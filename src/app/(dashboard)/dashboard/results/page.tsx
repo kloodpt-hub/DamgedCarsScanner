@@ -91,6 +91,7 @@ export default function ResultsPage({
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [sourceId, setSourceId] = useState("");
   const [isRead, setIsRead] = useState("");
@@ -113,6 +114,11 @@ export default function ResultsPage({
       if (isRead) sp.set("isRead", isRead);
 
       const res = await fetch(`/api/listings?${sp.toString()}`);
+      if (!res.ok) {
+        toast.error(t.failedToLoad);
+        setListings([]);
+        return;
+      }
       const data = await res.json();
       setListings(data.listings);
       setTotal(data.total);
@@ -129,9 +135,20 @@ export default function ResultsPage({
   }, [fetchListings]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  useEffect(() => {
     fetch("/api/sources")
-      .then((r) => r.json())
-      .then((data) => setSources(data.sources ?? data))
+      .then((r) => {
+        if (!r.ok) return [];
+        return r.json();
+      })
+      .then((data) => setSources(data.sources ?? data ?? []))
       .catch(() => {});
   }, []);
 
@@ -174,11 +191,8 @@ export default function ResultsPage({
         <div className="relative flex-1 w-full sm:max-w-xs">
           <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
           <Input
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder={t.search}
             className="ps-9"
           />

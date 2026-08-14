@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Bell, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -52,11 +53,12 @@ export function PushPrompt() {
     try {
       const reg = await navigator.serviceWorker.ready;
 
-      // Fetch VAPID public key from status endpoint
       const statusRes = await fetch("/api/notifications/status");
+      if (!statusRes.ok) throw new Error("Failed to fetch push config");
       const statusData = await statusRes.json();
 
       if (!statusData.vapidPublicKey) {
+        toast.error("Push notifications not configured by admin");
         localStorage.setItem("push-prompt-dismissed", "1");
         setShow(false);
         return;
@@ -67,17 +69,21 @@ export function PushPrompt() {
         applicationServerKey: urlBase64ToUint8Array(statusData.vapidPublicKey) as BufferSource,
       });
 
-      await fetch("/api/notifications/subscribe", {
+      const subRes = await fetch("/api/notifications/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(subscription),
       });
-    } catch (err) {
-      // Subscription failed, but permission was granted
-    }
 
-    localStorage.setItem("push-prompt-dismissed", "1");
-    setShow(false);
+      if (!subRes.ok) throw new Error("Failed to save subscription");
+
+      toast.success("Push notifications enabled!");
+      localStorage.setItem("push-prompt-dismissed", "1");
+      setShow(false);
+    } catch {
+      toast.error("Failed to enable push notifications. You can try again later.");
+      // Don't set localStorage - let them try again
+    }
   };
 
   const handleDismiss = () => {

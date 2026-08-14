@@ -22,6 +22,8 @@ const labels = {
     read: "Read",
     new: "New",
     failed: "Failed",
+    markedRead: "Marked as read",
+    notified: "Notification sent",
   },
   ar: {
     view: "عرض",
@@ -30,6 +32,8 @@ const labels = {
     read: "مقروء",
     new: "جديد",
     failed: "فشل",
+    markedRead: "تم التحديد كمقروء",
+    notified: "تم الإرسال",
   },
 } as const;
 
@@ -63,7 +67,7 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
     try {
       await markAsRead(listing.id);
       setRead(true);
-      toast.success(t.markRead);
+      toast.success(t.markedRead);
     } catch {
       toast.error(t.failed);
     }
@@ -73,7 +77,7 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
     try {
       await markAsNotified(listing.id);
       setNotified(true);
-      toast.success(t.notify);
+      toast.success(t.notified);
     } catch {
       toast.error(t.failed);
     }
