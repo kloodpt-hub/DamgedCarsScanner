@@ -35,6 +35,8 @@ export default async function RootLayout({
       className={`${inter.variable} ${cairo.variable}`}
     >
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#2563eb" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

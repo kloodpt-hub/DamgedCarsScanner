@@ -24,3 +24,22 @@ self.addEventListener("notificationclick", (event) => {
     event.waitUntil(clients.openWindow(url));
   }
 });
+
+self.addEventListener("pushsubscriptionchange", (event) => {
+  event.waitUntil(
+    self.registration.pushManager
+      .subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: event.oldSubscription
+          ? event.oldSubscription.applicationServerKey
+          : undefined,
+      })
+      .then((subscription) => {
+        return fetch("/api/notifications/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(subscription),
+        });
+      })
+  );
+});

@@ -109,7 +109,7 @@ model ScraperJob {
 
 model PushSubscription {
   id        String   @id @default(cuid())
-  endpoint  String
+  endpoint  String   @unique
   keys      Json
   userId    String
   createdAt DateTime @default(now())

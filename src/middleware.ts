@@ -20,7 +20,7 @@ function getSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set("X-XSS-Protection", "1; mode=block");
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-ancestors 'none'"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://accounts.google.com https://www.googleapis.com https://fcm.googleapis.com https://android.googleapis.com https://updates.push.services.mozilla.com; frame-ancestors 'none'"
   );
   return response;
 }

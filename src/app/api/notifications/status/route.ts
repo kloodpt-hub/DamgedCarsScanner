@@ -29,6 +29,10 @@ export async function GET() {
     telegramConnected: !!user?.telegramChatId,
     telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || "",
     pushSupported: true,
+    pushConfigured:
+      !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY &&
+      !!process.env.VAPID_PRIVATE_KEY,
+    vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "",
     recentNotifications,
   });
 }
