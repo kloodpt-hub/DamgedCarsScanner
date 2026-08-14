@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ScraperEngine } from "@/lib/scraper/engine";
+import { deleteOldListings } from "@/lib/cron/cleanup";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -12,6 +13,7 @@ export async function GET(request: Request) {
   try {
     const engine = new ScraperEngine(prisma);
     const results = await engine.runDueJobs();
+    const deletedCount = await deleteOldListings(prisma);
 
     const scraped = results.filter((r) => r.status === "completed");
     const failed = results.filter((r) => r.status === "failed");
@@ -28,6 +30,7 @@ export async function GET(request: Request) {
         skipped,
         totalListings,
         newListings,
+        deletedListings: deletedCount,
       },
       results: results.map((r) => ({
         sourceId: r.sourceId,

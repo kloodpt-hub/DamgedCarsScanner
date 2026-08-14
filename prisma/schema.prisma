@@ -61,6 +61,7 @@ model Filter {
   maxPrice          Float?
   damageStatus      String?
   excludedKeywords  String[]
+  sourceIds         String[]
   minMileage        Int?
   maxMileage        Int?
   isActive          Boolean   @default(true)

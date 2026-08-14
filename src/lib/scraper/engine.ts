@@ -70,6 +70,11 @@ export class ScraperEngine {
         where: { isActive: true },
       });
 
+      const relevantFilters = activeFilters.filter((f) => {
+        if (!f.sourceIds || f.sourceIds.length === 0) return true;
+        return f.sourceIds.includes(source.id);
+      });
+
       for (const raw of availableListings) {
         try {
           const existing = await this.prisma.listing.findUnique({
@@ -96,7 +101,7 @@ export class ScraperEngine {
 
           newListings++;
 
-          const matchedFilters = evaluateListing(listing, activeFilters);
+          const matchedFilters = evaluateListing(listing, relevantFilters);
           if (matchedFilters.length > 0) {
             await this.prisma.listing.update({
               where: { id: listing.id },
