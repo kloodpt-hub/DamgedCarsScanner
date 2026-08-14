@@ -10,7 +10,13 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   variant?: "danger" | "default";
+  locale?: string;
 }
+
+const confirmLabels = {
+  en: { cancel: "Cancel", confirm: "Confirm" },
+  ar: { cancel: "إلغاء", confirm: "تأكيد" },
+};
 
 export function ConfirmDialog({
   open,
@@ -19,7 +25,11 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   variant = "default",
+  locale,
 }: ConfirmDialogProps) {
+  const t =
+    confirmLabels[(locale as keyof typeof confirmLabels) ?? "en"] ??
+    confirmLabels.en;
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -51,13 +61,13 @@ export function ConfirmDialog({
         <p className="text-sm text-text-muted mb-6">{message}</p>
         <div className="flex justify-end gap-3">
           <Button ref={cancelRef} variant="outline" onClick={onCancel}>
-            Cancel
+            {t.cancel}
           </Button>
           <Button
             variant={variant === "danger" ? "destructive" : "default"}
             onClick={onConfirm}
           >
-            Confirm
+            {t.confirm}
           </Button>
         </div>
       </div>

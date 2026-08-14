@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Car } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -89,9 +90,9 @@ export default async function AdminMyResultsPage({
                       </div>
                     )}
                     {!listing.isRead && (
-                      <span className="absolute top-2 start-2 badge badge-primary">
+                      <Badge variant="default" className="absolute top-2 start-2">
                         {isRtl ? "جديد" : "New"}
-                      </span>
+                      </Badge>
                     )}
                   </div>
                   <div className="space-y-1">

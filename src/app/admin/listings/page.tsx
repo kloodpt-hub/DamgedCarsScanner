@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { ListingsFilters } from "@/components/admin/ListingsFilters";
 import { FileText, ExternalLink, Info } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -116,6 +117,14 @@ export default async function AdminListingsPage({
             : "Read-only database view. All listings auto-delete after 7 days."}
         </p>
       </div>
+
+      <ListingsFilters
+        search={search}
+        sourceId={sourceId}
+        isRead={isRead}
+        sources={sources.map((s) => ({ id: s.id, name: s.name }))}
+        isRtl={isRtl}
+      />
 
       <Card>
         <CardHeader>

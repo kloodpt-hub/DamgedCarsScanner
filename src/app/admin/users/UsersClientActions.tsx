@@ -167,6 +167,7 @@ export function UsersClientActions({
           onConfirm={handleDelete}
           onCancel={() => setShowDelete(false)}
           variant="danger"
+          locale={locale}
         />
       </div>
     );

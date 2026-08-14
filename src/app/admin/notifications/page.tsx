@@ -35,6 +35,12 @@ export default async function NotificationsPage({
   const hasTelegramBot = !!process.env.TELEGRAM_BOT_TOKEN;
   const hasVapid = !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && !!process.env.VAPID_PRIVATE_KEY;
 
+  function maskValue(val?: string): string {
+    if (!val) return "";
+    if (val.length <= 8) return "•".repeat(val.length);
+    return val.slice(0, 4) + "•".repeat(Math.max(4, val.length - 8)) + val.slice(-4);
+  }
+
   const [
     notifiedListings,
     telegramUsers,
@@ -59,9 +65,14 @@ export default async function NotificationsPage({
       orderBy: { createdAt: "desc" },
     }),
     prisma.listing.count({ where: { isNotified: true } }),
-    prisma.user.findMany({
-      select: { id: true },
-    }).then((users) => users.length),
+    prisma.user.count({
+      where: {
+        OR: [
+          { telegramChatId: { not: null } },
+          { pushSubscriptions: { some: {} } },
+        ],
+      },
+    }),
     prisma.pushSubscription.count(),
   ]);
 
@@ -107,7 +118,7 @@ export default async function NotificationsPage({
               <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
                 <span className="text-text-muted">API Key</span>
                 <span className="text-text font-medium font-mono">
-                  {hasResendKey ? `${process.env.RESEND_API_KEY?.slice(0, 8)}...configured` : "-"}
+                  {hasResendKey ? maskValue(process.env.RESEND_API_KEY) : "-"}
                 </span>
               </div>
               <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
@@ -152,7 +163,7 @@ export default async function NotificationsPage({
                 <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
                   <span className="text-text-muted">Bot Token</span>
                   <span className="text-text font-medium font-mono">
-                    {process.env.TELEGRAM_BOT_TOKEN?.slice(0, 8)}...configured
+                    {maskValue(process.env.TELEGRAM_BOT_TOKEN)}
                   </span>
                 </div>
                 <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
@@ -318,8 +329,8 @@ export default async function NotificationsPage({
                       {listing.source.name} &middot; {formatDate(listing.updatedAt, locale)}
                     </p>
                   </div>
-                  <Badge variant="default" className="shrink-0">
-                    {t.alerts.emailConfigured}
+                  <Badge variant="success" className="shrink-0">
+                    Notified
                   </Badge>
                 </div>
               ))}
