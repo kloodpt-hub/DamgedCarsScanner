@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
+import { isEmailConfigured } from "@/lib/email";
 import {
   Card,
   CardContent,
@@ -8,11 +9,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Send, CheckCircle, AlertCircle, Wifi } from "lucide-react";
+import { Bell, Send, CheckCircle, AlertCircle, Wifi, Mail } from "lucide-react";
 
 const labels = {
   en: {
     title: "Alerts & Notifications",
+    emailStatus: "Email Notifications",
     telegramStatus: "Telegram Connection",
     webPush: "Web Push Notifications",
     notificationHistory: "Notification History",
@@ -25,10 +27,15 @@ const labels = {
     sentAt: "Sent At",
     via: "Via",
     telegram: "Telegram",
+    email: "Email",
     web: "Web Push",
+    configured: "Configured",
+    notConfigured: "Not configured",
+    recentNotifications: "Recent Email Notifications",
   },
   ar: {
     title: "التنبيهات والإشعارات",
+    emailStatus: "إشعارات البريد الإلكتروني",
     telegramStatus: "حالة اتصال تيليجرام",
     webPush: "إشعارات الويب",
     notificationHistory: "سجل الإشعارات",
@@ -41,7 +48,11 @@ const labels = {
     sentAt: "تم الإرسال في",
     via: " عبر ",
     telegram: "تيليجرام",
+    email: "البريد الإلكتروني",
     web: "ويب",
+    configured: "تم التكوين",
+    notConfigured: "لم يتم التكوين",
+    recentNotifications: "إشعارات البريد الأخيرة",
   },
 } as const;
 
@@ -56,6 +67,7 @@ export default async function AlertsPage({
 
   const session = await auth();
   const userId = session?.user?.id;
+  const emailConfigured = isEmailConfigured();
 
   const [telegramUser, notifiedListings] = await Promise.all([
     userId
@@ -85,11 +97,35 @@ export default async function AlertsPage({
         <h1 className="text-2xl font-bold text-text">{t.title}</h1>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-surface">
-              <Send className="h-6 w-6 text-primary" />
+              <Mail className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-text">{t.emailStatus}</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                {emailConfigured ? (
+                  <>
+                    <Wifi className="h-3.5 w-3.5 text-success" />
+                    <Badge variant="success">{t.configured}</Badge>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-3.5 w-3.5 text-text-muted" />
+                    <Badge variant="secondary">{t.notConfigured}</Badge>
+                  </>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-surface">
+              <Send className="h-6 w-6 text-accent" />
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-text">{t.telegramStatus}</p>
@@ -127,7 +163,7 @@ export default async function AlertsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>{t.notificationHistory}</CardTitle>
+          <CardTitle>{t.recentNotifications}</CardTitle>
         </CardHeader>
         <CardContent>
           {notifiedListings.length === 0 ? (
@@ -168,7 +204,7 @@ export default async function AlertsPage({
                     </p>
                   </div>
                   <Badge variant="default" className="shrink-0">
-                    {t.telegram}
+                    {t.email}
                   </Badge>
                 </div>
               ))}

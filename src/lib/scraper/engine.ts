@@ -5,13 +5,22 @@ import { Autoscout24Adapter } from "./autoscout24.adapter";
 import type { ScraperAdapter, ScraperJobResult, ScraperSelectors } from "./types";
 import { evaluateListing } from "../filters/evaluator";
 import { notifyNewListing } from "../notifications";
-import { isDueForScraping } from "../cron/scheduler";
+import { getDueSources, markSourceScraped } from "../cron/scheduler";
 
 const ADAPTERS: Record<string, () => ScraperAdapter> = {
   generic: () => new GenericAdapter(),
   leboncoin: () => new LeboncoinAdapter(),
   autoscout24: () => new Autoscout24Adapter(),
 };
+
+export interface ScrapeResult {
+  sourceId: string;
+  sourceName: string;
+  status: "completed" | "failed" | "skipped";
+  listingsFound: number;
+  newListings: number;
+  errors: string[];
+}
 
 export class ScraperEngine {
   constructor(private prisma: PrismaClient) {}
@@ -36,14 +45,6 @@ export class ScraperEngine {
 
     if (!source.isActive) {
       return { listingsFound: 0, newListings: 0, errors: [`Source ${source.name} is inactive`] };
-    }
-
-    if (!isDueForScraping(source)) {
-      return {
-        listingsFound: 0,
-        newListings: 0,
-        errors: [`Source ${source.name} is not due for scraping`],
-      };
     }
 
     const job = await this.prisma.scraperJob.create({
@@ -122,10 +123,7 @@ export class ScraperEngine {
         },
       });
 
-      await this.prisma.scraperSource.update({
-        where: { id: source.id },
-        data: { lastScrapedAt: new Date() },
-      });
+      await markSourceScraped(this.prisma, source.id);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       errors.push(errorMessage);
@@ -143,17 +141,42 @@ export class ScraperEngine {
     return { listingsFound, newListings, errors };
   }
 
-  async runAllActiveJobs(): Promise<ScraperJobResult[]> {
+  async runAllActiveJobs(): Promise<ScrapeResult[]> {
     const sources = await this.prisma.scraperSource.findMany({
       where: { isActive: true },
     });
 
-    const dueSources = sources.filter(isDueForScraping);
-    const results: ScraperJobResult[] = [];
+    const results: ScrapeResult[] = [];
 
-    for (const source of dueSources) {
+    for (const source of sources) {
       const result = await this.runJob(source.id);
-      results.push(result);
+      results.push({
+        sourceId: source.id,
+        sourceName: source.name,
+        status: result.errors.length > 0 ? "failed" : "completed",
+        listingsFound: result.listingsFound,
+        newListings: result.newListings,
+        errors: result.errors,
+      });
+    }
+
+    return results;
+  }
+
+  async runDueJobs(): Promise<ScrapeResult[]> {
+    const sources = await getDueSources(this.prisma);
+    const results: ScrapeResult[] = [];
+
+    for (const source of sources) {
+      const result = await this.runJob(source.id);
+      results.push({
+        sourceId: source.id,
+        sourceName: source.name,
+        status: result.errors.length > 0 ? "failed" : "completed",
+        listingsFound: result.listingsFound,
+        newListings: result.newListings,
+        errors: result.errors,
+      });
     }
 
     return results;

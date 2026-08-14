@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ScraperEngine } from "@/lib/scraper/engine";
 
-export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+export async function POST() {
+  const session = await auth();
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -15,7 +15,6 @@ export async function GET(request: Request) {
 
     const scraped = results.filter((r) => r.status === "completed");
     const failed = results.filter((r) => r.status === "failed");
-    const skipped = 0;
     const totalListings = results.reduce((sum, r) => sum + r.listingsFound, 0);
     const newListings = results.reduce((sum, r) => sum + r.newListings, 0);
 
@@ -25,7 +24,6 @@ export async function GET(request: Request) {
       summary: {
         scraped: scraped.length,
         failed: failed.length,
-        skipped,
         totalListings,
         newListings,
       },
