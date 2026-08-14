@@ -16,6 +16,7 @@ async function matchExistingListings(filterId: string) {
     const listings = await prisma.listing.findMany({
       skip,
       take: BATCH_SIZE,
+      orderBy: { createdAt: "desc" },
     });
 
     const matchingIds = listings
@@ -87,7 +88,7 @@ export async function createFilter(data: {
     },
   });
 
-  matchExistingListings(filter.id);
+  await matchExistingListings(filter.id);
 
   return { success: true, filter };
 }
@@ -119,7 +120,7 @@ export async function updateFilter(
     data: { listings: { set: [] } },
   });
 
-  matchExistingListings(id);
+  await matchExistingListings(id);
 
   return { success: true, filter };
 }
