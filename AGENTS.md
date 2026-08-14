@@ -1,16 +1,5 @@
 # CRITICAL RULES - MUST FOLLOW
 
-# Rules for this project
-
-- Always prioritize finding and implementing the solution with minimal tokens.
-- Do NOT output large blocks of code in the chat.
-- Prefer editing files directly when possible.
-- After making changes, briefly explain in 1-3 short sentences what you did and why.
-- Keep all responses extremely concise.
-- Avoid long explanations, tutorials, introductions, or conclusions.
-- If code must be shown, show only the minimal relevant snippet or diff.
-- Never repeat information the user already knows.
-
 ## RESPONSES
 
 - Keep responses concise and to the point - unless the user asks otherwise
@@ -24,7 +13,7 @@
 
 ## CHANGE / EDIT MODE
 
-- Never implement features yourself when possible — assign tasks to at least two sub-agents running in parallel!
+- Never implement features yourself when possible — assign tasks to sub-agents running in parallel!
 - Identify changes from the plan that can be implemented in parallel, and use sub-agents to implement the features efficiently
 - When using sub-agents to implement features, act as a coordinator only
 - Use the best model for the task - premium models for complex tasks (like coding) and mid-tier models for simpler tasks, like documentation

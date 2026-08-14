@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
@@ -68,15 +69,26 @@ interface NavItem {
 }
 
 interface SidebarProps {
-  currentPath: string;
   locale: string;
   role?: string;
 }
 
-export function Sidebar({ currentPath, locale, role }: SidebarProps) {
+export function Sidebar({ locale, role }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const currentPath = usePathname();
   const t = navLabels[locale as keyof typeof navLabels] ?? navLabels.en;
   const isAdmin = role === "ADMIN";
+
+  useEffect(() => {
+    const stored = localStorage.getItem("sidebar-collapsed");
+    if (stored === "true") setCollapsed(true);
+  }, []);
+
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem("sidebar-collapsed", String(next));
+  };
 
   const userNavItems: NavItem[] = [
     { label: t.dashboard, href: "/dashboard", icon: LayoutDashboard },
@@ -213,7 +225,7 @@ export function Sidebar({ currentPath, locale, role }: SidebarProps) {
         </button>
 
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={toggleCollapsed}
           className={cn(
             "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors",
             collapsed && "justify-center px-0"

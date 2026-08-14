@@ -101,8 +101,13 @@ export default function FiltersPage({
     setLoading(true);
     try {
       const res = await fetch("/api/filters");
+      if (!res.ok) {
+        toast.error(t.failedToLoad);
+        setFilters([]);
+        return;
+      }
       const data = await res.json();
-      setFilters(data);
+      setFilters(Array.isArray(data) ? data : []);
     } catch {
       toast.error(t.failedToLoad);
     } finally {
@@ -192,6 +197,7 @@ export default function FiltersPage({
           </CardHeader>
           <CardContent>
             <FilterForm
+              key={editingFilter?.id ?? "new"}
               filter={editingFilter}
               locale={locale}
               onSuccess={handleFormSuccess}

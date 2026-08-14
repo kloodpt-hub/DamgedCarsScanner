@@ -25,12 +25,14 @@ async function requireAdmin() {
 }
 
 export async function getAllSources() {
+  await requireAdmin();
   return prisma.scraperSource.findMany({
     orderBy: { createdAt: "desc" },
   });
 }
 
 export async function getSource(id: string) {
+  await requireAdmin();
   return prisma.scraperSource.findUnique({
     where: { id },
     include: { _count: { select: { listings: true } } },
