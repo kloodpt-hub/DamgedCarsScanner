@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",
-    "start": "prisma migrate deploy && next start -p $PORT",
+    "prestart": "prisma db push --skip-generate 2>&1 || true",
+    "start": "next start -p $PORT",
     "lint": "next lint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
