@@ -2,7 +2,38 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { evaluateListing } from "@/lib/filters/evaluator";
 import { z } from "zod";
+
+const BATCH_SIZE = 50;
+
+async function matchExistingListings(filterId: string) {
+  const filter = await prisma.filter.findUnique({ where: { id: filterId } });
+  if (!filter) return;
+
+  const totalListings = await prisma.listing.count();
+  for (let skip = 0; skip < totalListings; skip += BATCH_SIZE) {
+    const listings = await prisma.listing.findMany({
+      skip,
+      take: BATCH_SIZE,
+    });
+
+    const matchingIds = listings
+      .filter((listing) => evaluateListing(listing, [filter]).length > 0)
+      .map((listing) => listing.id);
+
+    if (matchingIds.length > 0) {
+      await prisma.filter.update({
+        where: { id: filterId },
+        data: {
+          listings: {
+            connect: matchingIds.map((id) => ({ id })),
+          },
+        },
+      });
+    }
+  }
+}
 
 const createFilterSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -56,6 +87,8 @@ export async function createFilter(data: {
     },
   });
 
+  matchExistingListings(filter.id);
+
   return { success: true, filter };
 }
 
@@ -80,6 +113,13 @@ export async function updateFilter(
     where: { id, userId: session.user.id },
     data: validated,
   });
+
+  await prisma.filter.update({
+    where: { id },
+    data: { listings: { set: [] } },
+  });
+
+  matchExistingListings(id);
 
   return { success: true, filter };
 }
