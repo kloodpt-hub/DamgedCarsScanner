@@ -16,8 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { FileText } from "lucide-react";
-import { ListingsActions } from "./ListingsActions";
+import { FileText, ExternalLink, Info } from "lucide-react";
 
 const PAGE_SIZE = 20;
 
@@ -105,6 +104,15 @@ export default async function AdminListingsPage({
         </div>
       </div>
 
+      <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+        <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+        <p className="text-xs text-text-muted">
+          {isRtl
+            ? "عرض قاعدة البيانات للقراءة فقط. جميع الإعلانات تُحذف تلقائيًا بعد 7 أيام."
+            : "Read-only database view. All listings auto-delete after 7 days."}
+        </p>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">
@@ -127,7 +135,6 @@ export default async function AdminListingsPage({
                   <TableHead>{isRtl ? "المسافة" : "Mileage"}</TableHead>
                   <TableHead>{isRtl ? "الحالة" : "Status"}</TableHead>
                   <TableHead>{isRtl ? "التاريخ" : "Date"}</TableHead>
-                  <TableHead>{isRtl ? "الإجراءات" : "Actions"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -161,13 +168,15 @@ export default async function AdminListingsPage({
                         {formatDate(listing.createdAt, locale)}
                       </TableCell>
                       <TableCell>
-                        <ListingsActions
-                          listingId={listing.id}
-                          canonicalUrl={listing.canonicalUrl}
-                          isRead={listing.isRead}
-                          isNotified={listing.isNotified}
-                          locale={locale}
-                        />
+                        <a
+                          href={listing.canonicalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded text-text-muted hover:text-primary hover:bg-surface transition-colors inline-flex"
+                          title={isRtl ? "عرض" : "View"}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
                       </TableCell>
                     </TableRow>
                   );

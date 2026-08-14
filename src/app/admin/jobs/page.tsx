@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getDictionary, type Locale } from "@/lib/i18n";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDateTime } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -118,10 +118,10 @@ export default async function JobsPage({
                       <TableCell className="text-text">{job.listingsFound}</TableCell>
                       <TableCell className="text-text">{job.newListings}</TableCell>
                       <TableCell className="text-text-muted">
-                        {job.startedAt ? formatDate(job.startedAt, locale) : "-"}
+                        {job.startedAt ? formatDateTime(job.startedAt, locale) : "-"}
                       </TableCell>
                       <TableCell className="text-text-muted">
-                        {job.completedAt ? formatDate(job.completedAt, locale) : "-"}
+                        {job.completedAt ? formatDateTime(job.completedAt, locale) : "-"}
                       </TableCell>
                       <TableCell className="text-text-muted">
                         {duration(job)}

@@ -25,6 +25,7 @@ const navLabels = {
     dashboard: "Dashboard",
     listings: "Listings",
     results: "Results",
+    myResults: "My Results",
     filters: "Filters",
     alerts: "Alerts",
     sources: "Sources",
@@ -43,6 +44,7 @@ const navLabels = {
     dashboard: "لوحة التحكم",
     listings: "الإعلانات",
     results: "النتائج",
+    myResults: "نتائجي",
     filters: "الفلاتر",
     alerts: "التنبيهات",
     sources: "المصادر",
@@ -85,6 +87,7 @@ export function Sidebar({ currentPath, locale, role }: SidebarProps) {
 
   const adminNavItems: NavItem[] = [
     { label: t.dashboard, href: "/admin", icon: LayoutDashboard },
+    { label: t.myResults, href: "/admin/my-results", icon: FileText },
     { label: t.listings, href: "/admin/listings", icon: FileText },
     { label: t.sources, href: "/admin/sources", icon: Globe },
     { label: t.jobs, href: "/admin/jobs", icon: Activity },

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Sidebar } from "@/components/Sidebar";
+import { PushPrompt } from "@/components/shared/PushPrompt";
 
 export default async function DashboardLayout({
   children,
@@ -28,6 +29,7 @@ export default async function DashboardLayout({
       >
         <main className="p-4 lg:p-6">{children}</main>
       </div>
+      <PushPrompt />
     </div>
   );
 }
