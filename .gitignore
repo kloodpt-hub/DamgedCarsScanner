@@ -7,3 +7,4 @@ prisma/dev.db
 dist
 *.tsbuildinfo
 .vercel
+next-env.d.ts
