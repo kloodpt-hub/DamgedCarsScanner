@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { GenericAdapter } from "./generic-adapter";
 import { LeboncoinAdapter } from "./leboncoin.adapter";
 import { Autoscout24Adapter } from "./autoscout24.adapter";
+import { SchadeautosAdapter } from "./schadeautos.adapter";
 import type { ScraperAdapter, ScraperJobResult, ScraperSelectors } from "./types";
 import { evaluateListing } from "../filters/evaluator";
 import { notifyNewListing } from "../notifications";
@@ -11,6 +12,7 @@ const ADAPTERS: Record<string, () => ScraperAdapter> = {
   generic: () => new GenericAdapter(),
   leboncoin: () => new LeboncoinAdapter(),
   autoscout24: () => new Autoscout24Adapter(),
+  schadeautos: () => new SchadeautosAdapter(),
 };
 
 export interface ScrapeResult {

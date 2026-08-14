@@ -16,9 +16,11 @@ export function matchYear(
   minYear?: number | null,
   maxYear?: number | null
 ): boolean {
-  if (listingYear == null) return true;
-  if (minYear != null && listingYear < minYear) return false;
-  if (maxYear != null && listingYear > maxYear) return false;
+  const hasFilter = (minYear != null && minYear !== 0) || (maxYear != null && maxYear !== 0);
+  if (!hasFilter) return true;
+  if (listingYear == null) return false;
+  if (minYear != null && minYear !== 0 && listingYear < minYear) return false;
+  if (maxYear != null && maxYear !== 0 && listingYear > maxYear) return false;
   return true;
 }
 
@@ -27,9 +29,11 @@ export function matchPrice(
   minPrice?: number | null,
   maxPrice?: number | null
 ): boolean {
-  if (listingPrice == null) return true;
-  if (minPrice != null && listingPrice < minPrice) return false;
-  if (maxPrice != null && listingPrice > maxPrice) return false;
+  const hasFilter = (minPrice != null && minPrice !== 0) || (maxPrice != null && maxPrice !== 0);
+  if (!hasFilter) return true;
+  if (listingPrice == null) return false;
+  if (minPrice != null && minPrice !== 0 && listingPrice < minPrice) return false;
+  if (maxPrice != null && maxPrice !== 0 && listingPrice > maxPrice) return false;
   return true;
 }
 
@@ -38,9 +42,11 @@ export function matchMileage(
   minMileage?: number | null,
   maxMileage?: number | null
 ): boolean {
-  if (listingMileage == null) return true;
-  if (minMileage != null && listingMileage < minMileage) return false;
-  if (maxMileage != null && listingMileage > maxMileage) return false;
+  const hasFilter = (minMileage != null && minMileage !== 0) || (maxMileage != null && maxMileage !== 0);
+  if (!hasFilter) return true;
+  if (listingMileage == null) return false;
+  if (minMileage != null && minMileage !== 0 && listingMileage < minMileage) return false;
+  if (maxMileage != null && maxMileage !== 0 && listingMileage > maxMileage) return false;
   return true;
 }
 

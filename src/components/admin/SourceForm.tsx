@@ -49,6 +49,19 @@ const GENERIC_DEFAULTS = {
   nextPage: "",
 };
 
+const SCHADEAUTOS_DEFAULTS = {
+  listingContainer: "a.schadeautos-card",
+  title: ".schadeautos-card__title",
+  price: ".schadeautos-card__price",
+  year: ".schadeautos-card__footer .schadeautos-card__stat:nth-child(1) span",
+  mileage: ".schadeautos-card__footer .schadeautos-card__stat:nth-child(3) span",
+  damageStatus: "",
+  description: ".schadeautos-card__subtitle",
+  imageUrl: ".schadeautos-card__image",
+  link: "a.schadeautos-card",
+  nextPage: ".schadeautos-pagination__nav--next",
+};
+
 type SelectorField = keyof typeof GENERIC_DEFAULTS;
 
 const SELECTOR_FIELDS: { key: SelectorField; label: string; placeholder: string }[] = [
@@ -70,6 +83,8 @@ function getDefaultsForAdapter(type: string): Record<SelectorField, string> {
       return { ...LEBONCOIN_DEFAULTS };
     case "autoscout24":
       return { ...AUTOSCOUT24_DEFAULTS };
+    case "schadeautos":
+      return { ...SCHADEAUTOS_DEFAULTS };
     default:
       return { ...GENERIC_DEFAULTS };
   }
@@ -259,6 +274,10 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
       en: "Generic adapter. You'll need to provide custom CSS selectors for your target site.",
       ar: "محول عام. ستحتاج إلى تقديم محددات CSS مخصصة لموقعك المستهدف.",
     },
+    schadeautos: {
+      en: "Optimized for WordPress sites using the Schadeautos plugin (e.g. auto-didact.nl). Reads data from data-* attributes for reliable extraction.",
+      ar: "محسّن لمواقع WordPress التي تستخدم إضافة Schadeautos. يقرأ البيانات من سمات data-* لاستخراج موثوق.",
+    },
   };
 
   return (
@@ -306,6 +325,7 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
             <option value="generic">Generic</option>
             <option value="leboncoin">Leboncoin</option>
             <option value="autoscout24">AutoScout24</option>
+            <option value="schadeautos">Schadeautos (WordPress)</option>
           </Select>
           {adapterHelperText[adapterType] && (
             <p className="text-xs text-text-muted mt-1">
