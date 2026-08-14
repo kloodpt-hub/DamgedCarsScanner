@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { Sidebar } from "@/components/dashboard/Sidebar";
+import { Sidebar } from "@/components/Sidebar";
 
 export default async function DashboardLayout({
   children,
@@ -18,7 +18,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-bg">
-      <Sidebar currentPath="/dashboard" locale={locale} />
+      <Sidebar currentPath="/dashboard" locale={locale} role={session.user.role} />
       <div
         className={
           locale === "ar"

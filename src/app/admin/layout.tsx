@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { Sidebar } from "@/components/admin/Sidebar";
+import { Sidebar } from "@/components/Sidebar";
 
 export default async function AdminLayout({
   children,
@@ -18,7 +18,7 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-bg">
-      <Sidebar currentPath="/admin" locale={locale} />
+      <Sidebar currentPath="/admin" locale={locale} role={session.user.role} />
       <div
         className={
           locale === "ar"
