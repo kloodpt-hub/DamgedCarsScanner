@@ -202,7 +202,7 @@ export default async function AdminListingsPage({
       </Card>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex flex-wrap items-center justify-center gap-1">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
             <a
               key={p}

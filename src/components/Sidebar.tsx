@@ -18,6 +18,8 @@ import {
   Scan,
   ArrowLeftRight,
   Settings,
+  Menu,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -75,14 +77,20 @@ interface SidebarProps {
 
 export function Sidebar({ locale, role }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const currentPath = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname() || "";
   const t = navLabels[locale as keyof typeof navLabels] ?? navLabels.en;
   const isAdmin = role === "ADMIN";
+  const isRtl = locale === "ar";
 
   useEffect(() => {
     const stored = localStorage.getItem("sidebar-collapsed");
     if (stored === "true") setCollapsed(true);
   }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   const toggleCollapsed = () => {
     const next = !collapsed;
@@ -108,32 +116,21 @@ export function Sidebar({ locale, role }: SidebarProps) {
     { label: t.settings, href: "/admin/settings", icon: Settings },
   ];
 
-  const isOnAdmin = currentPath.startsWith("/admin");
+  const isOnAdmin = pathname.startsWith("/admin");
   const navItems = isOnAdmin ? adminNavItems : userNavItems;
 
   const isActive = (href: string) => {
     if (href === "/admin" || href === "/dashboard") {
-      return currentPath === href;
+      return pathname === href;
     }
-    return currentPath.startsWith(href);
+    return pathname.startsWith(href);
   };
 
-  const isRtl = locale === "ar";
-
-  return (
-    <aside
-      className={cn(
-        "fixed inset-y-0 z-30 flex flex-col bg-gray-900 text-gray-300 transition-all duration-300",
-        isRtl
-          ? "right-0 border-s border-gray-800"
-          : "left-0 border-e border-gray-800",
-        collapsed ? "w-[68px]" : "w-64"
-      )}
-    >
-      {/* Brand */}
+  const sidebarInner = (
+    <>
       <div
         className={cn(
-          "flex h-16 items-center gap-2 border-b border-gray-800 px-4",
+          "flex h-16 items-center gap-2 border-b border-gray-800 px-4 shrink-0",
           collapsed && "justify-center px-0"
         )}
       >
@@ -147,9 +144,7 @@ export function Sidebar({ locale, role }: SidebarProps) {
         )}
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        {/* Section label */}
         {!collapsed && isAdmin && (
           <p className="px-3 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
             {isOnAdmin ? t.adminSection : t.userSection}
@@ -178,12 +173,9 @@ export function Sidebar({ locale, role }: SidebarProps) {
           );
         })}
 
-        {/* Role switcher for admins */}
         {isAdmin && (
           <>
-            {!collapsed && (
-              <div className="my-3 border-t border-gray-800" />
-            )}
+            {!collapsed && <div className="my-3 border-t border-gray-800" />}
             <Link
               href={isOnAdmin ? "/dashboard" : "/admin"}
               className={cn(
@@ -210,10 +202,9 @@ export function Sidebar({ locale, role }: SidebarProps) {
         )}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-gray-800 p-3 space-y-1">
+      <div className="border-t border-gray-800 p-3 space-y-1 shrink-0">
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut({ callbackUrl: "/" })}
           className={cn(
             "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors",
             collapsed && "justify-center px-0"
@@ -227,7 +218,7 @@ export function Sidebar({ locale, role }: SidebarProps) {
         <button
           onClick={toggleCollapsed}
           className={cn(
-            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors",
+            "hidden lg:flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors",
             collapsed && "justify-center px-0"
           )}
         >
@@ -242,11 +233,65 @@ export function Sidebar({ locale, role }: SidebarProps) {
           ) : (
             <ChevronLeft className="h-5 w-5 shrink-0" />
           )}
-          {!collapsed && (
-            <span>{t.collapse}</span>
-          )}
+          {!collapsed && <span>{t.collapse}</span>}
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed top-4 start-4 z-40 p-2 rounded-lg bg-gray-900 text-white shadow-lg"
+        aria-label="Open menu"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside
+        className={cn(
+          "lg:hidden fixed inset-y-0 z-50 flex flex-col bg-gray-900 text-gray-300 transition-transform duration-300 w-64",
+          isRtl ? "right-0" : "left-0",
+          mobileOpen
+            ? "translate-x-0"
+            : isRtl
+              ? "translate-x-full"
+              : "-translate-x-full"
+        )}
+      >
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="absolute top-4 end-4 z-10 p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
+          aria-label="Close menu"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        {sidebarInner}
+      </aside>
+
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden lg:flex fixed inset-y-0 z-30 flex-col bg-gray-900 text-gray-300 transition-all duration-300",
+          isRtl
+            ? "right-0 border-s border-gray-800"
+            : "left-0 border-e border-gray-800",
+          collapsed ? "w-[68px]" : "w-64"
+        )}
+      >
+        {sidebarInner}
+      </aside>
+    </>
   );
 }

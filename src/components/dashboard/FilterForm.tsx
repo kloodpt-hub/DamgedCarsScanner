@@ -180,7 +180,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="label">{t.minYear}</label>
           <Input
@@ -205,7 +205,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="label">{t.minPrice}</label>
           <Input
@@ -241,7 +241,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="label">{t.minMileage}</label>
           <Input

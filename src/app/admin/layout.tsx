@@ -19,14 +19,8 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen bg-bg">
       <Sidebar locale={locale} role={session.user.role} />
-      <div
-        className={
-          locale === "ar"
-            ? "mr-[68px] lg:mr-[256px] transition-all duration-300"
-            : "ml-[68px] lg:ml-[256px] transition-all duration-300"
-        }
-      >
-        <main className="p-4 lg:p-6">{children}</main>
+      <div className="lg:ml-64 transition-all duration-300">
+        <main className="p-4 lg:p-6 pt-16 lg:pt-6">{children}</main>
       </div>
     </div>
   );
