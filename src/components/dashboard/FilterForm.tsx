@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { createFilter, updateFilter } from "@/server/actions/filters";
+
+interface Source {
+  id: string;
+  name: string;
+}
 
 const labels = {
   en: {
@@ -25,6 +31,8 @@ const labels = {
     filterUpdated: "Filter updated",
     filterCreated: "Filter created",
     failedToSave: "Failed to save filter",
+    sources: "Sources",
+    noSources: "No sources available",
   },
   ar: {
     filterName: "اسم الفلتر",
@@ -43,6 +51,8 @@ const labels = {
     filterUpdated: "تم تحديث الفلتر",
     filterCreated: "تم إنشاء الفلتر",
     failedToSave: "فشل حفظ الفلتر",
+    sources: "المصادر",
+    noSources: "لا توجد مصادر متاحة",
   },
 } as const;
 
@@ -57,6 +67,7 @@ interface FilterData {
   excludedKeywords?: string[];
   minMileage?: number | null;
   maxMileage?: number | null;
+  sourceIds?: string[];
 }
 
 interface FilterFormProps {
@@ -81,7 +92,16 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
   );
   const [minMileage, setMinMileage] = useState(filter?.minMileage?.toString() ?? "");
   const [maxMileage, setMaxMileage] = useState(filter?.maxMileage?.toString() ?? "");
+  const [sources, setSources] = useState<Source[]>([]);
+  const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>(filter?.sourceIds ?? []);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/sources")
+      .then((r) => r.json())
+      .then((data) => setSources(data.sources ?? data))
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +125,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
           : [],
         minMileage: minMileage ? parseInt(minMileage) : undefined,
         maxMileage: maxMileage ? parseInt(maxMileage) : undefined,
+        sourceIds: selectedSourceIds,
       };
 
       if (isEdit && filter?.id) {
@@ -131,6 +152,32 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
           onChange={(e) => setName(e.target.value)}
           placeholder={t.filterName}
         />
+      </div>
+
+      <div>
+        <label className="label">{t.sources}</label>
+        <div className="space-y-2 rounded-lg border border-border bg-input-bg/30 p-3 max-h-40 overflow-y-auto">
+          {sources.map((s) => (
+            <label key={s.id} className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedSourceIds.includes(s.id)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedSourceIds((prev) => [...prev, s.id]);
+                  } else {
+                    setSelectedSourceIds((prev) => prev.filter((id) => id !== s.id));
+                  }
+                }}
+                className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
+              />
+              <span className="text-sm text-text">{s.name}</span>
+            </label>
+          ))}
+          {sources.length === 0 && (
+            <p className="text-xs text-text-muted">{t.noSources}</p>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -183,11 +230,15 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
 
       <div>
         <label className="label">{t.damageStatus}</label>
-        <Input
+        <Select
           value={damageStatus}
           onChange={(e) => setDamageStatus(e.target.value)}
-          placeholder="e.g. accident, fire, flood"
-        />
+        >
+          <option value="">Any</option>
+          <option value="Damage">Damage</option>
+          <option value="No Damage">No Damage</option>
+          <option value="Total Loss">Total Loss</option>
+        </Select>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

@@ -26,6 +26,7 @@ interface FilterData {
   excludedKeywords: string[];
   minMileage: number | null;
   maxMileage: number | null;
+  sourceIds?: string[];
   isActive: boolean;
   createdAt: string;
 }
@@ -154,6 +155,9 @@ export default function FiltersPage({
     }
     if (filter.excludedKeywords?.length) {
       parts.push(`${t.keywords}: ${filter.excludedKeywords.join(", ")}`);
+    }
+    if (filter.sourceIds?.length) {
+      parts.push(`Sources: ${filter.sourceIds.length}`);
     }
     return parts.length > 0 ? parts.join(" | ") : t.none;
   };

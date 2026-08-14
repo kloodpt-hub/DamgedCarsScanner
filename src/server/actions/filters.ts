@@ -46,6 +46,7 @@ const createFilterSchema = z.object({
   excludedKeywords: z.array(z.string()).optional(),
   minMileage: z.number().min(0).optional(),
   maxMileage: z.number().min(0).optional(),
+  sourceIds: z.array(z.string()).optional(),
 });
 
 const updateFilterSchema = createFilterSchema.partial();
@@ -77,6 +78,7 @@ export async function createFilter(data: {
   excludedKeywords?: string[];
   minMileage?: number;
   maxMileage?: number;
+  sourceIds?: string[];
 }) {
   const session = await requireAuth();
   const validated = createFilterSchema.parse(data);
@@ -105,6 +107,7 @@ export async function updateFilter(
     excludedKeywords?: string[];
     minMileage?: number;
     maxMileage?: number;
+    sourceIds?: string[];
   }
 ) {
   const session = await requireAuth();

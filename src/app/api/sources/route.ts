@@ -14,11 +14,16 @@ const createSourceSchema = z.object({
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const where = session.user.role === "ADMIN"
+    ? {}
+    : { isActive: true };
+
   const sources = await prisma.scraperSource.findMany({
+    where,
     orderBy: { createdAt: "desc" },
   });
 

@@ -13,6 +13,7 @@ const createFilterSchema = z.object({
   excludedKeywords: z.array(z.string()).optional(),
   minMileage: z.number().min(0).optional(),
   maxMileage: z.number().min(0).optional(),
+  sourceIds: z.array(z.string()).optional(),
 });
 
 export async function GET() {
