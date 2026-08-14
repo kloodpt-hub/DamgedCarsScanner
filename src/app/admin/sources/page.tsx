@@ -45,7 +45,7 @@ export default async function SourcesPage({
             {t.nav.sources}
           </h1>
           <p className="text-text-muted text-sm mt-1">
-            {isRtl ? "إدارة مصادر البيانات" : "Manage data sources"}
+            {t.sources.manageSources}
           </p>
         </div>
         <SourcesClientActions locale={locale} />
@@ -64,7 +64,7 @@ export default async function SourcesPage({
                   <TableHead>{t.sources.sourceName}</TableHead>
                   <TableHead>{t.sources.baseUrl}</TableHead>
                   <TableHead>{t.sources.adapterType}</TableHead>
-                  <TableHead>{isRtl ? "الفترة" : "Interval"}</TableHead>
+                  <TableHead>{t.sources.interval}</TableHead>
                   <TableHead>{t.sources.lastScraped}</TableHead>
                   <TableHead>{t.sources.status}</TableHead>
                   <TableHead className="text-end">{t.sources.actions}</TableHead>
@@ -95,12 +95,8 @@ export default async function SourcesPage({
                         variant={source.isActive ? "success" : "secondary"}
                       >
                         {source.isActive
-                          ? isRtl
-                            ? "نشط"
-                            : "Active"
-                          : isRtl
-                            ? "غير نشط"
-                            : "Inactive"}
+                          ? t.sources.active
+                          : t.sources.inactive}
                       </Badge>
                     </TableCell>
                     <TableCell>

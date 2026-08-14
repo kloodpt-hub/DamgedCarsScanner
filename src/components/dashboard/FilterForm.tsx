@@ -22,6 +22,9 @@ const labels = {
     cancel: "Cancel",
     creating: "Saving...",
     nameRequired: "Filter name is required",
+    filterUpdated: "Filter updated",
+    filterCreated: "Filter created",
+    failedToSave: "Failed to save filter",
   },
   ar: {
     filterName: "اسم الفلتر",
@@ -37,6 +40,9 @@ const labels = {
     cancel: "إلغاء",
     creating: "جاري الحفظ...",
     nameRequired: "اسم الفلتر مطلوب",
+    filterUpdated: "تم تحديث الفلتر",
+    filterCreated: "تم إنشاء الفلتر",
+    failedToSave: "فشل حفظ الفلتر",
   },
 } as const;
 

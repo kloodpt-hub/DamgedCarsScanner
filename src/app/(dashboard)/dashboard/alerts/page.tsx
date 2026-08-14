@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
-import { isEmailConfigured } from "@/lib/email";
+import { getDictionary, type Locale } from "@/lib/i18n";
 import {
   Card,
   CardContent,
@@ -11,63 +11,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Bell, Send, CheckCircle, AlertCircle, Wifi, Mail } from "lucide-react";
 
-const labels = {
-  en: {
-    title: "Alerts & Notifications",
-    emailStatus: "Email Notifications",
-    telegramStatus: "Telegram Connection",
-    webPush: "Web Push Notifications",
-    notificationHistory: "Notification History",
-    connected: "Connected",
-    notConnected: "Not Connected",
-    enablePush: "Enable Push Notifications",
-    testNotification: "Send Test Notification",
-    noHistory: "No notifications sent yet",
-    listing: "Listing",
-    sentAt: "Sent At",
-    via: "Via",
-    telegram: "Telegram",
-    email: "Email",
-    web: "Web Push",
-    configured: "Configured",
-    notConfigured: "Not configured",
-    recentNotifications: "Recent Email Notifications",
-  },
-  ar: {
-    title: "التنبيهات والإشعارات",
-    emailStatus: "إشعارات البريد الإلكتروني",
-    telegramStatus: "حالة اتصال تيليجرام",
-    webPush: "إشعارات الويب",
-    notificationHistory: "سجل الإشعارات",
-    connected: "متصل",
-    notConnected: "غير متصل",
-    enablePush: "تفعيل إشعارات الويب",
-    testNotification: "إرسال إشعار تجريبي",
-    noHistory: "لم يتم إرسال إشعارات بعد",
-    listing: "الإعلان",
-    sentAt: "تم الإرسال في",
-    via: " عبر ",
-    telegram: "تيليجرام",
-    email: "البريد الإلكتروني",
-    web: "ويب",
-    configured: "تم التكوين",
-    notConfigured: "لم يتم التكوين",
-    recentNotifications: "إشعارات البريد الأخيرة",
-  },
-} as const;
-
 export default async function AlertsPage({
   params,
 }: {
   params: Promise<{ locale?: string }>;
 }) {
   const { locale = "en" } = await params;
-  const t = labels[locale as keyof typeof labels] ?? labels.en;
-  const isRtl = locale === "ar";
+  const t = await getDictionary(locale as Locale);
 
   const session = await auth();
   const userId = session?.user?.id;
-  const emailConfigured = isEmailConfigured();
+
+  const hasSmtp = !!process.env.SMTP_HOST;
 
   const [telegramUser, notifiedListings] = await Promise.all([
     userId
@@ -94,51 +49,27 @@ export default async function AlertsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-text">{t.title}</h1>
+        <h1 className="text-2xl font-bold text-text">{t.alerts.title}</h1>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-surface">
-              <Mail className="h-6 w-6 text-primary" />
+              <Send className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-text">{t.emailStatus}</p>
-              <div className="flex items-center gap-1.5 mt-1">
-                {emailConfigured ? (
-                  <>
-                    <Wifi className="h-3.5 w-3.5 text-success" />
-                    <Badge variant="success">{t.configured}</Badge>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="h-3.5 w-3.5 text-text-muted" />
-                    <Badge variant="secondary">{t.notConfigured}</Badge>
-                  </>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-surface">
-              <Send className="h-6 w-6 text-accent" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-text">{t.telegramStatus}</p>
+              <p className="text-sm font-medium text-text">{t.alerts.telegramStatus}</p>
               <div className="flex items-center gap-1.5 mt-1">
                 {hasTelegram ? (
                   <>
                     <Wifi className="h-3.5 w-3.5 text-success" />
-                    <Badge variant="success">{t.connected}</Badge>
+                    <Badge variant="success">{t.alerts.connected}</Badge>
                   </>
                 ) : (
                   <>
                     <AlertCircle className="h-3.5 w-3.5 text-text-muted" />
-                    <Badge variant="secondary">{t.notConnected}</Badge>
+                    <Badge variant="secondary">{t.alerts.notConnected}</Badge>
                   </>
                 )}
               </div>
@@ -152,10 +83,34 @@ export default async function AlertsPage({
               <Bell className="h-6 w-6 text-accent" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-text">{t.webPush}</p>
+              <p className="text-sm font-medium text-text">{t.alerts.webPush}</p>
               <p className="text-xs text-text-muted mt-1">
-                {t.enablePush}
+                {t.alerts.enablePush}
               </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-surface">
+              <Mail className="h-6 w-6 text-success" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-text">{t.alerts.emailStatus}</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                {hasSmtp ? (
+                  <>
+                    <CheckCircle className="h-3.5 w-3.5 text-success" />
+                    <Badge variant="success">{t.alerts.smtpConfigured}</Badge>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-3.5 w-3.5 text-text-muted" />
+                    <Badge variant="secondary">{t.alerts.smtpNotConfigured}</Badge>
+                  </>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -163,13 +118,13 @@ export default async function AlertsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>{t.recentNotifications}</CardTitle>
+          <CardTitle>{t.alerts.notificationHistory}</CardTitle>
         </CardHeader>
         <CardContent>
           {notifiedListings.length === 0 ? (
             <div className="py-8 text-center text-text-muted">
               <CheckCircle className="h-12 w-12 mx-auto mb-3 opacity-20" />
-              <p>{t.noHistory}</p>
+              <p>{t.alerts.noHistory}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -204,7 +159,7 @@ export default async function AlertsPage({
                     </p>
                   </div>
                   <Badge variant="default" className="shrink-0">
-                    {t.email}
+                    {t.alerts.telegram}
                   </Badge>
                 </div>
               ))}

@@ -59,10 +59,10 @@ export default async function JobsPage({
 
   const statusBadge = (status: string) => {
     const map: Record<string, { variant: "success" | "warning" | "destructive" | "default"; label: string }> = {
-      completed: { variant: "success", label: isRtl ? "مكتمل" : "Completed" },
-      pending: { variant: "warning", label: isRtl ? "قيد الانتظار" : "Pending" },
-      running: { variant: "default", label: isRtl ? "قيد التنفيذ" : "Running" },
-      failed: { variant: "destructive", label: isRtl ? "فشل" : "Failed" },
+      completed: { variant: "success", label: t.jobs.completed },
+      pending: { variant: "warning", label: t.jobs.pending },
+      running: { variant: "default", label: t.jobs.running },
+      failed: { variant: "destructive", label: t.jobs.failed },
     };
     return map[status] ?? { variant: "default" as const, label: status };
   };
@@ -95,13 +95,13 @@ export default async function JobsPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{isRtl ? "المصدر" : "Source"}</TableHead>
+                  <TableHead>{t.nav.sources}</TableHead>
                   <TableHead>{t.jobs.jobStatus}</TableHead>
                   <TableHead>{t.jobs.listingsFound}</TableHead>
                   <TableHead>{t.jobs.newListings}</TableHead>
                   <TableHead>{t.jobs.startedAt}</TableHead>
                   <TableHead>{t.jobs.completedAt}</TableHead>
-                  <TableHead>{isRtl ? "المدة" : "Duration"}</TableHead>
+                  <TableHead>{t.jobs.duration}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

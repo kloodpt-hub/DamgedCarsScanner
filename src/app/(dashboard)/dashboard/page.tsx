@@ -80,7 +80,7 @@ export default async function DashboardPage({
       color: "text-warning",
     },
     {
-      label: isRtl ? "إشعارات مرسلة" : "Notifications Sent",
+      label: t.dashboard.notificationsSent,
       value: notificationsSent,
       icon: Bell,
       color: "text-success",
@@ -92,7 +92,7 @@ export default async function DashboardPage({
       <div>
         <h1 className="text-2xl font-bold text-text">{t.common.dashboard}</h1>
         <p className="text-text-muted text-sm mt-1">
-          {isRtl ? "نظرة عامة على حسابك" : "Your account overview"}
+          {t.dashboard.accountOverview}
         </p>
       </div>
 

@@ -22,6 +22,7 @@ export interface Dictionary {
     success: string;
     error: string;
     warning: string;
+    collapse: string;
   };
   nav: {
     home: string;
@@ -42,6 +43,8 @@ export interface Dictionary {
     quickActions: string;
     scanNow: string;
     viewAll: string;
+    notificationsSent: string;
+    accountOverview: string;
   };
   sources: {
     addSource: string;
@@ -57,6 +60,10 @@ export interface Dictionary {
     status: string;
     configured: string;
     notConfigured: string;
+    manageSources: string;
+    interval: string;
+    active: string;
+    inactive: string;
   };
   filters: {
     addFilter: string;
@@ -102,6 +109,7 @@ export interface Dictionary {
     completedAt: string;
     retry: string;
     cancel: string;
+    duration: string;
   };
   auth: {
     signInTitle: string;
@@ -114,6 +122,35 @@ export interface Dictionary {
     orContinueWith: string;
     noAccount: string;
     hasAccount: string;
+  };
+  alerts: {
+    title: string;
+    telegramStatus: string;
+    webPush: string;
+    emailStatus: string;
+    notificationHistory: string;
+    connected: string;
+    notConnected: string;
+    enablePush: string;
+    testNotification: string;
+    noHistory: string;
+    listing: string;
+    sentAt: string;
+    via: string;
+    telegram: string;
+    web: string;
+    smtpConfigured: string;
+    smtpNotConfigured: string;
+    loadError: string;
+    notificationsSentCount: string;
+  };
+  users: {
+    name: string;
+    role: string;
+    created: string;
+    admin: string;
+    user: string;
+    manageUsers: string;
   };
 }
 
@@ -139,6 +176,7 @@ const en: Dictionary = {
     success: "Success",
     error: "Error",
     warning: "Warning",
+    collapse: "Collapse",
   },
   nav: {
     home: "Home",
@@ -159,6 +197,8 @@ const en: Dictionary = {
     quickActions: "Quick Actions",
     scanNow: "Scan Now",
     viewAll: "View All",
+    notificationsSent: "Notifications Sent",
+    accountOverview: "Your account overview",
   },
   sources: {
     addSource: "Add Source",
@@ -174,6 +214,10 @@ const en: Dictionary = {
     status: "Status",
     configured: "Configured",
     notConfigured: "Not Configured",
+    manageSources: "Manage data sources",
+    interval: "Interval",
+    active: "Active",
+    inactive: "Inactive",
   },
   filters: {
     addFilter: "Add Filter",
@@ -219,6 +263,7 @@ const en: Dictionary = {
     completedAt: "Completed At",
     retry: "Retry",
     cancel: "Cancel",
+    duration: "Duration",
   },
   auth: {
     signInTitle: "Sign In",
@@ -231,6 +276,35 @@ const en: Dictionary = {
     orContinueWith: "Or continue with",
     noAccount: "Don't have an account?",
     hasAccount: "Already have an account?",
+  },
+  alerts: {
+    title: "Alerts & Notifications",
+    telegramStatus: "Telegram Connection",
+    webPush: "Web Push Notifications",
+    emailStatus: "Email Notifications",
+    notificationHistory: "Notification History",
+    connected: "Connected",
+    notConnected: "Not Connected",
+    enablePush: "Enable Push Notifications",
+    testNotification: "Send Test Notification",
+    noHistory: "No notifications sent yet",
+    listing: "Listing",
+    sentAt: "Sent At",
+    via: "via",
+    telegram: "Telegram",
+    web: "Web Push",
+    smtpConfigured: "SMTP Configured",
+    smtpNotConfigured: "SMTP Not Configured",
+    loadError: "Failed to load",
+    notificationsSentCount: "notifications sent",
+  },
+  users: {
+    name: "Name",
+    role: "Role",
+    created: "Created",
+    admin: "Admin",
+    user: "User",
+    manageUsers: "Manage system users",
   },
 };
 
@@ -256,6 +330,7 @@ const ar: Dictionary = {
     success: "نجاح",
     error: "خطأ",
     warning: "تحذير",
+    collapse: "تصغير",
   },
   nav: {
     home: "الرئيسية",
@@ -276,6 +351,8 @@ const ar: Dictionary = {
     quickActions: "إجراءات سريعة",
     scanNow: "مسح الآن",
     viewAll: "عرض الكل",
+    notificationsSent: "إشعارات مرسلة",
+    accountOverview: "نظرة عامة على حسابك",
   },
   sources: {
     addSource: "إضافة مصدر",
@@ -291,6 +368,10 @@ const ar: Dictionary = {
     status: "الحالة",
     configured: "تم التكوين",
     notConfigured: "لم يتم التكوين",
+    manageSources: "إدارة مصادر البيانات",
+    interval: "الفترة",
+    active: "نشط",
+    inactive: "غير نشط",
   },
   filters: {
     addFilter: "إضافة فلتر",
@@ -336,6 +417,7 @@ const ar: Dictionary = {
     completedAt: "اكتمل في",
     retry: "إعادة المحاولة",
     cancel: "إلغاء",
+    duration: "المدة",
   },
   auth: {
     signInTitle: "تسجيل الدخول",
@@ -348,6 +430,35 @@ const ar: Dictionary = {
     orContinueWith: "أو تابع بـ",
     noAccount: "ليس لديك حساب؟",
     hasAccount: "لديك حساب بالفعل؟",
+  },
+  alerts: {
+    title: "التنبيهات والإشعارات",
+    telegramStatus: "حالة اتصال تيليجرام",
+    webPush: "إشعارات الويب",
+    emailStatus: "إشعارات البريد الإلكتروني",
+    notificationHistory: "سجل الإشعارات",
+    connected: "متصل",
+    notConnected: "غير متصل",
+    enablePush: "تفعيل إشعارات الويب",
+    testNotification: "إرسال إشعار تجريبي",
+    noHistory: "لم يتم إرسال إشعارات بعد",
+    listing: "الإعلان",
+    sentAt: "تم الإرسال في",
+    via: "عبر",
+    telegram: "تيليجرام",
+    web: "ويب",
+    smtpConfigured: "تم تكوين SMTP",
+    smtpNotConfigured: "لم يتم تكوين SMTP",
+    loadError: "فشل التحميل",
+    notificationsSentCount: "إشعارات مرسلة",
+  },
+  users: {
+    name: "الاسم",
+    role: "الدور",
+    created: "تاريخ الإنشاء",
+    admin: "مدير",
+    user: "مستخدم",
+    manageUsers: "إدارة المستخدمين",
   },
 };
 

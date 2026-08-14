@@ -48,6 +48,8 @@ const labels = {
     damage: "Damage",
     keywords: "Keywords",
     none: "None",
+    loading: "Loading...",
+    filtersCount: "filters",
   },
   ar: {
     title: "فلاتري",
@@ -66,6 +68,8 @@ const labels = {
     damage: "الضرر",
     keywords: "الكلمات",
     none: "لا شيء",
+    loading: "جاري التحميل...",
+    filtersCount: "فلتر",
   },
 } as const;
 
@@ -156,7 +160,7 @@ export default function FiltersPage({
         <div>
           <h1 className="text-2xl font-bold text-text">{t.title}</h1>
           <p className="text-text-muted text-sm mt-1">
-            {filters.length} {isRtl ? "فلتر" : "filters"}
+            {filters.length} {t.filtersCount}
           </p>
         </div>
         <Button onClick={() => { setEditingFilter(undefined); setShowForm(true); }}>
@@ -191,7 +195,7 @@ export default function FiltersPage({
 
       {loading ? (
         <div className="py-12 text-center text-text-muted">
-          {isRtl ? "جاري التحميل..." : "Loading..."}
+          {t.loading}
         </div>
       ) : filters.length === 0 ? (
         <div className="py-12 text-center text-text-muted">{t.noFilters}</div>

@@ -34,6 +34,7 @@ const navLabels = {
     userSection: "User",
     switchToUser: "User View",
     switchToAdmin: "Admin Panel",
+    collapse: "Collapse",
   },
   ar: {
     dashboard: "لوحة التحكم",
@@ -49,6 +50,7 @@ const navLabels = {
     userSection: "المستخدم",
     switchToUser: "عرض المستخدم",
     switchToAdmin: "لوحة الإدارة",
+    collapse: "تصغير",
   },
 } as const;
 
@@ -218,7 +220,7 @@ export function Sidebar({ currentPath, locale, role }: SidebarProps) {
             <ChevronLeft className="h-5 w-5 shrink-0" />
           )}
           {!collapsed && (
-            <span>{isRtl ? "تصغير" : "Collapse"}</span>
+            <span>{t.collapse}</span>
           )}
         </button>
       </div>

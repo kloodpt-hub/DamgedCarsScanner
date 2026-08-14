@@ -79,6 +79,8 @@ const labels = {
     dateCol: "Date",
     actionsCol: "Actions",
     new: "New",
+    loading: "Loading...",
+    listingsCount: "listings",
   },
   ar: {
     title: "الإعلانات",
@@ -107,6 +109,8 @@ const labels = {
     dateCol: "التاريخ",
     actionsCol: "الإجراءات",
     new: "جديد",
+    loading: "جاري التحميل...",
+    listingsCount: "إعلان",
   },
 } as const;
 
@@ -188,7 +192,7 @@ export default function ListingsPage({
       <div>
         <h1 className="text-2xl font-bold text-text">{t.title}</h1>
         <p className="text-text-muted text-sm mt-1">
-          {total} {isRtl ? "إعلان" : "listings"}
+          {total} {t.listingsCount}
         </p>
       </div>
 
@@ -261,7 +265,7 @@ export default function ListingsPage({
 
       {loading ? (
         <div className="py-12 text-center text-text-muted">
-          {isRtl ? "جاري التحميل..." : "Loading..."}
+          {t.loading}
         </div>
       ) : listings.length === 0 ? (
         <div className="py-12 text-center text-text-muted">{t.noResults}</div>

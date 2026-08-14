@@ -44,8 +44,8 @@ export default async function UsersPage({
 
   const roleBadge = (role: string) => {
     return role === "ADMIN"
-      ? { variant: "default" as const, label: "Admin" }
-      : { variant: "secondary" as const, label: "User" };
+      ? { variant: "default" as const, label: t.users.admin }
+      : { variant: "secondary" as const, label: t.users.user };
   };
 
   return (
@@ -56,7 +56,7 @@ export default async function UsersPage({
             {t.nav.users}
           </h1>
           <p className="text-text-muted text-sm mt-1">
-            {isRtl ? "إدارة المستخدمين" : "Manage system users"}
+            {t.users.manageUsers}
           </p>
         </div>
         <UsersClientActions locale={locale} />
@@ -72,10 +72,10 @@ export default async function UsersPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{isRtl ? "الاسم" : "Name"}</TableHead>
+                  <TableHead>{t.users.name}</TableHead>
                   <TableHead>{t.auth.email}</TableHead>
-                  <TableHead>{isRtl ? "الدور" : "Role"}</TableHead>
-                  <TableHead>{isRtl ? "تاريخ الإنشاء" : "Created"}</TableHead>
+                  <TableHead>{t.users.role}</TableHead>
+                  <TableHead>{t.users.created}</TableHead>
                   <TableHead className="text-end">{t.sources.actions}</TableHead>
                 </TableRow>
               </TableHeader>
