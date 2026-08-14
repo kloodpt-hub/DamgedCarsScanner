@@ -3,32 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Search,
-  LayoutGrid,
-  List,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
-  Check,
-  Send,
-  Car,
-  SlidersHorizontal,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
 import { ListingCard } from "@/components/dashboard/ListingCard";
-import { markAsRead, markAsNotified } from "@/server/actions/listings";
-import { cn, formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface Listing {
@@ -67,21 +49,12 @@ const labels = {
     page: "Page",
     of: "of",
     noResults: "No results found",
-    grid: "Grid",
-    list: "List",
-    filters: "Filters",
-    titleCol: "Title",
-    priceCol: "Price",
-    yearCol: "Year",
-    mileageCol: "Mileage",
-    damageCol: "Damage",
-    sourceCol: "Source",
-    dateCol: "Date",
-    actionsCol: "Actions",
     new: "New",
     loading: "Loading...",
     listingsCount: "results",
     failedToLoad: "Failed to load results",
+    today: "Today",
+    yesterday: "Yesterday",
   },
   ar: {
     title: "النتائج",
@@ -98,21 +71,12 @@ const labels = {
     page: "صفحة",
     of: "من",
     noResults: "لا توجد نتائج",
-    grid: "شبكة",
-    list: "قائمة",
-    filters: "الفلاتر",
-    titleCol: "العنوان",
-    priceCol: "السعر",
-    yearCol: "السنة",
-    mileageCol: "المسافة",
-    damageCol: "الضرر",
-    sourceCol: "المصدر",
-    dateCol: "التاريخ",
-    actionsCol: "الإجراءات",
     new: "جديد",
     loading: "جاري التحميل...",
     listingsCount: "نتيجة",
     failedToLoad: "فشل تحميل النتائج",
+    today: "اليوم",
+    yesterday: "أمس",
   },
 } as const;
 
@@ -130,12 +94,9 @@ export default function ResultsPage({
   const [search, setSearch] = useState("");
   const [sourceId, setSourceId] = useState("");
   const [isRead, setIsRead] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [loading, setLoading] = useState(true);
-  const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
 
   const t = labels[locale as keyof typeof labels] ?? labels.en;
-  const isRtl = locale === "ar";
 
   useEffect(() => {
     params.then((p) => setLocale(p.locale ?? "en"));
@@ -146,7 +107,7 @@ export default function ResultsPage({
     try {
       const sp = new URLSearchParams();
       sp.set("page", page.toString());
-      sp.set("limit", "20");
+      sp.set("limit", "30");
       if (search) sp.set("search", search);
       if (sourceId) sp.set("sourceId", sourceId);
       if (isRead) sp.set("isRead", isRead);
@@ -174,21 +135,31 @@ export default function ResultsPage({
       .catch(() => {});
   }, []);
 
-  const handleMarkRead = async (id: string) => {
-    await markAsRead(id);
-    setListings((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, isRead: true } : l))
-    );
-    toast.success(t.markRead);
-  };
+  const groups: { label: string; listings: Listing[] }[] = [];
+  if (!loading && listings.length > 0) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
 
-  const handleNotify = async (id: string) => {
-    await markAsNotified(id);
-    setListings((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, isNotified: true } : l))
-    );
-    toast.success(t.notify);
-  };
+    const todayListings = listings.filter((l) => new Date(l.createdAt) >= today);
+    const yesterdayListings = listings.filter((l) => {
+      const d = new Date(l.createdAt);
+      return d >= yesterday && d < today;
+    });
+    const olderListings = listings.filter((l) => new Date(l.createdAt) < yesterday);
+
+    if (todayListings.length > 0) groups.push({ label: t.today, listings: todayListings });
+    if (yesterdayListings.length > 0) groups.push({ label: t.yesterday, listings: yesterdayListings });
+
+    const olderByDate = new Map<string, Listing[]>();
+    olderListings.forEach((l) => {
+      const dateKey = formatDate(l.createdAt, locale);
+      if (!olderByDate.has(dateKey)) olderByDate.set(dateKey, []);
+      olderByDate.get(dateKey)!.push(l);
+    });
+    olderByDate.forEach((groupListings, label) => groups.push({ label, listings: groupListings }));
+  }
 
   return (
     <div className="space-y-6">
@@ -239,31 +210,6 @@ export default function ResultsPage({
           <option value="false">{t.unread}</option>
           <option value="true">{t.read}</option>
         </Select>
-
-        <div className="flex items-center gap-1 border border-border rounded-lg p-1">
-          <button
-            onClick={() => setViewMode("list")}
-            className={cn(
-              "p-1.5 rounded transition-colors",
-              viewMode === "list"
-                ? "bg-surface text-text"
-                : "text-text-muted hover:text-text"
-            )}
-          >
-            <List className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setViewMode("grid")}
-            className={cn(
-              "p-1.5 rounded transition-colors",
-              viewMode === "grid"
-                ? "bg-surface text-text"
-                : "text-text-muted hover:text-text"
-            )}
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </button>
-        </div>
       </div>
 
       {loading ? (
@@ -272,119 +218,21 @@ export default function ResultsPage({
         </div>
       ) : listings.length === 0 ? (
         <div className="py-12 text-center text-text-muted">{t.noResults}</div>
-      ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} locale={locale} />
+      ) : (
+        <div className="space-y-8">
+          {groups.map((group) => (
+            <div key={group.label} className="space-y-4">
+              <h2 className="text-lg font-semibold text-text border-b border-border pb-2">
+                {group.label}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {group.listings.map((listing) => (
+                  <ListingCard key={listing.id} listing={listing} locale={locale} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t.titleCol}</TableHead>
-                  <TableHead>{t.priceCol}</TableHead>
-                  <TableHead>{t.yearCol}</TableHead>
-                  <TableHead>{t.mileageCol}</TableHead>
-                  <TableHead>{t.damageCol}</TableHead>
-                  <TableHead>{t.sourceCol}</TableHead>
-                  <TableHead>{t.dateCol}</TableHead>
-                  <TableHead>{t.actionsCol}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {listings.map((listing) => (
-                  <TableRow
-                    key={listing.id}
-                    className={cn(!listing.isRead && "bg-primary/5")}
-                  >
-                    <TableCell className="max-w-[250px]">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 shrink-0 rounded bg-surface flex items-center justify-center overflow-hidden">
-                          {listing.imageUrl && !imgErrors[listing.id] ? (
-                            <img
-                              src={listing.imageUrl}
-                              alt=""
-                              className="h-full w-full object-cover"
-                              onError={() => setImgErrors(prev => ({ ...prev, [listing.id]: true }))}
-                            />
-                          ) : (
-                            <Car className="h-4 w-4 text-text-muted" />
-                          )}
-                        </div>
-                        <span className="text-sm font-medium text-text truncate">
-                          {listing.title}
-                        </span>
-                        {!listing.isRead && (
-                          <Badge variant="default" className="shrink-0 text-[10px]">
-                            {t.new}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-text">
-                      {listing.price != null ? formatCurrency(listing.price) : "-"}
-                    </TableCell>
-                    <TableCell className="text-sm text-text">
-                      {listing.year ?? "-"}
-                    </TableCell>
-                    <TableCell className="text-sm text-text">
-                      {listing.mileage != null
-                        ? `${listing.mileage.toLocaleString()} km`
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {listing.damageStatus ? (
-                        <Badge variant="warning">{listing.damageStatus}</Badge>
-                      ) : (
-                        <span className="text-text-muted">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm text-text-muted">
-                      {listing.source.name}
-                    </TableCell>
-                    <TableCell className="text-sm text-text-muted">
-                      {formatDate(listing.createdAt, locale)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <a
-                          href={listing.canonicalUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 rounded text-text-muted hover:text-primary hover:bg-surface transition-colors"
-                          title={t.view}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                        {!listing.isRead && (
-                          <button
-                            onClick={() => handleMarkRead(listing.id)}
-                            className="p-1.5 rounded text-text-muted hover:text-success hover:bg-surface transition-colors"
-                            title={t.markRead}
-                          >
-                            <Check className="h-4 w-4" />
-                          </button>
-                        )}
-                        {!listing.isNotified && (
-                          <button
-                            onClick={() => handleNotify(listing.id)}
-                            className="p-1.5 rounded text-text-muted hover:text-accent hover:bg-surface transition-colors"
-                            title={t.notify}
-                          >
-                            <Send className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
       )}
 
       {totalPages > 1 && (

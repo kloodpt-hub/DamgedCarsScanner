@@ -16,6 +16,17 @@ export function formatDate(
   return fnsFormat(d, "PPP", { locale: undefined });
 }
 
+export function formatDateTime(date: Date | string | number, locale: string = "en"): string {
+  const d = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
+  return d.toLocaleString(locale === "ar" ? "ar-EG" : "en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function formatCurrency(
   amount: number,
   currency: string = "USD"

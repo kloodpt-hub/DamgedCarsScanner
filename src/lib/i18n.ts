@@ -41,6 +41,7 @@ export interface Dictionary {
     activeFilters: string;
     lastScan: string;
     recentActivity: string;
+    todaysActivity: string;
     quickActions: string;
     scanNow: string;
     viewAll: string;
@@ -196,6 +197,7 @@ const en: Dictionary = {
     activeFilters: "Active Filters",
     lastScan: "Last Scan",
     recentActivity: "Recent Activity",
+    todaysActivity: "Today's Activity",
     quickActions: "Quick Actions",
     scanNow: "Scan Now",
     viewAll: "View All",
@@ -351,6 +353,7 @@ const ar: Dictionary = {
     activeFilters: "الفلاتر النشطة",
     lastScan: "آخر مسح",
     recentActivity: "النشاط الأخير",
+    todaysActivity: "نشاط اليوم",
     quickActions: "إجراءات سريعة",
     scanNow: "مسح الآن",
     viewAll: "عرض الكل",

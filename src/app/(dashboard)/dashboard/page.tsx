@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import {
   Card,
@@ -8,12 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   FileText,
   Filter,
   Bell,
   BookOpen,
+  Car,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,10 +24,12 @@ export default async function DashboardPage({
 }) {
   const { locale = "en" } = await params;
   const t = await getDictionary(locale as Locale);
-  const isRtl = locale === "ar";
 
   const session = await auth();
   const userId = session?.user?.id;
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
 
   const [
     totalListings,
@@ -59,9 +61,12 @@ export default async function DashboardPage({
       : 0,
     userId
       ? prisma.listing.findMany({
-          where: { matchedFilters: { some: { userId } } },
+          where: {
+            matchedFilters: { some: { userId } },
+            createdAt: { gte: todayStart },
+          },
           orderBy: { createdAt: "desc" },
-          take: 10,
+          take: 12,
           include: { source: true },
         })
       : [],
@@ -124,7 +129,7 @@ export default async function DashboardPage({
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>{t.dashboard.recentActivity}</CardTitle>
+          <CardTitle>{t.dashboard.todaysActivity}</CardTitle>
           <Link
             href="/dashboard/results"
             className="text-sm text-primary hover:text-primary-hover transition-colors"
@@ -143,36 +148,42 @@ export default async function DashboardPage({
                 id: string;
                 title: string;
                 imageUrl: string | null;
-                source: { name: string };
+                price: number | null;
+                year: number | null;
+                mileage: number | null;
+                canonicalUrl: string;
                 isRead: boolean;
                 createdAt: Date | string;
+                source: { name: string };
               }) => (
-                <div
-                  key={listing.id}
-                  className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-surface/50 transition-colors"
-                >
-                  <div className="h-12 w-12 shrink-0 rounded-lg bg-surface flex items-center justify-center overflow-hidden">
+                <div key={listing.id} className="card overflow-hidden">
+                  <div className="relative h-32 bg-surface overflow-hidden rounded-lg mb-3">
                     {listing.imageUrl ? (
-                      <img
-                        src={listing.imageUrl}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
+                      <img src={listing.imageUrl} alt={listing.title} className="h-full w-full object-cover" />
                     ) : (
-                      <FileText className="h-5 w-5 text-text-muted" />
+                      <div className="flex h-full items-center justify-center text-text-muted">
+                        <Car className="h-8 w-8 opacity-30" />
+                      </div>
+                    )}
+                    {!listing.isRead && (
+                      <span className="absolute top-2 start-2 badge badge-primary">{t.listings.new}</span>
                     )}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-text truncate">
-                      {listing.title}
-                    </p>
-                    <p className="text-xs text-text-muted">
-                      {listing.source.name} &middot; {formatDate(listing.createdAt, locale)}
-                    </p>
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-semibold text-text truncate">
+                      <a href={listing.canonicalUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                        {listing.title}
+                      </a>
+                    </h3>
+                    <div className="flex items-center gap-3 text-xs text-text-muted">
+                      {listing.year && <span>{listing.year}</span>}
+                      {listing.mileage != null && <span>{listing.mileage.toLocaleString()} km</span>}
+                    </div>
+                    {listing.price != null && (
+                      <p className="text-sm font-bold text-primary">{formatCurrency(listing.price)}</p>
+                    )}
+                    <p className="text-xs text-text-muted">{listing.source.name}</p>
                   </div>
-                  {!listing.isRead && (
-                    <Badge variant="default" className="shrink-0">{t.listings.new}</Badge>
-                  )}
                 </div>
               ))}
             </div>
