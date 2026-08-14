@@ -1,40 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// --- Rate Limiting ---
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_MAX = 100;
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-
-function getRateLimitKey(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  const ip = forwarded?.split(",")[0]?.trim() ?? "127.0.0.1";
-  return ip;
-}
-
-function isRateLimited(key: string): boolean {
-  const now = Date.now();
-  const record = rateLimitStore.get(key);
-
-  if (!record || now > record.resetTime) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return false;
-  }
-
-  record.count++;
-  return record.count > RATE_LIMIT_MAX;
-}
-
-// Clean up old entries periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, record] of rateLimitStore.entries()) {
-    if (now > record.resetTime) {
-      rateLimitStore.delete(key);
-    }
-  }
-}, RATE_LIMIT_WINDOW);
-
 // --- Protected Routes ---
 const protectedRoutes = [
   "/dashboard",
@@ -65,21 +31,8 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip middleware for Next.js internal routes
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon") ||
-    pathname.includes(".")
-  ) {
+  if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) {
     return getSecurityHeaders(NextResponse.next());
-  }
-
-  // Rate limiting
-  const rateLimitKey = getRateLimitKey(request);
-  if (isRateLimited(rateLimitKey)) {
-    return NextResponse.json(
-      { error: "Too many requests. Please try again later." },
-      { status: 429 }
-    );
   }
 
   // Auth check for protected routes
