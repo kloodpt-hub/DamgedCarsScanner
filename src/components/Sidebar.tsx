@@ -80,9 +80,11 @@ export function Sidebar({ currentPath, locale, role }: SidebarProps) {
 
   const adminNavItems: NavItem[] = [
     { label: t.dashboard, href: "/admin", icon: LayoutDashboard },
+    { label: t.listings, href: "/admin/listings", icon: FileText },
     { label: t.sources, href: "/admin/sources", icon: Globe },
     { label: t.jobs, href: "/admin/jobs", icon: Activity },
     { label: t.users, href: "/admin/users", icon: Users },
+    { label: t.alerts, href: "/admin/notifications", icon: Bell },
   ];
 
   const isOnAdmin = currentPath.startsWith("/admin");
