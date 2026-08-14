@@ -17,9 +17,13 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search");
   const skip = (page - 1) * limit;
 
+  const view = searchParams.get("view");
+  const defaultView = session.user.role === "ADMIN" ? "all" : "matched";
+  const effectiveView = view ?? defaultView;
+
   const where: Record<string, unknown> = {};
 
-  if (session.user.role !== "ADMIN") {
+  if (effectiveView === "matched" && session.user.role !== "ADMIN") {
     where.matchedFilters = { some: { userId: session.user.id } };
   }
 

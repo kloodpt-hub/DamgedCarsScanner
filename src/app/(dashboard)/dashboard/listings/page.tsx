@@ -82,6 +82,8 @@ const labels = {
     loading: "Loading...",
     listingsCount: "listings",
     failedToLoad: "Failed to load listings",
+    matchedOnly: "Matched Only",
+    allDatabase: "All Database",
   },
   ar: {
     title: "الإعلانات",
@@ -113,6 +115,8 @@ const labels = {
     loading: "جاري التحميل...",
     listingsCount: "إعلان",
     failedToLoad: "فشل تحميل الإعلانات",
+    matchedOnly: "المطابقة فقط",
+    allDatabase: "جميع البيانات",
   },
 } as const;
 
@@ -131,7 +135,9 @@ export default function ListingsPage({
   const [sourceId, setSourceId] = useState("");
   const [isRead, setIsRead] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [view, setView] = useState<"matched" | "all">("matched");
   const [loading, setLoading] = useState(true);
+  const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
 
   const t = labels[locale as keyof typeof labels] ?? labels.en;
   const isRtl = locale === "ar";
@@ -149,6 +155,7 @@ export default function ListingsPage({
       if (search) sp.set("search", search);
       if (sourceId) sp.set("sourceId", sourceId);
       if (isRead) sp.set("isRead", isRead);
+      sp.set("view", view);
 
       const res = await fetch(`/api/listings?${sp.toString()}`);
       const data = await res.json();
@@ -160,7 +167,7 @@ export default function ListingsPage({
     } finally {
       setLoading(false);
     }
-  }, [page, search, sourceId, isRead]);
+  }, [page, search, sourceId, isRead, view]);
 
   useEffect(() => {
     fetchListings();
@@ -239,6 +246,17 @@ export default function ListingsPage({
           <option value="true">{t.read}</option>
         </Select>
 
+        <Select
+          value={view}
+          onChange={(e) => {
+            setView(e.target.value as "matched" | "all");
+            setPage(1);
+          }}
+        >
+          <option value="matched">{t.matchedOnly}</option>
+          <option value="all">{t.allDatabase}</option>
+        </Select>
+
         <div className="flex items-center gap-1 border border-border rounded-lg p-1">
           <button
             onClick={() => setViewMode("list")}
@@ -302,11 +320,12 @@ export default function ListingsPage({
                     <TableCell className="max-w-[250px]">
                       <div className="flex items-center gap-2">
                         <div className="h-8 w-8 shrink-0 rounded bg-surface flex items-center justify-center overflow-hidden">
-                          {listing.imageUrl ? (
+                          {listing.imageUrl && !imgErrors[listing.id] ? (
                             <img
                               src={listing.imageUrl}
                               alt=""
                               className="h-full w-full object-cover"
+                              onError={() => setImgErrors(prev => ({ ...prev, [listing.id]: true }))}
                             />
                           ) : (
                             <Car className="h-4 w-4 text-text-muted" />
