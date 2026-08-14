@@ -113,10 +113,10 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         await createFilter(data);
       }
 
-      toast.success(isEdit ? "Filter updated" : "Filter created");
+      toast.success(isEdit ? t.filterUpdated : t.filterCreated);
       onSuccess();
     } catch {
-      toast.error("Failed to save filter");
+      toast.error(t.failedToSave);
     } finally {
       setLoading(false);
     }

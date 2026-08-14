@@ -21,6 +21,7 @@ const labels = {
     notify: "Notify",
     read: "Read",
     new: "New",
+    failed: "Failed",
   },
   ar: {
     view: "عرض",
@@ -28,6 +29,7 @@ const labels = {
     notify: "إشعار",
     read: "مقروء",
     new: "جديد",
+    failed: "فشل",
   },
 } as const;
 
@@ -62,7 +64,7 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
       setRead(true);
       toast.success(t.markRead);
     } catch {
-      toast.error("Failed");
+      toast.error(t.failed);
     }
   };
 
@@ -72,7 +74,7 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
       setNotified(true);
       toast.success(t.notify);
     } catch {
-      toast.error("Failed");
+      toast.error(t.failed);
     }
   };
 

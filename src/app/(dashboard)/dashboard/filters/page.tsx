@@ -50,6 +50,8 @@ const labels = {
     none: "None",
     loading: "Loading...",
     filtersCount: "filters",
+    failedToLoad: "Failed to load filters",
+    failed: "Failed",
   },
   ar: {
     title: "فلاتري",
@@ -70,6 +72,8 @@ const labels = {
     none: "لا شيء",
     loading: "جاري التحميل...",
     filtersCount: "فلتر",
+    failedToLoad: "فشل تحميل الفلاتر",
+    failed: "فشل",
   },
 } as const;
 
@@ -99,7 +103,7 @@ export default function FiltersPage({
       const data = await res.json();
       setFilters(data);
     } catch {
-      toast.error("Failed to load filters");
+      toast.error(t.failedToLoad);
     } finally {
       setLoading(false);
     }
@@ -117,7 +121,7 @@ export default function FiltersPage({
       setFilters((prev) => prev.filter((f) => f.id !== id));
       toast.success(t.delete);
     } catch {
-      toast.error("Failed");
+      toast.error(t.failed);
     } finally {
       setDeleting(null);
     }

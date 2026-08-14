@@ -81,6 +81,7 @@ const labels = {
     new: "New",
     loading: "Loading...",
     listingsCount: "listings",
+    failedToLoad: "Failed to load listings",
   },
   ar: {
     title: "الإعلانات",
@@ -111,6 +112,7 @@ const labels = {
     new: "جديد",
     loading: "جاري التحميل...",
     listingsCount: "إعلان",
+    failedToLoad: "فشل تحميل الإعلانات",
   },
 } as const;
 
@@ -154,7 +156,7 @@ export default function ListingsPage({
       setTotal(data.total);
       setTotalPages(data.totalPages);
     } catch {
-      toast.error("Failed to load listings");
+      toast.error(t.failedToLoad);
     } finally {
       setLoading(false);
     }
