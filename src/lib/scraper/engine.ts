@@ -62,13 +62,15 @@ export class ScraperEngine {
       const selectors = source.selectors as unknown as ScraperSelectors;
 
       const rawListings = await adapter.scrape(source.baseUrl, selectors);
-      listingsFound = rawListings.length;
+      const availableListings = rawListings.filter((l) => !l.isSold);
+      console.log(`[engine] Skipped ${rawListings.length - availableListings.length} sold listings`);
+      listingsFound = availableListings.length;
 
       const activeFilters = await this.prisma.filter.findMany({
         where: { isActive: true },
       });
 
-      for (const raw of rawListings) {
+      for (const raw of availableListings) {
         try {
           const existing = await this.prisma.listing.findUnique({
             where: { externalId: raw.externalId },

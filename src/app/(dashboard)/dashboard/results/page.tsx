@@ -53,8 +53,8 @@ interface Source {
 
 const labels = {
   en: {
-    title: "Listings",
-    search: "Search listings...",
+    title: "Results",
+    search: "Search results...",
     allSources: "All Sources",
     all: "All",
     read: "Read",
@@ -66,7 +66,7 @@ const labels = {
     next: "Next",
     page: "Page",
     of: "of",
-    noResults: "No listings found",
+    noResults: "No results found",
     grid: "Grid",
     list: "List",
     filters: "Filters",
@@ -80,14 +80,12 @@ const labels = {
     actionsCol: "Actions",
     new: "New",
     loading: "Loading...",
-    listingsCount: "listings",
-    failedToLoad: "Failed to load listings",
-    matchedOnly: "Matched Only",
-    allDatabase: "All Database",
+    listingsCount: "results",
+    failedToLoad: "Failed to load results",
   },
   ar: {
-    title: "الإعلانات",
-    search: "بحث في الإعلانات...",
+    title: "النتائج",
+    search: "بحث في النتائج...",
     allSources: "جميع المصادر",
     all: "الكل",
     read: "مقروء",
@@ -99,7 +97,7 @@ const labels = {
     next: "التالي",
     page: "صفحة",
     of: "من",
-    noResults: "لا توجد إعلانات",
+    noResults: "لا توجد نتائج",
     grid: "شبكة",
     list: "قائمة",
     filters: "الفلاتر",
@@ -113,14 +111,12 @@ const labels = {
     actionsCol: "الإجراءات",
     new: "جديد",
     loading: "جاري التحميل...",
-    listingsCount: "إعلان",
-    failedToLoad: "فشل تحميل الإعلانات",
-    matchedOnly: "المطابقة فقط",
-    allDatabase: "جميع البيانات",
+    listingsCount: "نتيجة",
+    failedToLoad: "فشل تحميل النتائج",
   },
 } as const;
 
-export default function ListingsPage({
+export default function ResultsPage({
   params,
 }: {
   params: Promise<{ locale?: string }>;
@@ -135,7 +131,6 @@ export default function ListingsPage({
   const [sourceId, setSourceId] = useState("");
   const [isRead, setIsRead] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
-  const [view, setView] = useState<"matched" | "all">("matched");
   const [loading, setLoading] = useState(true);
   const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
 
@@ -155,7 +150,6 @@ export default function ListingsPage({
       if (search) sp.set("search", search);
       if (sourceId) sp.set("sourceId", sourceId);
       if (isRead) sp.set("isRead", isRead);
-      sp.set("view", view);
 
       const res = await fetch(`/api/listings?${sp.toString()}`);
       const data = await res.json();
@@ -167,7 +161,7 @@ export default function ListingsPage({
     } finally {
       setLoading(false);
     }
-  }, [page, search, sourceId, isRead, view]);
+  }, [page, search, sourceId, isRead]);
 
   useEffect(() => {
     fetchListings();
@@ -244,17 +238,6 @@ export default function ListingsPage({
           <option value="">{t.all}</option>
           <option value="false">{t.unread}</option>
           <option value="true">{t.read}</option>
-        </Select>
-
-        <Select
-          value={view}
-          onChange={(e) => {
-            setView(e.target.value as "matched" | "all");
-            setPage(1);
-          }}
-        >
-          <option value="matched">{t.matchedOnly}</option>
-          <option value="all">{t.allDatabase}</option>
         </Select>
 
         <div className="flex items-center gap-1 border border-border rounded-lg p-1">

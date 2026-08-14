@@ -1,5 +1,7 @@
 import { BaseAdapter } from "./base-adapter";
 import type { RawListing, ScraperSelectors } from "./types";
+import { isListingSold } from "./sold-detector";
+import { parsePrice, parseMileage, parseYear, parseDamageStatus } from "./attribute-parser";
 
 const AUTOSCOUT24_SELECTORS: ScraperSelectors = {
   listingContainer:
@@ -36,38 +38,25 @@ export class Autoscout24Adapter extends BaseAdapter {
   }
 
   private enhanceListing(listing: RawListing): RawListing {
+    const text = `${listing.title ?? ""} ${listing.description ?? ""}`;
+
     let year = listing.year;
-    if (!year && listing.title) {
-      const titleMatch = listing.title.match(YEAR_PATTERN);
-      if (titleMatch) {
-        year = parseInt(titleMatch[1], 10);
-      }
-    }
-    if (!year && listing.description) {
-      const descMatch = listing.description.match(YEAR_PATTERN);
-      if (descMatch) {
-        year = parseInt(descMatch[1], 10);
-      }
+    if (!year) {
+      year = parseYear(text) ?? undefined;
     }
 
     let mileage = listing.mileage;
-    if (!mileage && listing.description) {
-      const descMileage = listing.description.match(MILEAGE_PATTERN);
-      if (descMileage) {
-        mileage = parseInt(descMileage[1].replace(/[\s.,]/g, ""), 10);
-      }
+    if (!mileage) {
+      mileage = parseMileage(text) ?? undefined;
     }
 
     let damageStatus = listing.damageStatus;
     if (!damageStatus) {
-      const text = `${listing.title ?? ""} ${listing.description ?? ""}`.toLowerCase();
-      if (text.includes("unfallfrei") || text.includes("no accidents") || text.includes("sans accident")) {
-        damageStatus = "Unfallfrei";
-      } else if (text.includes("unfall") || text.includes("accident") || text.includes("beschädigt")) {
-        damageStatus = "Unfall";
-      }
+      damageStatus = parseDamageStatus(text) ?? undefined;
     }
 
-    return { ...listing, year, mileage, damageStatus };
+    const isSold = isListingSold(listing.title, listing.description);
+
+    return { ...listing, year, mileage, damageStatus, isSold };
   }
 }

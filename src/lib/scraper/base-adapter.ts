@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import type { RawListing, ScraperSelectors, ScraperAdapter } from "./types";
+import { isListingSold } from "./sold-detector";
 
 const USER_AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
@@ -135,6 +136,7 @@ export abstract class BaseAdapter implements ScraperAdapter {
           images,
           canonicalUrl: link,
           sourceUrl,
+          isSold: isListingSold(title, description),
         });
       } catch (err) {
         console.warn(

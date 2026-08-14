@@ -10,6 +10,7 @@ export interface RawListing {
   images: string[];
   canonicalUrl: string;
   sourceUrl: string;
+  isSold?: boolean;
 }
 
 export interface ScraperSelectors {

@@ -1,6 +1,8 @@
 import * as cheerio from "cheerio";
 import { BaseAdapter } from "./base-adapter";
 import type { RawListing, ScraperSelectors } from "./types";
+import { isListingSold } from "./sold-detector";
+import { parsePrice, parseMileage, parseYear, parseDamageStatus } from "./attribute-parser";
 
 const COMMON_PATTERNS = {
   listingContainer: [
@@ -93,6 +95,7 @@ export class GenericAdapter extends BaseAdapter {
           images,
           canonicalUrl: link,
           sourceUrl,
+          isSold: isListingSold(title, description),
         });
       } catch (err) {
         console.warn(
@@ -138,41 +141,21 @@ export class GenericAdapter extends BaseAdapter {
     mileage: number | null;
     damageStatus: string | null;
   }): { year: number | null; mileage: number | null; damageStatus: string | null } {
-    const text = `${data.title} ${data.description ?? ""}`.toLowerCase();
+    const text = `${data.title} ${data.description ?? ""}`;
 
     let year = data.year;
     if (!year) {
-      const yearMatch = text.match(/(?:19|20)\d{2}/);
-      if (yearMatch) {
-        const parsed = parseInt(yearMatch[0], 10);
-        if (parsed >= 1950 && parsed <= new Date().getFullYear() + 1) {
-          year = parsed;
-        }
-      }
+      year = parseYear(text);
     }
 
     let mileage = data.mileage;
     if (!mileage) {
-      const kmMatch = text.match(/([\d\s.,]+)\s*km/);
-      if (kmMatch) {
-        mileage = parseInt(kmMatch[1].replace(/[\s.,]/g, ""), 10);
-      }
+      mileage = parseMileage(text);
     }
 
     let damageStatus = data.damageStatus;
     if (!damageStatus) {
-      const damageKeywords: [RegExp, string][] = [
-        [/non[\s-]accident[eé]|sans[\s-]accident/i, "Non accidenté"],
-        [/accident[eé]|accident[\s-]/i, "Accidenté"],
-        [/unfallfrei|no[\s-]accident/i, "Unfallfrei"],
-        [/unfall|accident/i, "Unfall"],
-      ];
-      for (const [pattern, status] of damageKeywords) {
-        if (pattern.test(text)) {
-          damageStatus = status;
-          break;
-        }
-      }
+      damageStatus = parseDamageStatus(text);
     }
 
     return { year, mileage, damageStatus };

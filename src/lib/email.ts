@@ -1,17 +1,18 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: process.env.SMTP_SECURE === "true",
-  auth:
-    process.env.SMTP_USER && process.env.SMTP_PASS
-      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-      : undefined,
-});
+let resendClient: Resend | null = null;
+
+function getResendClient(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+  if (!resendClient) {
+    resendClient = new Resend(apiKey);
+  }
+  return resendClient;
+}
 
 export function isEmailConfigured(): boolean {
-  return !!process.env.SMTP_HOST && !!process.env.SMTP_FROM;
+  return !!process.env.RESEND_API_KEY && !!process.env.FROM_EMAIL;
 }
 
 export async function sendEmail({
@@ -23,18 +24,15 @@ export async function sendEmail({
   subject: string;
   html: string;
 }): Promise<boolean> {
-  if (!isEmailConfigured()) {
-    console.warn("[email] SMTP not configured, skipping send");
+  const client = getResendClient();
+  if (!client) {
+    console.warn("[email] Resend not configured, skipping email");
     return false;
   }
 
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to,
-      subject,
-      html,
-    });
+    const from = process.env.FROM_EMAIL || "noreply@damagedcarscanner.com";
+    await client.emails.send({ from, to, subject, html });
     return true;
   } catch (err) {
     console.error("[email] Failed to send:", err);
@@ -116,4 +114,17 @@ export async function sendDigestEmail(
     </div>`;
 
   return sendEmail({ to: user.email, subject, html });
+}
+
+export async function sendTestEmail(to: string): Promise<boolean> {
+  return sendEmail({
+    to,
+    subject: "Test Email from DamgedCarsScanner",
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#6c5ce7;">✅ Email Notifications Working!</h2>
+        <p>You will receive alerts when new listings match your filters.</p>
+      </div>
+    `,
+  });
 }

@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import { BaseAdapter } from "./base-adapter";
 import type { RawListing, ScraperSelectors } from "./types";
+import { isListingSold } from "./sold-detector";
 
 const SCHADEAUTOS_SELECTORS: ScraperSelectors = {
   listingContainer: "a.schadeautos-card",
@@ -116,6 +117,10 @@ export class SchadeautosAdapter extends BaseAdapter {
         const images: string[] = [];
         if (imageUrl) images.push(imageUrl);
 
+        const isSold =
+          $el.hasClass("schadeautos-card--sold") ||
+          $el.find(".schadeautos-card__sold").length > 0;
+
         listings.push({
           externalId,
           title: fullTitle,
@@ -128,6 +133,7 @@ export class SchadeautosAdapter extends BaseAdapter {
           images,
           canonicalUrl,
           sourceUrl,
+          isSold,
         });
       } catch (err) {
         console.warn(
@@ -152,6 +158,8 @@ export class SchadeautosAdapter extends BaseAdapter {
       }
     }
 
-    return { ...listing, damageStatus };
+    const isSold = listing.isSold || isListingSold(listing.title, listing.description);
+
+    return { ...listing, damageStatus, isSold };
   }
 }

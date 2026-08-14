@@ -27,6 +27,7 @@ export interface Dictionary {
   nav: {
     home: string;
     listings: string;
+    results: string;
     filters: string;
     alerts: string;
     admin: string;
@@ -181,6 +182,7 @@ const en: Dictionary = {
   nav: {
     home: "Home",
     listings: "Listings",
+    results: "Results",
     filters: "Filters",
     alerts: "Alerts",
     admin: "Admin",
@@ -335,6 +337,7 @@ const ar: Dictionary = {
   nav: {
     home: "الرئيسية",
     listings: "الإعلانات",
+    results: "النتائج",
     filters: "الفلاتر",
     alerts: "التنبيهات",
     admin: "الإدارة",

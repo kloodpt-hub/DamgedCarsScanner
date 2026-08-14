@@ -1,165 +1,335 @@
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { formatDate } from "@/lib/utils";
-import { getDictionary, type Locale } from "@/lib/i18n";
+"use client";
+
+import { useState, useEffect } from "react";
+import {
+  Bell,
+  Mail,
+  MessageCircle,
+  Send,
+  ExternalLink,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Send, CheckCircle, AlertCircle, Wifi, Mail } from "lucide-react";
+import { formatDate } from "@/lib/utils";
+import { toast } from "sonner";
 
-export default async function AlertsPage({
+const labels = {
+  en: {
+    title: "Notifications",
+    subtitle: "Configure how you receive alerts for new matching listings",
+    email: {
+      title: "Email Notifications",
+      description: "Receive alerts directly in your inbox",
+      testSend: "Send Test Email",
+      configured: "Configured",
+      notConfigured: "Not configured by admin",
+      testSent: "Test email sent!",
+      testFailed: "Failed to send test email",
+    },
+    telegram: {
+      title: "Telegram Bot",
+      description: "Get instant alerts via Telegram",
+      connect: "Connect Telegram Bot",
+      connected: "Connected",
+      notConnected: "Not connected",
+      setupHint: "Click the button below to open Telegram and connect your account",
+    },
+    push: {
+      title: "Web Push Notifications",
+      description: "Get alerts directly in your browser",
+      enable: "Enable Push Notifications",
+      enabled: "Enabled",
+      disabled: "Disabled",
+      notSupported: "Not supported in this browser",
+    },
+    history: {
+      title: "Recent Notifications",
+      empty: "No notifications yet",
+      new: "New",
+    },
+  },
+  ar: {
+    title: "الإشعارات",
+    subtitle: "تكوين طريقة تلقي التنبيهات للإعلانات المطابقة الجديدة",
+    email: {
+      title: "إشعارات البريد الإلكتروني",
+      description: "تلق التنبيهات مباشرة في بريدك",
+      testSend: "إرسال بريد تجريبي",
+      configured: "تم التكوين",
+      notConfigured: "لم يُكوَّن من قبل المسؤول",
+      testSent: "تم إرسال البريد التجريبي!",
+      testFailed: "فشل إرسال البريد التجريبي",
+    },
+    telegram: {
+      title: "بوت تيليجرام",
+      description: "تلق تنبيهات فورية عبر تيليجرام",
+      connect: "ربط بوت تيليجرام",
+      connected: "متصل",
+      notConnected: "غير متصل",
+      setupHint: "انقر على الزر أدناه لفتح تيليجرام وربط حسابك",
+    },
+    push: {
+      title: "إشعارات الويب",
+      description: "تلق تنبيهات مباشرة في متصفحك",
+      enable: "تفعيل إشعارات الويب",
+      enabled: "مفعّل",
+      disabled: "معطّل",
+      notSupported: "غير مدعوم في هذا المتصفح",
+    },
+    history: {
+      title: "الإشعارات الأخيرة",
+      empty: "لا توجد إشعارات بعد",
+      new: "جديد",
+    },
+  },
+} as const;
+
+interface NotificationListing {
+  id: string;
+  title: string;
+  imageUrl: string | null;
+  createdAt: string;
+  source: { name: string };
+}
+
+export default function AlertsPage({
   params,
 }: {
   params: Promise<{ locale?: string }>;
 }) {
-  const { locale = "en" } = await params;
-  const t = await getDictionary(locale as Locale);
+  const [locale, setLocale] = useState("en");
+  const [emailConfigured, setEmailConfigured] = useState(false);
+  const [telegramConnected, setTelegramConnected] = useState(false);
+  const [telegramBotUsername, setTelegramBotUsername] = useState("");
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushSupported, setPushSupported] = useState(false);
+  const [recentNotifications, setRecentNotifications] = useState<NotificationListing[]>([]);
+  const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const session = await auth();
-  const userId = session?.user?.id;
+  const t = labels[locale as keyof typeof labels] ?? labels.en;
 
-  const hasSmtp = !!process.env.SMTP_HOST;
+  useEffect(() => {
+    params.then((p) => setLocale(p.locale ?? "en"));
+  }, [params]);
 
-  const [telegramUser, notifiedListings] = await Promise.all([
-    userId
-      ? prisma.user.findUnique({
-          where: { id: userId },
-          select: { telegramChatId: true },
-        })
-      : null,
-    userId
-      ? prisma.listing.findMany({
-          where: {
-            isNotified: true,
-            matchedFilters: { some: { userId } },
-          },
-          include: { source: true },
-          orderBy: { updatedAt: "desc" },
-          take: 50,
-        })
-      : [],
-  ]);
+  useEffect(() => {
+    fetch("/api/notifications/status")
+      .then((r) => r.json())
+      .then((data) => {
+        setEmailConfigured(data.emailConfigured);
+        setTelegramConnected(data.telegramConnected);
+        setTelegramBotUsername(data.telegramBotUsername || "");
+        setPushSupported(data.pushSupported);
+        setRecentNotifications(data.recentNotifications || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
 
-  const hasTelegram = !!telegramUser?.telegramChatId;
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setPushEnabled(Notification.permission === "granted");
+    }
+  }, []);
+
+  const handleTestEmail = async () => {
+    setSending(true);
+    try {
+      const res = await fetch("/api/notifications/test-email", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(t.email.testSent);
+      } else {
+        toast.error(t.email.testFailed);
+      }
+    } catch {
+      toast.error(t.email.testFailed);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleEnablePush = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      toast.error(t.push.notSupported);
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    setPushEnabled(permission === "granted");
+    if (permission === "granted") {
+      toast.success(t.push.enabled);
+
+      if ("serviceWorker" in navigator) {
+        try {
+          await navigator.serviceWorker.register("/sw.js");
+        } catch {
+          // Service worker registration failed, but notifications still work
+        }
+      }
+    }
+  };
+
+  const telegramBotUrl = telegramBotUsername
+    ? `https://t.me/${telegramBotUsername}?start=connect`
+    : "#";
+
+  if (loading) {
+    return (
+      <div className="space-y-6 max-w-2xl">
+        <div>
+          <h1 className="text-2xl font-bold text-text">{t.title}</h1>
+          <p className="text-text-muted text-sm mt-1">{t.subtitle}</p>
+        </div>
+        <div className="py-12 text-center text-text-muted">Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-text">{t.alerts.title}</h1>
+        <h1 className="text-2xl font-bold text-text">{t.title}</h1>
+        <p className="text-text-muted text-sm mt-1">{t.subtitle}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-surface">
-              <Send className="h-6 w-6 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-text">{t.alerts.telegramStatus}</p>
-              <div className="flex items-center gap-1.5 mt-1">
-                {hasTelegram ? (
-                  <>
-                    <Wifi className="h-3.5 w-3.5 text-success" />
-                    <Badge variant="success">{t.alerts.connected}</Badge>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="h-3.5 w-3.5 text-text-muted" />
-                    <Badge variant="secondary">{t.alerts.notConnected}</Badge>
-                  </>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-surface">
-              <Bell className="h-6 w-6 text-accent" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-text">{t.alerts.webPush}</p>
-              <p className="text-xs text-text-muted mt-1">
-                {t.alerts.enablePush}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-surface">
-              <Mail className="h-6 w-6 text-success" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-text">{t.alerts.emailStatus}</p>
-              <div className="flex items-center gap-1.5 mt-1">
-                {hasSmtp ? (
-                  <>
-                    <CheckCircle className="h-3.5 w-3.5 text-success" />
-                    <Badge variant="success">{t.alerts.smtpConfigured}</Badge>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="h-3.5 w-3.5 text-text-muted" />
-                    <Badge variant="secondary">{t.alerts.smtpNotConfigured}</Badge>
-                  </>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* Email Notifications */}
       <Card>
         <CardHeader>
-          <CardTitle>{t.alerts.notificationHistory}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5 text-primary" />
+            {t.email.title}
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          {notifiedListings.length === 0 ? (
-            <div className="py-8 text-center text-text-muted">
-              <CheckCircle className="h-12 w-12 mx-auto mb-3 opacity-20" />
-              <p>{t.alerts.noHistory}</p>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-text-muted">{t.email.description}</p>
+          {emailConfigured ? (
+            <div className="flex items-center justify-between">
+              <Badge variant="success">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                {t.email.configured}
+              </Badge>
+              <Button onClick={handleTestEmail} disabled={sending} size="sm">
+                {sending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                ) : (
+                  <Send className="h-4 w-4 mr-1" />
+                )}
+                {t.email.testSend}
+              </Button>
             </div>
           ) : (
-            <div className="space-y-2">
-              {notifiedListings.map((listing: {
-                id: string;
-                title: string;
-                imageUrl: string | null;
-                source: { name: string };
-                updatedAt: Date | string;
-              }) => (
+            <Badge variant="warning">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              {t.email.notConfigured}
+            </Badge>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Telegram */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageCircle className="h-5 w-5 text-primary" />
+            {t.telegram.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-text-muted">{t.telegram.description}</p>
+          {telegramConnected ? (
+            <Badge variant="success">
+              <CheckCircle className="h-3 w-3 mr-1" />
+              {t.telegram.connected}
+            </Badge>
+          ) : (
+            <>
+              <p className="text-xs text-text-muted">{t.telegram.setupHint}</p>
+              <a
+                href={telegramBotUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors"
+                aria-disabled={!telegramBotUsername}
+                style={!telegramBotUsername ? { opacity: 0.5, pointerEvents: "none" } : undefined}
+              >
+                <ExternalLink className="h-4 w-4" />
+                {t.telegram.connect}
+              </a>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Web Push */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5 text-primary" />
+            {t.push.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-text-muted">{t.push.description}</p>
+          {pushSupported ? (
+            <div className="flex items-center justify-between">
+              <Badge variant={pushEnabled ? "success" : "default"}>
+                {pushEnabled ? t.push.enabled : t.push.disabled}
+              </Badge>
+              {!pushEnabled && (
+                <Button onClick={handleEnablePush} size="sm">
+                  {t.push.enable}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Badge variant="warning">{t.push.notSupported}</Badge>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Recent Notifications */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5 text-primary" />
+            {t.history.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {recentNotifications.length === 0 ? (
+            <p className="text-sm text-text-muted text-center py-8">{t.history.empty}</p>
+          ) : (
+            <div className="space-y-3">
+              {recentNotifications.map((n) => (
                 <div
-                  key={listing.id}
-                  className="flex items-center gap-3 rounded-lg border border-border p-3"
+                  key={n.id}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-surface/50"
                 >
-                  <div className="h-10 w-10 shrink-0 rounded-lg bg-surface flex items-center justify-center overflow-hidden">
-                    {listing.imageUrl ? (
+                  <div className="h-8 w-8 rounded bg-surface flex items-center justify-center shrink-0">
+                    {n.imageUrl ? (
                       <img
-                        src={listing.imageUrl}
+                        src={n.imageUrl}
                         alt=""
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover rounded"
                       />
                     ) : (
                       <Bell className="h-4 w-4 text-text-muted" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-text truncate">
-                      {listing.title}
-                    </p>
-                    <p className="text-xs text-text-muted">
-                      {listing.source.name} &middot; {formatDate(listing.updatedAt, locale)}
-                    </p>
+                    <p className="text-sm font-medium text-text truncate">{n.title}</p>
+                    <p className="text-xs text-text-muted">{n.source?.name}</p>
                   </div>
                   <Badge variant="default" className="shrink-0">
-                    {t.alerts.telegram}
+                    {t.history.new}
                   </Badge>
                 </div>
               ))}

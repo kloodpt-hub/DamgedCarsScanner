@@ -126,7 +126,7 @@ export default async function DashboardPage({
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t.dashboard.recentActivity}</CardTitle>
           <Link
-            href="/dashboard/listings"
+            href="/dashboard/results"
             className="text-sm text-primary hover:text-primary-hover transition-colors"
           >
             {t.dashboard.viewAll} &rarr;
