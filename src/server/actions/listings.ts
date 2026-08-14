@@ -16,7 +16,7 @@ export async function getAllListings(params: {
   }
 
   const page = params.page ?? 1;
-  const limit = params.limit ?? 20;
+  const limit = Math.min(params.limit ?? 20, 100);
   const skip = (page - 1) * limit;
 
   const where: Record<string, unknown> = {};
@@ -60,6 +60,11 @@ export async function getAllListings(params: {
 }
 
 export async function getListing(id: string) {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+
   return prisma.listing.findUnique({
     where: { id },
     include: { source: true, matchedFilters: true },
@@ -67,6 +72,11 @@ export async function getListing(id: string) {
 }
 
 export async function markAsRead(id: string) {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+
   return prisma.listing.update({
     where: { id },
     data: { isRead: true },
@@ -74,6 +84,11 @@ export async function markAsRead(id: string) {
 }
 
 export async function markAsNotified(id: string) {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+
   return prisma.listing.update({
     where: { id },
     data: { isNotified: true },
@@ -81,5 +96,10 @@ export async function markAsNotified(id: string) {
 }
 
 export async function deleteListing(id: string) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "ADMIN") {
+    throw new Error("Admin access required");
+  }
+
   return prisma.listing.delete({ where: { id } });
 }

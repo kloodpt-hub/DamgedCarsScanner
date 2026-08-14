@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
   const page = parseInt(searchParams.get("page") ?? "1", 10);
-  const limit = parseInt(searchParams.get("limit") ?? "20", 10);
+  const limit = Math.min(parseInt(searchParams.get("limit") ?? "20", 10), 100);
   const sourceId = searchParams.get("sourceId");
   const isRead = searchParams.get("isRead");
   const search = searchParams.get("search");
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
   const where: Record<string, unknown> = {};
 
-  if (effectiveView === "matched" && session.user.role !== "ADMIN") {
+  if (effectiveView === "matched") {
     where.matchedFilters = { some: { userId: session.user.id } };
   }
 
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     where.sourceId = sourceId;
   }
 
-  if (isRead !== null) {
+  if (isRead !== null && isRead !== "") {
     where.isRead = isRead === "true";
   }
 

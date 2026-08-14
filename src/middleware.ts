@@ -7,6 +7,9 @@ const protectedRoutes = [
   "/api/listings",
   "/api/filters",
   "/api/sources",
+  "/api/scraper",
+  "/api/admin",
+  "/api/notifications",
 ];
 
 function isProtectedRoute(pathname: string): boolean {
