@@ -55,6 +55,7 @@ interface ListingCardProps {
 export function ListingCard({ listing, locale }: ListingCardProps) {
   const [read, setRead] = useState(listing.isRead);
   const [notified, setNotified] = useState(listing.isNotified);
+  const [imgError, setImgError] = useState(false);
   const t = labels[locale as keyof typeof labels] ?? labels.en;
   const isRtl = locale === "ar";
 
@@ -81,11 +82,12 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
   return (
     <Card className={cn("group overflow-hidden transition-all hover:shadow-lg", !read && "ring-1 ring-primary/30")}>
       <div className="relative h-40 bg-surface overflow-hidden">
-        {listing.imageUrl ? (
+        {listing.imageUrl && !imgError ? (
           <img
             src={listing.imageUrl}
             alt={listing.title}
             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={() => setImgError(true)}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-text-muted">
