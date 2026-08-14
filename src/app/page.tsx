@@ -136,8 +136,10 @@ function LandingContent() {
     setGoogleLoading(true);
     try {
       await signIn("google", { callbackUrl });
+      // If we get here without redirect, something went wrong
     } catch {
       setError(t.googleError);
+    } finally {
       setGoogleLoading(false);
     }
   }

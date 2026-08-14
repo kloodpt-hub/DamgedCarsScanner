@@ -43,7 +43,7 @@ export function JobsClientBar({
     setLoading(true);
     try {
       const result = await runAllJobs();
-      if (result.success && result.results) {
+      if (result?.success && result.results) {
         const total = result.results.reduce((a, r) => a + r.listingsFound, 0);
         const newListings = result.results.reduce((a, r) => a + r.newListings, 0);
         toast.success(
@@ -52,6 +52,8 @@ export function JobsClientBar({
             : `Done: ${total} listings, ${newListings} new`
         );
         router.refresh();
+      } else {
+        toast.error(isRtl ? "فشل في تنفيذ المهام" : "Failed to run scrapers");
       }
     } catch {
       toast.error(isRtl ? "فشل في تنفيذ المهام" : "Failed to run jobs");

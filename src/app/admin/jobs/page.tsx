@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { formatDate, formatDateTime } from "@/lib/utils";
@@ -77,13 +78,15 @@ export default async function JobsPage({
 
   return (
     <div className="space-y-6">
-      <JobsClientBar
-        locale={locale}
-        sources={sources}
-        currentSourceId={sourceId}
-        currentStatus={status}
-        hasRunning={jobs.some((j) => j.status === "running" || j.status === "pending")}
-      />
+      <Suspense fallback={<div className="h-12" />}>
+        <JobsClientBar
+          locale={locale}
+          sources={sources}
+          currentSourceId={sourceId}
+          currentStatus={status}
+          hasRunning={jobs.some((j) => j.status === "running" || j.status === "pending")}
+        />
+      </Suspense>
 
       <Card>
         <CardContent>

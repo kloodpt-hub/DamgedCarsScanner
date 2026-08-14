@@ -176,15 +176,13 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
   };
 
   const handleSelectorFieldChange = (key: SelectorField, value: string) => {
-    setSelectorValues((prev) => {
-      const next = { ...prev, [key]: value };
-      setCustomJson(JSON.stringify(
-        Object.fromEntries(SELECTOR_FIELDS.map((f) => [f.key, next[f.key]])),
-        null,
-        2
-      ));
-      return next;
-    });
+    const next = { ...selectorValues, [key]: value };
+    setSelectorValues(next);
+    setCustomJson(JSON.stringify(
+      Object.fromEntries(SELECTOR_FIELDS.map((f) => [f.key, next[f.key]])),
+      null,
+      2
+    ));
   };
 
   const handleCustomJsonChange = (value: string) => {

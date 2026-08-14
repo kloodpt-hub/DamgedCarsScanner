@@ -12,12 +12,21 @@ async function requireAdmin() {
   return session;
 }
 
+async function requireAuth() {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+  return session;
+}
+
 export async function getAllJobs(params: {
   page?: number;
   limit?: number;
   sourceId?: string;
   status?: string;
 }) {
+  await requireAuth();
   const page = params.page ?? 1;
   const limit = params.limit ?? 20;
   const skip = (page - 1) * limit;
@@ -52,6 +61,7 @@ export async function getAllJobs(params: {
 }
 
 export async function getJob(id: string) {
+  await requireAuth();
   return prisma.scraperJob.findUnique({
     where: { id },
     include: { source: true },
