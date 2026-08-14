@@ -16,6 +16,7 @@ import {
   LogOut,
   Scan,
   ArrowLeftRight,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +37,7 @@ const navLabels = {
     switchToUser: "User View",
     switchToAdmin: "Admin Panel",
     collapse: "Collapse",
+    settings: "Settings",
   },
   ar: {
     dashboard: "لوحة التحكم",
@@ -53,6 +55,7 @@ const navLabels = {
     switchToUser: "عرض المستخدم",
     switchToAdmin: "لوحة الإدارة",
     collapse: "تصغير",
+    settings: "الإعدادات",
   },
 } as const;
 
@@ -87,6 +90,7 @@ export function Sidebar({ currentPath, locale, role }: SidebarProps) {
     { label: t.jobs, href: "/admin/jobs", icon: Activity },
     { label: t.users, href: "/admin/users", icon: Users },
     { label: t.alerts, href: "/admin/notifications", icon: Bell },
+    { label: t.settings, href: "/admin/settings", icon: Settings },
   ];
 
   const isOnAdmin = currentPath.startsWith("/admin");
