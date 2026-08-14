@@ -27,15 +27,7 @@ export default async function SourcesPage({
 
   const sources = await prisma.scraperSource.findMany({
     orderBy: { createdAt: "desc" },
-  }) as Array<{
-    id: string;
-    name: string;
-    baseUrl: string;
-    adapterType: string;
-    scrapeIntervalMinutes: number;
-    lastScrapedAt: Date | null;
-    isActive: boolean;
-  }>;
+  });
 
   return (
     <div className="space-y-6">
@@ -120,7 +112,15 @@ function SourceRowActions({
   source,
   locale,
 }: {
-  source: { id: string; name: string };
+  source: {
+    id: string;
+    name: string;
+    baseUrl: string;
+    adapterType: string;
+    selectors: unknown;
+    isActive: boolean;
+    scrapeIntervalMinutes: number;
+  };
   locale: string;
 }) {
   return (
@@ -129,6 +129,7 @@ function SourceRowActions({
         locale={locale}
         sourceId={source.id}
         sourceName={source.name}
+        source={source}
         inline
       />
     </div>

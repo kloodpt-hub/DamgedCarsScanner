@@ -1,6 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format as fnsFormat } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -8,12 +7,16 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatDate(
   date: Date | string | number,
-  locale: string = "en-US"
+  locale: string = "en"
 ): string {
   const d = typeof date === "string" || typeof date === "number"
     ? new Date(date)
     : date;
-  return fnsFormat(d, "PPP", { locale: undefined });
+  return d.toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export function formatDateTime(date: Date | string | number, locale: string = "en"): string {
@@ -29,11 +32,12 @@ export function formatDateTime(date: Date | string | number, locale: string = "e
 
 export function formatCurrency(
   amount: number,
-  currency: string = "USD"
+  currency: string = "EUR"
 ): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
+    maximumFractionDigits: 0,
   }).format(amount);
 }
 

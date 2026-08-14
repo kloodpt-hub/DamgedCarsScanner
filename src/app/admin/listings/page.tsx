@@ -83,9 +83,13 @@ export default async function AdminListingsPage({
 
   const buildUrl = (overrides: Record<string, string>) => {
     const params = new URLSearchParams();
-    if (overrides.search ?? search) params.set("search", overrides.search ?? search);
-    if (overrides.sourceId ?? sourceId) params.set("sourceId", overrides.sourceId ?? sourceId);
-    if (overrides.isRead ?? isRead) params.set("isRead", overrides.isRead ?? isRead);
+    const finalSearch = overrides.search !== undefined ? overrides.search : search;
+    const finalSourceId = overrides.sourceId !== undefined ? overrides.sourceId : sourceId;
+    const finalIsRead = overrides.isRead !== undefined ? overrides.isRead : isRead;
+
+    if (finalSearch) params.set("search", finalSearch);
+    if (finalSourceId) params.set("sourceId", finalSourceId);
+    if (finalIsRead) params.set("isRead", finalIsRead);
     if (overrides.page) params.set("page", overrides.page);
     return `/admin/listings?${params.toString()}`;
   };
@@ -135,6 +139,7 @@ export default async function AdminListingsPage({
                   <TableHead>{isRtl ? "المسافة" : "Mileage"}</TableHead>
                   <TableHead>{isRtl ? "الحالة" : "Status"}</TableHead>
                   <TableHead>{isRtl ? "التاريخ" : "Date"}</TableHead>
+                  <TableHead>{isRtl ? "عرض" : "View"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { formatDate } from "@/lib/utils";
+import { isEmailConfigured } from "@/lib/email";
 import {
   Card,
   CardContent,
@@ -12,8 +13,6 @@ import {
   Bell,
   Mail,
   Send,
-  Wifi,
-  AlertCircle,
   CheckCircle,
   Globe,
   Users,
@@ -29,10 +28,9 @@ export default async function NotificationsPage({
   const t = await getDictionary(locale as Locale);
   const isRtl = locale === "ar";
 
-  const hasSmtp = !!process.env.SMTP_HOST;
-  const smtpHost = process.env.SMTP_HOST || "-";
-  const smtpPort = process.env.SMTP_PORT || "587";
-  const smtpFrom = process.env.SMTP_FROM || "-";
+  const hasEmail = isEmailConfigured();
+  const fromEmail = process.env.FROM_EMAIL || "-";
+  const hasResendKey = !!process.env.RESEND_API_KEY;
 
   const hasTelegramBot = !!process.env.TELEGRAM_BOT_TOKEN;
   const hasVapid = !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && !!process.env.VAPID_PRIVATE_KEY;
@@ -93,26 +91,28 @@ export default async function NotificationsPage({
         <CardContent className="space-y-4">
           <div className="flex items-center gap-2">
             <span className={`text-sm font-medium text-text`}>Status:</span>
-            {hasSmtp ? (
-              <Badge variant="success">{t.alerts.smtpConfigured}</Badge>
+            {hasEmail ? (
+              <Badge variant="success">{t.alerts.emailConfigured}</Badge>
             ) : (
-              <Badge variant="secondary">{t.alerts.smtpNotConfigured}</Badge>
+              <Badge variant="secondary">{t.alerts.emailNotConfigured}</Badge>
             )}
           </div>
 
-          {hasSmtp ? (
+          {hasEmail ? (
             <div className="rounded-lg border border-border p-4 bg-surface/50 space-y-2 text-sm">
               <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
-                <span className="text-text-muted">Host</span>
-                <span className="text-text font-medium">{smtpHost}</span>
+                <span className="text-text-muted">Provider</span>
+                <span className="text-text font-medium">Resend</span>
               </div>
               <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
-                <span className="text-text-muted">Port</span>
-                <span className="text-text font-medium">{smtpPort}</span>
+                <span className="text-text-muted">API Key</span>
+                <span className="text-text font-medium font-mono">
+                  {hasResendKey ? `${process.env.RESEND_API_KEY?.slice(0, 8)}...configured` : "-"}
+                </span>
               </div>
               <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
                 <span className="text-text-muted">From</span>
-                <span className="text-text font-medium">{smtpFrom}</span>
+                <span className="text-text font-medium">{fromEmail}</span>
               </div>
             </div>
           ) : (
@@ -120,12 +120,8 @@ export default async function NotificationsPage({
               <p className="font-medium text-text">Setup Instructions:</p>
               <p>Add the following environment variables to your <code className="text-primary">.env</code> file:</p>
               <ul className="list-disc list-inside space-y-1 mt-2">
-                <li><code className="text-primary">SMTP_HOST</code> - Your SMTP server hostname</li>
-                <li><code className="text-primary">SMTP_PORT</code> - SMTP port (default: 587)</li>
-                <li><code className="text-primary">SMTP_SECURE</code> - Use TLS (true/false)</li>
-                <li><code className="text-primary">SMTP_USER</code> - SMTP username</li>
-                <li><code className="text-primary">SMTP_PASS</code> - SMTP password</li>
-                <li><code className="text-primary">SMTP_FROM</code> - Sender email address</li>
+                <li><code className="text-primary">RESEND_API_KEY</code> - Your Resend API key</li>
+                <li><code className="text-primary">FROM_EMAIL</code> - Sender email address</li>
               </ul>
             </div>
           )}
@@ -323,7 +319,7 @@ export default async function NotificationsPage({
                     </p>
                   </div>
                   <Badge variant="default" className="shrink-0">
-                    {t.alerts.smtpConfigured}
+                    {t.alerts.emailConfigured}
                   </Badge>
                 </div>
               ))}

@@ -25,9 +25,6 @@ const AUTOSCOUT24_SELECTORS: ScraperSelectors = {
     'button[aria-label="Next page"], a[aria-label="Next page"], [data-testid="pagination-next"], [class*="next"]',
 };
 
-const YEAR_PATTERN = /(?:01\/)?((?:19|20)\d{2})/;
-const MILEAGE_PATTERN = /([\d\s.,]+)\s*km/i;
-
 export class Autoscout24Adapter extends BaseAdapter {
   name = "autoscout24";
 

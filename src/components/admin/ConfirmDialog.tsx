@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface ConfirmDialogProps {
   open: boolean;

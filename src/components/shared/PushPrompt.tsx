@@ -4,6 +4,16 @@ import { useState, useEffect } from "react";
 import { Bell, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 export function PushPrompt() {
   const [show, setShow] = useState(false);
 
@@ -24,15 +34,49 @@ export function PushPrompt() {
   }, []);
 
   const handleEnable = async () => {
-    if (!("Notification" in window)) return;
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+
     const permission = await Notification.requestPermission();
-    if (permission === "granted" && "serviceWorker" in navigator) {
-      try {
-        await navigator.serviceWorker.ready;
-        // Try to subscribe - the alerts page has the full subscription logic
-        // Just request permission here, full subscription happens on alerts page
-      } catch {}
+    if (permission !== "granted") {
+      localStorage.setItem("push-prompt-dismissed", "1");
+      setShow(false);
+      return;
     }
+
+    if (!("serviceWorker" in navigator)) {
+      localStorage.setItem("push-prompt-dismissed", "1");
+      setShow(false);
+      return;
+    }
+
+    try {
+      const reg = await navigator.serviceWorker.ready;
+
+      // Fetch VAPID public key from status endpoint
+      const statusRes = await fetch("/api/notifications/status");
+      const statusData = await statusRes.json();
+
+      if (!statusData.vapidPublicKey) {
+        localStorage.setItem("push-prompt-dismissed", "1");
+        setShow(false);
+        return;
+      }
+
+      const subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(statusData.vapidPublicKey) as BufferSource,
+      });
+
+      await fetch("/api/notifications/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(subscription),
+      });
+    } catch (err) {
+      // Subscription failed, but permission was granted
+    }
+
+    localStorage.setItem("push-prompt-dismissed", "1");
     setShow(false);
   };
 

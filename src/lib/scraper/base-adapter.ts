@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import type { RawListing, ScraperSelectors, ScraperAdapter } from "./types";
 import { isListingSold } from "./sold-detector";
+import { parsePrice } from "./attribute-parser";
 
 const USER_AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
@@ -65,12 +66,9 @@ export abstract class BaseAdapter implements ScraperAdapter {
         };
 
         if (this.proxyUrl) {
-          (fetchInit as any).dispatcher = undefined;
-          const proxiedUrl = new URL(url);
-          const proxyBase = this.proxyUrl.endsWith("/")
-            ? this.proxyUrl
-            : `${this.proxyUrl}/`;
-          url = `${proxyBase}${proxiedUrl.href}`;
+          console.warn(
+            `[${this.name}] proxyUrl is set but proxy fetching is disabled.`
+          );
         }
 
         const response = await fetch(url, fetchInit);
@@ -208,9 +206,8 @@ export abstract class BaseAdapter implements ScraperAdapter {
       const text = $el.find(sel).first().text().trim();
       if (!text) continue;
 
-      const cleaned = text.replace(/[^\d.,]/g, "").replace(",", ".");
-      const num = parseFloat(cleaned);
-      if (!isNaN(num)) return num;
+      const parsed = parsePrice(text);
+      if (parsed !== null) return parsed;
     }
     return null;
   }

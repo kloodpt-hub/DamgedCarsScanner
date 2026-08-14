@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
     const scraped = results.filter((r) => r.status === "completed");
     const failed = results.filter((r) => r.status === "failed");
-    const skipped = 0;
+    const skipped = results.filter((r) => r.status === "skipped").length;
     const totalListings = results.reduce((sum, r) => sum + r.listingsFound, 0);
     const newListings = results.reduce((sum, r) => sum + r.newListings, 0);
 

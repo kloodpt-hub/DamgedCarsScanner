@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,9 +21,9 @@ export default async function AdminMyResultsPage({
 
   const session = await auth();
   if (!session?.user || session.user.role !== "ADMIN") {
-    // Redirect handled by layout
+    redirect("/login");
   }
-  const userId = session?.user?.id;
+  const userId = session.user.id;
 
   const page = Math.max(1, parseInt(typeof sp.page === "string" ? sp.page : "1", 10));
   const skip = (page - 1) * PAGE_SIZE;

@@ -20,18 +20,16 @@ export function getNextRunTime(source: ScraperSource): Date | null {
 }
 
 export async function getDueSources(prisma: PrismaClient): Promise<ScraperSource[]> {
-  return prisma.scraperSource.findMany({
-    where: {
-      isActive: true,
-      OR: [
-        { lastScrapedAt: null },
-        {
-          lastScrapedAt: {
-            lte: new Date(Date.now() - 60 * 1000),
-          },
-        },
-      ],
-    },
+  const sources = await prisma.scraperSource.findMany({
+    where: { isActive: true },
+  });
+
+  const now = Date.now();
+  return sources.filter((source) => {
+    if (!source.lastScrapedAt) return true;
+    const lastScraped = new Date(source.lastScrapedAt).getTime();
+    const intervalMs = source.scrapeIntervalMinutes * 60 * 1000;
+    return now - lastScraped >= intervalMs;
   });
 }
 

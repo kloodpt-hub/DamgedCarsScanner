@@ -14,6 +14,15 @@ interface SourcesClientActionsProps {
   locale: string;
   sourceId?: string;
   sourceName?: string;
+  source?: {
+    id: string;
+    name: string;
+    baseUrl: string;
+    adapterType: string;
+    selectors: unknown;
+    isActive: boolean;
+    scrapeIntervalMinutes: number;
+  };
   inline?: boolean;
 }
 
@@ -21,6 +30,7 @@ export function SourcesClientActions({
   locale,
   sourceId,
   sourceName,
+  source,
   inline,
 }: SourcesClientActionsProps) {
   const router = useRouter();
@@ -83,7 +93,7 @@ export function SourcesClientActions({
                 {isRtl ? "تعديل المصدر" : "Edit Source"}
               </h2>
               <SourceForm
-                source={{
+                source={source ?? {
                   id: sourceId,
                   name: sourceName ?? "",
                   baseUrl: "",

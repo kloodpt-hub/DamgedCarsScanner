@@ -141,8 +141,8 @@ export interface Dictionary {
     via: string;
     telegram: string;
     web: string;
-    smtpConfigured: string;
-    smtpNotConfigured: string;
+    emailConfigured: string;
+    emailNotConfigured: string;
     loadError: string;
     notificationsSentCount: string;
   };
@@ -297,8 +297,8 @@ const en: Dictionary = {
     via: "via",
     telegram: "Telegram",
     web: "Web Push",
-    smtpConfigured: "SMTP Configured",
-    smtpNotConfigured: "SMTP Not Configured",
+    emailConfigured: "Email Configured",
+    emailNotConfigured: "Email Not Configured",
     loadError: "Failed to load",
     notificationsSentCount: "notifications sent",
   },
@@ -453,8 +453,8 @@ const ar: Dictionary = {
     via: "عبر",
     telegram: "تيليجرام",
     web: "ويب",
-    smtpConfigured: "تم تكوين SMTP",
-    smtpNotConfigured: "لم يتم تكوين SMTP",
+    emailConfigured: "تم تكوين البريد الإلكتروني",
+    emailNotConfigured: "لم يتم تكوين البريد الإلكتروني",
     loadError: "فشل التحميل",
     notificationsSentCount: "إشعارات مرسلة",
   },

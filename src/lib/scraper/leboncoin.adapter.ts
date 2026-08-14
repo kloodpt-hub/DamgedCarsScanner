@@ -21,9 +21,6 @@ const LEBONCOIN_SELECTORS: ScraperSelectors = {
     'button[data-qa-id="pagination_next"], a[data-qa-id="pagination_next"], [aria-label="Page suivante"]',
 };
 
-const YEAR_PATTERN = /(?:19|20)\d{2}/;
-const MILEAGE_PATTERN = /(\d[\d\s.,]*)\s*km/i;
-
 export class LeboncoinAdapter extends BaseAdapter {
   name = "leboncoin";
 
