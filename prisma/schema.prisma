@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id               String              @id @default(cuid())
+  email            String              @unique
+  name             String?
+  password         String
+  role             UserRole            @default(USER)
+  telegramChatId   String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  targets          TargetUrl[]
+  filters          Filter[]
+  pushSubscriptions PushSubscription[]
+  scraperJobs      ScraperJob[]
+}
+
+model ScraperSource {
+  id                   String         @id @default(cuid())
+  name                 String
+  baseUrl              String
+  adapterType          String         @default("generic")
+  selectors            Json
+  isActive             Boolean        @default(true)
+  scrapeIntervalMinutes Int           @default(60)
+  lastScrapedAt        DateTime?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  listings             Listing[]
+  scraperJobs          ScraperJob[]
+}
+
+model TargetUrl {
+  id        String   @id @default(cuid())
+  url       String
+  name      String?
+  isActive  Boolean  @default(true)
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Filter {
+  id                String    @id @default(cuid())
+  name              String
+  minYear           Int?
+  maxYear           Int?
+  minPrice          Float?
+  maxPrice          Float?
+  damageStatus      String?
+  excludedKeywords  String[]
+  minMileage        Int?
+  maxMileage        Int?
+  isActive          Boolean   @default(true)
+  userId            String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listings          Listing[] @relation("FilteredListings")
+}
+
+model Listing {
+  id            String    @id @default(cuid())
+  externalId    String    @unique
+  title         String
+  price         Float?
+  year          Int?
+  mileage       Int?
+  damageStatus  String?
+  description   String?
+  imageUrl      String?
+  images        String[]
+  canonicalUrl  String
+  sourceId      String
+  isRead        Boolean   @default(false)
+  isNotified    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  source        ScraperSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  matchedFilters Filter[] @relation("FilteredListings")
+}
+
+model ScraperJob {
+  id           String         @id @default(cuid())
+  sourceId     String
+  userId       String?
+  status       String         @default("pending")
+  listingsFound Int           @default(0)
+  newListings  Int            @default(0)
+  errorMessage String?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime       @default(now())
+  source       ScraperSource  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  user         User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String
+  keys      Json
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
