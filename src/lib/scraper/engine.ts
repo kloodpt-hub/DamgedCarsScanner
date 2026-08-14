@@ -4,6 +4,8 @@ import { LeboncoinAdapter } from "./leboncoin.adapter";
 import { Autoscout24Adapter } from "./autoscout24.adapter";
 import type { ScraperAdapter, ScraperJobResult, ScraperSelectors } from "./types";
 import { evaluateListing } from "../filters/evaluator";
+import { notifyNewListing } from "../notifications";
+import { isDueForScraping } from "../cron/scheduler";
 
 const ADAPTERS: Record<string, () => ScraperAdapter> = {
   generic: () => new GenericAdapter(),
@@ -34,6 +36,14 @@ export class ScraperEngine {
 
     if (!source.isActive) {
       return { listingsFound: 0, newListings: 0, errors: [`Source ${source.name} is inactive`] };
+    }
+
+    if (!isDueForScraping(source)) {
+      return {
+        listingsFound: 0,
+        newListings: 0,
+        errors: [`Source ${source.name} is not due for scraping`],
+      };
     }
 
     const job = await this.prisma.scraperJob.create({
@@ -91,6 +101,11 @@ export class ScraperEngine {
                 },
               },
             });
+
+            await notifyNewListing(
+              { ...listing, sourceId: source.id },
+              matchedFilters
+            );
           }
         } catch (err) {
           errors.push(`Failed to process listing ${raw.externalId}: ${err instanceof Error ? err.message : String(err)}`);
@@ -133,9 +148,10 @@ export class ScraperEngine {
       where: { isActive: true },
     });
 
+    const dueSources = sources.filter(isDueForScraping);
     const results: ScraperJobResult[] = [];
 
-    for (const source of sources) {
+    for (const source of dueSources) {
       const result = await this.runJob(source.id);
       results.push(result);
     }
