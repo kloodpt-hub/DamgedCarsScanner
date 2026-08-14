@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
 export async function getAllListings(params: {
   page?: number;
@@ -9,11 +10,20 @@ export async function getAllListings(params: {
   isRead?: boolean;
   search?: string;
 }) {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+
   const page = params.page ?? 1;
   const limit = params.limit ?? 20;
   const skip = (page - 1) * limit;
 
   const where: Record<string, unknown> = {};
+
+  if (session.user.role !== "ADMIN") {
+    where.matchedFilters = { some: { userId: session.user.id } };
+  }
 
   if (params.sourceId) {
     where.sourceId = params.sourceId;

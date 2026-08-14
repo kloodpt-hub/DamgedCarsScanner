@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const searchParams = request.nextUrl.searchParams;
 
   const page = parseInt(searchParams.get("page") ?? "1", 10);
@@ -12,6 +18,10 @@ export async function GET(request: NextRequest) {
   const skip = (page - 1) * limit;
 
   const where: Record<string, unknown> = {};
+
+  if (session.user.role !== "ADMIN") {
+    where.matchedFilters = { some: { userId: session.user.id } };
+  }
 
   if (sourceId) {
     where.sourceId = sourceId;
