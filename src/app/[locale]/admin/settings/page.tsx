@@ -1,4 +1,5 @@
 import { getDictionary, type Locale } from "@/lib/i18n";
+import { getTelegramConfig } from "@/lib/settings";
 import {
   Card,
   CardContent,
@@ -9,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/CopyButton";
 import { SettingsEnvEditor } from "@/components/admin/SettingsEnvEditor";
+import { TelegramSettingsEditor } from "@/components/admin/TelegramSettingsEditor";
 import {
   KeyRound,
   Mail,
@@ -109,8 +111,9 @@ export default async function SettingsPage({
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.FROM_EMAIL;
-  const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
-  const telegramBotUsername = process.env.TELEGRAM_BOT_USERNAME;
+  const telegramConfig = await getTelegramConfig();
+  const telegramBotToken = telegramConfig.token;
+  const telegramBotUsername = telegramConfig.username;
   const vapidPublic = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
 
@@ -145,20 +148,6 @@ export default async function SettingsPage({
       value: maskValue(fromEmail),
       configured: !!fromEmail,
       isSecret: false,
-    },
-    {
-      label: "Bot Username",
-      envVar: "TELEGRAM_BOT_USERNAME",
-      value: maskValue(telegramBotUsername),
-      configured: !!telegramBotUsername,
-      isSecret: false,
-    },
-    {
-      label: "Bot Token",
-      envVar: "TELEGRAM_BOT_TOKEN",
-      value: maskValue(telegramBotToken),
-      configured: !!telegramBotToken,
-      isSecret: true,
     },
     {
       label: "VAPID Public Key",
@@ -417,28 +406,17 @@ export default async function SettingsPage({
             <span>Telegram Bot</span>
           </CardTitle>
           <CardDescription>
-            Bot credentials for sending Telegram notifications.
+            Bot credentials for sending Telegram notifications. Stored in the database and
+            read directly at runtime.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {!renderConfigured && (
-            <>
-              <SettingRow
-                label="Bot Username"
-                envVar="TELEGRAM_BOT_USERNAME"
-                value={telegramBotUsername ?? ""}
-                configured={!!telegramBotUsername}
-                isRtl={isRtl}
-              />
-              <SettingRow
-                label="Bot Token"
-                envVar="TELEGRAM_BOT_TOKEN"
-                value={telegramBotToken ?? ""}
-                configured={!!telegramBotToken}
-                isRtl={isRtl}
-              />
-            </>
-          )}
+          <TelegramSettingsEditor
+            locale={locale === "ar" ? "ar" : "en"}
+            configured={!!telegramBotToken}
+            tokenMasked={telegramBotToken ? maskValue(telegramBotToken) : null}
+            username={telegramBotUsername}
+          />
 
           <div className="rounded-lg border border-border p-4 bg-surface/50 text-sm text-text-muted">
             <p className="font-medium text-text mb-1">Telegram bot setup steps</p>
@@ -458,14 +436,13 @@ export default async function SettingsPage({
                 </>,
                 <>Send <code className="text-primary">/newbot</code> and follow the prompts to name it.</>,
                 <>
-                  Copy the token BotFather returns and set it as{" "}
-                  <code className="text-primary">TELEGRAM_BOT_TOKEN</code> on Render.
+                  Copy the token BotFather returns and save it here using the{" "}
+                  <code className="text-primary">Save</code> button (it is stored in the database).
                 </>,
                 <>
-                  Set <code className="text-primary">TELEGRAM_BOT_USERNAME</code> to the
-                  bot&apos;s username (without the leading <code>@</code>).
+                  Enter the bot&apos;s username (without the leading <code>@</code>) and save.
                 </>,
-                <>Redeploy the service for changes to take effect.</>,
+                <>Click <code className="text-primary">Register Webhook</code> to activate receiving connect requests.</>,
               ]}
             />
           </div>

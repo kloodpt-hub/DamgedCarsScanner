@@ -108,6 +108,23 @@ async function main() {
   });
 
   console.log(`Created scraper sources: ${leboncoin.name}, ${autoscout24.name}, ${generic.name}`);
+
+  const settingsEntries: Array<[string, string]> = [];
+  if (process.env.TELEGRAM_BOT_TOKEN) {
+    settingsEntries.push(["TELEGRAM_BOT_TOKEN", process.env.TELEGRAM_BOT_TOKEN]);
+  }
+  if (process.env.TELEGRAM_BOT_USERNAME) {
+    settingsEntries.push(["TELEGRAM_BOT_USERNAME", process.env.TELEGRAM_BOT_USERNAME]);
+  }
+  for (const [key, value] of settingsEntries) {
+    await prisma.systemSetting.upsert({
+      where: { key },
+      update: { value },
+      create: { key, value },
+    });
+    console.log(`Seeded system setting: ${key}`);
+  }
+
   console.log("Seeding complete.");
 }
 

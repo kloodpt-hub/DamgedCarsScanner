@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { getTelegramConfig } from "./settings";
 import { sendListingAlert } from "./email";
 import {
   sendPushNotification,
@@ -36,6 +37,7 @@ export async function notifyNewListing(
 
   const userMap = new Map(users.map((u) => [u.id, u]));
   const sourceName = source?.name ?? "Unknown";
+  const telegramConfig = await getTelegramConfig();
 
   for (const filter of matchedFilters) {
     const user = userMap.get(filter.userId);
@@ -51,10 +53,10 @@ export async function notifyNewListing(
     }
 
     // 2. Telegram
-    if (user.telegramChatId && process.env.TELEGRAM_BOT_TOKEN) {
+    if (user.telegramChatId && telegramConfig.token) {
       try {
         const text = `🚗 New match: ${listing.title}\n💰 Price: ${listing.price ? '€' + listing.price.toLocaleString() : 'N/A'}\n📅 Year: ${listing.year ?? 'N/A'}\n🔗 ${listing.canonicalUrl}`;
-        await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        await fetch(`https://api.telegram.org/bot${telegramConfig.token}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

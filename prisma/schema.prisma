@@ -13,19 +13,21 @@ enum UserRole {
 }
 
 model User {
-  id               String              @id @default(cuid())
-  email            String              @unique
-  name             String?
-  password         String?
-  role             UserRole            @default(USER)
-  telegramChatId   String?
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  targets          TargetUrl[]
-  filters          Filter[]
-  pushSubscriptions PushSubscription[]
-  scraperJobs      ScraperJob[]
-  userListingReads UserListingRead[]
+  id                         String              @id @default(cuid())
+  email                      String              @unique
+  name                       String?
+  password                   String?
+  role                       UserRole            @default(USER)
+  telegramChatId             String?
+  telegramConnectToken       String?             @unique
+  telegramConnectTokenExpiresAt DateTime?
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
+  targets                    TargetUrl[]
+  filters                    Filter[]
+  pushSubscriptions          PushSubscription[]
+  scraperJobs                ScraperJob[]
+  userListingReads           UserListingRead[]
 }
 
 model ScraperSource {
@@ -144,4 +146,11 @@ model UserListingRead {
 
   @@id([userId, listingId])
   @@index([listingId])
+}
+
+model SystemSetting {
+  key       String   @id
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getCsrfToken } from "@/lib/csrf-client";
+import { createTelegramConnectLink } from "@/server/actions/telegram";
 import {
   subscribeToPush,
   unsubscribeFromPush,
@@ -51,6 +52,7 @@ const labels = {
       connected: "Connected",
       notConnected: "Not connected",
       setupHint: "Click the button below to open Telegram and connect your account",
+      connectFailed: "Could not create Telegram connection link. Try again later.",
     },
     push: {
       title: "Web Push Notifications",
@@ -97,6 +99,7 @@ const labels = {
       connected: "متصل",
       notConnected: "غير متصل",
       setupHint: "انقر على الزر أدناه لفتح تيليجرام وربط حسابك",
+      connectFailed: "تعذر إنشاء رابط ربط تيليجرام. حاول مجددًا لاحقًا.",
     },
     push: {
       title: "إشعارات الويب",
@@ -255,9 +258,24 @@ export default function AlertsPage({
     }
   };
 
-  const telegramBotUrl = telegramBotUsername
-    ? `https://t.me/${telegramBotUsername}?start=connect`
-    : "#";
+  const [telegramBusy, setTelegramBusy] = useState(false);
+
+  const handleConnectTelegram = async () => {
+    if (telegramBusy || !telegramBotUsername) return;
+    setTelegramBusy(true);
+    try {
+      const result = await createTelegramConnectLink();
+      if (result.url) {
+        window.open(result.url, "_blank", "noopener,noreferrer");
+      } else {
+        toast.error(result.error || t.telegram.connectFailed);
+      }
+    } catch {
+      toast.error(t.telegram.connectFailed);
+    } finally {
+      setTelegramBusy(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -330,17 +348,18 @@ export default function AlertsPage({
           ) : (
             <>
               <p className="text-xs text-text-muted">{t.telegram.setupHint}</p>
-              <a
-                href={telegramBotUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors"
-                aria-disabled={!telegramBotUsername}
-                style={!telegramBotUsername ? { opacity: 0.5, pointerEvents: "none" } : undefined}
+              <Button
+                onClick={handleConnectTelegram}
+                disabled={!telegramBotUsername || telegramBusy}
+                className="gap-1"
               >
-                <ExternalLink className="h-4 w-4" />
+                {telegramBusy ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ExternalLink className="h-4 w-4" />
+                )}
                 {t.telegram.connect}
-              </a>
+              </Button>
             </>
           )}
         </CardContent>

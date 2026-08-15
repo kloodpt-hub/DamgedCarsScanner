@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { formatDate } from "@/lib/utils";
 import { isEmailConfigured } from "@/lib/email";
+import { getTelegramConfig } from "@/lib/settings";
 import {
   Card,
   CardContent,
@@ -32,7 +33,8 @@ export default async function NotificationsPage({
   const fromEmail = process.env.FROM_EMAIL || "-";
   const hasResendKey = !!process.env.RESEND_API_KEY;
 
-  const hasTelegramBot = !!process.env.TELEGRAM_BOT_TOKEN;
+  const telegramConfig = await getTelegramConfig();
+  const hasTelegramBot = !!telegramConfig.token;
   const hasVapid = !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && !!process.env.VAPID_PRIVATE_KEY;
 
   function maskValue(val?: string): string {
@@ -163,7 +165,7 @@ export default async function NotificationsPage({
                 <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
                   <span className="text-text-muted">Bot Token</span>
                   <span className="text-text font-medium font-mono">
-                    {maskValue(process.env.TELEGRAM_BOT_TOKEN)}
+                    {maskValue(telegramConfig.token ?? "")}
                   </span>
                 </div>
                 <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
