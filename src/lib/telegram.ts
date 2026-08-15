@@ -2,7 +2,8 @@ import { getTelegramConfig } from "./settings";
 
 export async function sendTelegramMessage(
   chatId: string,
-  text: string
+  text: string,
+  replyMarkup?: Record<string, unknown>
 ): Promise<{ ok: boolean; description?: string }> {
   const { token } = await getTelegramConfig();
   if (!token) {
@@ -13,7 +14,12 @@ export async function sendTelegramMessage(
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: "HTML",
+        ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+      }),
     }
   );
   const data = (await response.json()) as {

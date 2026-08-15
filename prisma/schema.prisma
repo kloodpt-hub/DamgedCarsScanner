@@ -21,6 +21,10 @@ model User {
   telegramChatId             String?
   telegramConnectToken       String?             @unique
   telegramConnectTokenExpiresAt DateTime?
+  telegramPaused             Boolean             @default(false)
+  locale                     String              @default("en")
+  telegramConvStep           String?
+  telegramConvDraft          Json?
   createdAt                  DateTime            @default(now())
   updatedAt                  DateTime            @updatedAt
   targets                    TargetUrl[]

@@ -27,7 +27,15 @@ export async function notifyNewListing(
   const [users, source] = await Promise.all([
     prisma.user.findMany({
       where: { id: { in: userIds } },
-      select: { id: true, email: true, name: true, telegramChatId: true, pushSubscriptions: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        telegramChatId: true,
+        telegramPaused: true,
+        locale: true,
+        pushSubscriptions: true,
+      },
     }),
     prisma.scraperSource.findUnique({
       where: { id: listing.sourceId },
@@ -53,7 +61,7 @@ export async function notifyNewListing(
     }
 
     // 2. Telegram
-    if (user.telegramChatId && telegramConfig.token) {
+    if (user.telegramChatId && telegramConfig.token && !user.telegramPaused) {
       try {
         const text = `🚗 New match: ${listing.title}\n💰 Price: ${listing.price ? '€' + listing.price.toLocaleString() : 'N/A'}\n📅 Year: ${listing.year ?? 'N/A'}\n🔗 ${listing.canonicalUrl}`;
         await fetch(`https://api.telegram.org/bot${telegramConfig.token}/sendMessage`, {
