@@ -148,7 +148,7 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleMarkRead}
-                className="h-7 px-2 text-xs"
+                className="h-10 px-2.5 text-xs"
               >
                 <Check className="h-3 w-3" />
                 {t.markRead}
@@ -159,7 +159,7 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleNotify}
-                className="h-7 px-2 text-xs"
+                className="h-10 px-2.5 text-xs"
               >
                 <Send className="h-3 w-3" />
                 {t.notify}

@@ -170,7 +170,7 @@ export default function FiltersPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-text">{t.title}</h1>
           <p className="text-text-muted text-sm mt-1">
@@ -191,7 +191,7 @@ export default function FiltersPage({
             </CardTitle>
             <button
               onClick={() => { setShowForm(false); setEditingFilter(undefined); }}
-              className="p-1.5 rounded text-text-muted hover:text-text hover:bg-surface transition-colors"
+              className="p-2.5 -m-2.5 rounded text-text-muted hover:text-text hover:bg-surface transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
@@ -234,14 +234,14 @@ export default function FiltersPage({
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => handleEdit(filter)}
-                      className="p-1.5 rounded text-text-muted hover:text-primary hover:bg-surface transition-colors"
+                      className="p-2.5 -m-2.5 rounded text-text-muted hover:text-primary hover:bg-surface transition-colors"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(filter.id)}
                       disabled={deleting === filter.id}
-                      className="p-1.5 rounded text-text-muted hover:text-danger hover:bg-surface transition-colors disabled:opacity-50"
+                      className="p-2.5 -m-2.5 rounded text-text-muted hover:text-danger hover:bg-surface transition-colors disabled:opacity-50"
                     >
                       {deleting === filter.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />

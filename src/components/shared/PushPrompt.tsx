@@ -115,7 +115,7 @@ export function PushPrompt() {
               <Button size="sm" variant="ghost" onClick={handleDismiss}>Not now</Button>
             </div>
           </div>
-          <button onClick={handleDismiss} className="text-text-muted hover:text-text">
+          <button onClick={handleDismiss} className="p-2.5 -m-2.5 text-text-muted hover:text-text">
             <X className="h-4 w-4" />
           </button>
         </div>

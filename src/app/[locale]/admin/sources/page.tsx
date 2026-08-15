@@ -31,7 +31,7 @@ export default async function SourcesPage({
 
   return (
     <div className="space-y-6">
-      <div className={`flex items-center justify-between ${isRtl ? "flex-row-reverse" : ""}`}>
+      <div className={`flex flex-wrap items-center justify-between gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
         <div>
           <h1 className="text-2xl font-bold text-text">
             {t.nav.sources}

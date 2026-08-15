@@ -186,7 +186,7 @@ export default async function AdminListingsPage({
                           href={listing.canonicalUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 rounded text-text-muted hover:text-primary hover:bg-surface transition-colors inline-flex"
+                          className="p-2.5 rounded text-text-muted hover:text-primary hover:bg-surface transition-colors inline-flex"
                           title={isRtl ? "عرض" : "View"}
                         >
                           <ExternalLink className="h-4 w-4" />

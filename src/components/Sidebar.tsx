@@ -245,7 +245,7 @@ export function Sidebar({ locale, role }: SidebarProps) {
       {/* Mobile hamburger button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 start-4 z-40 p-2 rounded-lg bg-gray-900 text-white shadow-lg"
+        className="lg:hidden fixed top-4 start-4 z-40 p-2.5 rounded-lg bg-gray-900 text-white shadow-lg"
         aria-label="Open menu"
       >
         <Menu className="h-5 w-5" />
@@ -273,7 +273,7 @@ export function Sidebar({ locale, role }: SidebarProps) {
       >
         <button
           onClick={() => setMobileOpen(false)}
-          className="absolute top-4 end-4 z-10 p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
+          className="absolute top-4 end-4 z-10 p-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
           aria-label="Close menu"
         >
           <X className="h-5 w-5" />

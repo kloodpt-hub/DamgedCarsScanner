@@ -173,7 +173,7 @@ export default async function NotificationsPage({
               </div>
 
               {telegramUsers.length > 0 && (
-                <div className="rounded-lg border border-border overflow-hidden">
+                <div className="rounded-lg border border-border overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-surface/50 text-text-muted">

@@ -262,7 +262,7 @@ export default function AlertsPage({
                 href={telegramBotUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors"
+                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors"
                 aria-disabled={!telegramBotUsername}
                 style={!telegramBotUsername ? { opacity: 0.5, pointerEvents: "none" } : undefined}
               >

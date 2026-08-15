@@ -145,7 +145,7 @@ function LoginForm() {
                   setPassword(e.target.value);
                   setFieldErrors((prev) => ({ ...prev, password: undefined }));
                 }}
-                className={`input pr-10 ${fieldErrors.password ? "border-danger focus:ring-danger/50" : ""}`}
+                className={`input pr-12 ${fieldErrors.password ? "border-danger focus:ring-danger/50" : ""}`}
                 placeholder="••••••••"
                 autoComplete="current-password"
                 disabled={loading}
@@ -153,13 +153,13 @@ function LoginForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 text-text-muted hover:text-text transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
+                  <EyeOff className="h-5 w-5" />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-5 w-5" />
                 )}
               </button>
             </div>

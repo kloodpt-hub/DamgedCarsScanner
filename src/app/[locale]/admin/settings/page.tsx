@@ -68,7 +68,7 @@ function SettingRow({
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm font-medium text-text">{label}</span>
-          <code className="text-xs text-text-muted bg-bg px-1.5 py-0.5 rounded">
+          <code className="text-xs text-text-muted bg-bg px-1.5 py-0.5 rounded min-w-0 break-all">
             {envVar}
           </code>
         </div>
