@@ -76,19 +76,20 @@ interface SidebarProps {
 }
 
 export function Sidebar({ locale, role }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      localStorage.getItem("sidebar-collapsed") === "true"
+  );
   const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname() || "";
+  const rawPathname = usePathname() || "";
+  const pathname = rawPathname.replace(/^\/(en|ar)(?=\/|$)/, "") || "/";
   const t = navLabels[locale as keyof typeof navLabels] ?? navLabels.en;
   const isAdmin = role === "ADMIN";
   const isRtl = locale === "ar";
 
   useEffect(() => {
-    const stored = localStorage.getItem("sidebar-collapsed");
-    if (stored === "true") setCollapsed(true);
-  }, []);
-
-  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentionally close the mobile drawer whenever the route changes; resetting state on prop change is the documented use of this pattern
     setMobileOpen(false);
   }, [pathname]);
 
@@ -157,7 +158,7 @@ export function Sidebar({ locale, role }: SidebarProps) {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={`/${locale}${item.href}`}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
@@ -177,7 +178,7 @@ export function Sidebar({ locale, role }: SidebarProps) {
           <>
             {!collapsed && <div className="my-3 border-t border-gray-800" />}
             <Link
-              href={isOnAdmin ? "/dashboard" : "/admin"}
+              href={`/${locale}${isOnAdmin ? "/dashboard" : "/admin"}`}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 "text-primary hover:bg-primary/10",
@@ -204,7 +205,7 @@ export function Sidebar({ locale, role }: SidebarProps) {
 
       <div className="border-t border-gray-800 p-3 space-y-1 shrink-0">
         <button
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={() => signOut({ callbackUrl: `/${locale}` })}
           className={cn(
             "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors",
             collapsed && "justify-center px-0"
