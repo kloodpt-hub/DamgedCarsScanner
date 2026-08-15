@@ -1,0 +1,16 @@
+name: Scheduled Scrape
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger scheduled scrape
+        run: |
+          curl -sf --max-time 600 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://damged-cars-scanner-native.onrender.com/api/cron/scrape"
