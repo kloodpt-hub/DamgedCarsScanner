@@ -3,6 +3,7 @@ import { GenericAdapter } from "./generic-adapter";
 import { LeboncoinAdapter } from "./leboncoin.adapter";
 import { Autoscout24Adapter } from "./autoscout24.adapter";
 import { SchadeautosAdapter } from "./schadeautos.adapter";
+import { DebelsAdapter } from "./debels.adapter";
 import type { BaseAdapterOptions } from "./base-adapter";
 import type { ScraperAdapter, ScraperJobResult, ScraperSelectors } from "./types";
 import { evaluateListing } from "../filters/evaluator";
@@ -16,6 +17,7 @@ const ADAPTERS: Record<string, (options?: BaseAdapterOptions) => ScraperAdapter>
   leboncoin: (o) => new LeboncoinAdapter(o),
   autoscout24: (o) => new Autoscout24Adapter(o),
   schadeautos: (o) => new SchadeautosAdapter(o),
+  debels: (o) => new DebelsAdapter(o),
 };
 
 export interface ScrapeResult {

@@ -14,6 +14,7 @@ import {
   Bell,
   BookOpen,
   Car,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -108,11 +109,11 @@ export default async function DashboardPage({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.label}>
+            <Card key={stat.label} className="p-4">
               <CardContent className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-text-muted">{stat.label}</p>
@@ -182,7 +183,17 @@ export default async function DashboardPage({
                     {listing.price != null && (
                       <p className="text-sm font-bold text-primary">{formatCurrency(listing.price)}</p>
                     )}
-                    <p className="text-xs text-text-muted">{listing.source.name}</p>
+                    <p className="text-xs text-text-muted">
+                      <a
+                        href={listing.canonicalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary-hover transition-colors inline-flex items-center gap-1"
+                      >
+                        {listing.source.name}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </p>
                   </div>
                 </div>
               ))}

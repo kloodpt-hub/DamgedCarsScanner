@@ -276,6 +276,10 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
       en: "Optimized for WordPress sites using the Schadeautos plugin (e.g. auto-didact.nl). Reads data from data-* attributes for reliable extraction.",
       ar: "محسّن لمواقع WordPress التي تستخدم إضافة Schadeautos. يقرأ البيانات من سمات data-* لاستخراج موثوق.",
     },
+    debels: {
+      en: "Optimized for Debels.com damage cars promo page. Parses the promo grid directly without custom selectors.",
+      ar: "محسّن لصفحة عروض سيارات التصادم في موقع Debels. يقرأ شبكة العروض مباشرة دون الحاجة إلى محددات مخصصة.",
+    },
   };
 
   return (
@@ -324,6 +328,7 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
             <option value="leboncoin">Leboncoin</option>
             <option value="autoscout24">AutoScout24</option>
             <option value="schadeautos">Schadeautos (WordPress)</option>
+            <option value="debels">Debels</option>
           </Select>
           {adapterHelperText[adapterType] && (
             <p className="text-xs text-text-muted mt-1">
@@ -375,8 +380,8 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
         </div>
         <p className="text-xs text-text-muted">
           {isRtl
-            ? "المحولات المدمجة (leboncoin، autoscout24، schadeautos) تتبع تلقائيًا باستخدام منطق مدمج ولا تتطلب هذه المحددات. المحددات اختيارية وتُستخدم فقط كمُتجاوزات عند استخدام محول generic لموقع مخصص."
-            : "Built-in adapters (leboncoin, autoscout24, schadeautos) scrape automatically using built-in logic and do not require these selectors. Selectors are optional overrides only needed when using the generic adapter for a custom site."}
+            ? "المحولات المدمجة (leboncoin، autoscout24، schadeautos، debels) تتبع تلقائيًا باستخدام منطق مدمج ولا تتطلب هذه المحددات. المحددات اختيارية وتُستخدم فقط كمُتجاوزات عند استخدام محول generic لموقع مخصص."
+            : "Built-in adapters (leboncoin, autoscout24, schadeautos, debels) scrape automatically using built-in logic and do not require these selectors. Selectors are optional overrides only needed when using the generic adapter for a custom site."}
         </p>
 
         {useCustomJson ? (

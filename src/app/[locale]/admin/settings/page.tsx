@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/CopyButton";
+import { SettingsEnvEditor } from "@/components/admin/SettingsEnvEditor";
 import {
   KeyRound,
   Mail,
@@ -16,6 +17,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   ExternalLink,
+  Settings2,
 } from "lucide-react";
 
 const GOOGLE_REDIRECT_URI =
@@ -112,6 +114,68 @@ export default async function SettingsPage({
   const vapidPublic = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
 
+  const renderConfigured =
+    !!process.env.RENDER_API_KEY && !!process.env.RENDER_SERVICE_ID;
+
+  const envEntries = [
+    {
+      label: "Client ID",
+      envVar: "GOOGLE_CLIENT_ID",
+      value: maskValue(googleClientId),
+      configured: !!googleClientId,
+      isSecret: false,
+    },
+    {
+      label: "Client Secret",
+      envVar: "GOOGLE_CLIENT_SECRET",
+      value: maskValue(googleClientSecret),
+      configured: !!googleClientSecret,
+      isSecret: true,
+    },
+    {
+      label: "Resend API Key",
+      envVar: "RESEND_API_KEY",
+      value: maskValue(resendApiKey),
+      configured: !!resendApiKey,
+      isSecret: true,
+    },
+    {
+      label: "From Email",
+      envVar: "FROM_EMAIL",
+      value: maskValue(fromEmail),
+      configured: !!fromEmail,
+      isSecret: false,
+    },
+    {
+      label: "Bot Username",
+      envVar: "TELEGRAM_BOT_USERNAME",
+      value: maskValue(telegramBotUsername),
+      configured: !!telegramBotUsername,
+      isSecret: false,
+    },
+    {
+      label: "Bot Token",
+      envVar: "TELEGRAM_BOT_TOKEN",
+      value: maskValue(telegramBotToken),
+      configured: !!telegramBotToken,
+      isSecret: true,
+    },
+    {
+      label: "VAPID Public Key",
+      envVar: "NEXT_PUBLIC_VAPID_PUBLIC_KEY",
+      value: maskValue(vapidPublic),
+      configured: !!vapidPublic,
+      isSecret: false,
+    },
+    {
+      label: "VAPID Private Key",
+      envVar: "VAPID_PRIVATE_KEY",
+      value: maskValue(vapidPrivate),
+      configured: !!vapidPrivate,
+      isSecret: true,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className={`flex items-center justify-between ${isRtl ? "flex-row-reverse" : ""}`}>
@@ -126,23 +190,61 @@ export default async function SettingsPage({
 
       <div className="rounded-lg border border-border bg-surface/30 p-4 text-sm text-text-muted">
         <p className="font-medium text-text mb-1">How to update these settings</p>
-        <p>
-          Environment variables cannot be edited from the app directly. To change a
-          value, go to your{" "}
-          <a
-            href="https://dashboard.render.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline inline-flex items-center gap-1"
-          >
-            Render dashboard
-            <ExternalLink className="h-3 w-3" />
-          </a>
-          , open the <code className="text-primary">damged-cars-scanner-native</code>{" "}
-          service, and add or update the variable under{" "}
-          <strong>Environment</strong>. Redeploy for changes to take effect.
-        </p>
+        {renderConfigured ? (
+          <p>
+            Values below can be edited directly from this page — changes are
+            written to Render and the app redeploys automatically so they take
+            effect (~2 min). You can still set or change them from your{" "}
+            <a
+              href="https://dashboard.render.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline inline-flex items-center gap-1"
+            >
+              Render dashboard
+              <ExternalLink className="h-3 w-3" />
+            </a>
+            .
+          </p>
+        ) : (
+          <p>
+            Environment variables cannot be edited from the app directly. To change a
+            value, go to your{" "}
+            <a
+              href="https://dashboard.render.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline inline-flex items-center gap-1"
+            >
+              Render dashboard
+              <ExternalLink className="h-3 w-3" />
+            </a>
+            , open the <code className="text-primary">damged-cars-scanner-native</code>{" "}
+            service, and add or update the variable under{" "}
+            <strong>Environment</strong>. Redeploy for changes to take effect.
+          </p>
+        )}
       </div>
+
+      {renderConfigured && (
+        <Card>
+          <CardHeader>
+            <CardTitle className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
+              <Settings2 className="h-5 w-5 text-primary" />
+              <span>Environment Variables</span>
+            </CardTitle>
+            <CardDescription>
+              Edit credentials below — saved directly to Render.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SettingsEnvEditor
+              locale={locale === "ar" ? "ar" : "en"}
+              entries={envEntries}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Section 1: Google OAuth Setup */}
       <Card>
@@ -156,20 +258,24 @@ export default async function SettingsPage({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <SettingRow
-            label="Client ID"
-            envVar="GOOGLE_CLIENT_ID"
-            value={googleClientId ?? ""}
-            configured={!!googleClientId}
-            isRtl={isRtl}
-          />
-          <SettingRow
-            label="Client Secret"
-            envVar="GOOGLE_CLIENT_SECRET"
-            value={googleClientSecret ?? ""}
-            configured={!!googleClientSecret}
-            isRtl={isRtl}
-          />
+          {!renderConfigured && (
+            <>
+              <SettingRow
+                label="Client ID"
+                envVar="GOOGLE_CLIENT_ID"
+                value={googleClientId ?? ""}
+                configured={!!googleClientId}
+                isRtl={isRtl}
+              />
+              <SettingRow
+                label="Client Secret"
+                envVar="GOOGLE_CLIENT_SECRET"
+                value={googleClientSecret ?? ""}
+                configured={!!googleClientSecret}
+                isRtl={isRtl}
+              />
+            </>
+          )}
 
           <div className="rounded-lg border border-border p-4 bg-surface/50 space-y-2">
             <div className={`flex items-center justify-between gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
@@ -247,20 +353,24 @@ export default async function SettingsPage({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <SettingRow
-            label="Resend API Key"
-            envVar="RESEND_API_KEY"
-            value={resendApiKey ?? ""}
-            configured={!!resendApiKey}
-            isRtl={isRtl}
-          />
-          <SettingRow
-            label="From Email"
-            envVar="FROM_EMAIL"
-            value={fromEmail ?? ""}
-            configured={!!fromEmail}
-            isRtl={isRtl}
-          />
+          {!renderConfigured && (
+            <>
+              <SettingRow
+                label="Resend API Key"
+                envVar="RESEND_API_KEY"
+                value={resendApiKey ?? ""}
+                configured={!!resendApiKey}
+                isRtl={isRtl}
+              />
+              <SettingRow
+                label="From Email"
+                envVar="FROM_EMAIL"
+                value={fromEmail ?? ""}
+                configured={!!fromEmail}
+                isRtl={isRtl}
+              />
+            </>
+          )}
 
           <div className="rounded-lg border border-border p-4 bg-surface/50 text-sm text-text-muted">
             <p className="font-medium text-text mb-1">Resend email setup steps</p>
@@ -311,20 +421,24 @@ export default async function SettingsPage({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <SettingRow
-            label="Bot Username"
-            envVar="TELEGRAM_BOT_USERNAME"
-            value={telegramBotUsername ?? ""}
-            configured={!!telegramBotUsername}
-            isRtl={isRtl}
-          />
-          <SettingRow
-            label="Bot Token"
-            envVar="TELEGRAM_BOT_TOKEN"
-            value={telegramBotToken ?? ""}
-            configured={!!telegramBotToken}
-            isRtl={isRtl}
-          />
+          {!renderConfigured && (
+            <>
+              <SettingRow
+                label="Bot Username"
+                envVar="TELEGRAM_BOT_USERNAME"
+                value={telegramBotUsername ?? ""}
+                configured={!!telegramBotUsername}
+                isRtl={isRtl}
+              />
+              <SettingRow
+                label="Bot Token"
+                envVar="TELEGRAM_BOT_TOKEN"
+                value={telegramBotToken ?? ""}
+                configured={!!telegramBotToken}
+                isRtl={isRtl}
+              />
+            </>
+          )}
 
           <div className="rounded-lg border border-border p-4 bg-surface/50 text-sm text-text-muted">
             <p className="font-medium text-text mb-1">Telegram bot setup steps</p>
@@ -370,20 +484,24 @@ export default async function SettingsPage({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <SettingRow
-            label="VAPID Public Key"
-            envVar="NEXT_PUBLIC_VAPID_PUBLIC_KEY"
-            value={vapidPublic ?? ""}
-            configured={!!vapidPublic}
-            isRtl={isRtl}
-          />
-          <SettingRow
-            label="VAPID Private Key"
-            envVar="VAPID_PRIVATE_KEY"
-            value={vapidPrivate ?? ""}
-            configured={!!vapidPrivate}
-            isRtl={isRtl}
-          />
+          {!renderConfigured && (
+            <>
+              <SettingRow
+                label="VAPID Public Key"
+                envVar="NEXT_PUBLIC_VAPID_PUBLIC_KEY"
+                value={vapidPublic ?? ""}
+                configured={!!vapidPublic}
+                isRtl={isRtl}
+              />
+              <SettingRow
+                label="VAPID Private Key"
+                envVar="VAPID_PRIVATE_KEY"
+                value={vapidPrivate ?? ""}
+                configured={!!vapidPrivate}
+                isRtl={isRtl}
+              />
+            </>
+          )}
 
           <div className="rounded-lg border border-border p-4 bg-surface/50 text-sm text-text-muted">
             <p className="font-medium text-text mb-1">Web push setup steps</p>

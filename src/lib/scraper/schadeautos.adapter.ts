@@ -39,7 +39,7 @@ export class SchadeautosAdapter extends BaseAdapter {
     return listings.map((l) => this.enhanceListing(l));
   }
 
-  private parseFromDataAttributes(
+  protected parseFromDataAttributes(
     html: string,
     selectors: ScraperSelectors,
     sourceUrl: string
@@ -68,7 +68,13 @@ export class SchadeautosAdapter extends BaseAdapter {
         const makeLabel = $el.attr("data-make-label") || "";
         const baseModelLabel = $el.attr("data-base-model-label") || "";
 
-        const fullTitle = [makeLabel, baseModelLabel].filter(Boolean).join(" ") || title;
+        const subtitle = $el
+          .find(selectors.description || ".schadeautos-card__subtitle")
+          .first()
+          .text()
+          .trim();
+
+        const fullTitle = [makeLabel, baseModelLabel || subtitle].filter(Boolean).join(" ") || title;
 
         let year: number | undefined;
         if (!isNaN(dataYear) && dataYear > 1900) {
@@ -108,12 +114,6 @@ export class SchadeautosAdapter extends BaseAdapter {
         if (!isNaN(mileageParsed) && mileageParsed > 0) {
           mileage = mileageParsed;
         }
-
-        const subtitle = $el
-          .find(selectors.description || ".schadeautos-card__subtitle")
-          .first()
-          .text()
-          .trim();
 
         const imageUrl = this.extractImage($, $el, selectors.imageUrl || ".schadeautos-card__image", sourceUrl);
 
