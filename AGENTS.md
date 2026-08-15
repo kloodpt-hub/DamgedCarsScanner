@@ -33,4 +33,4 @@
 ## UI DESIGN
 
 - Always follow the UI design system when creating or reviewing components or pages.
-- Design System: @DESIGN.md
+- Design System: /home/kloodpt/projects/DamgedCarsScanner/ui-design

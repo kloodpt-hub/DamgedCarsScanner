@@ -8,3 +8,7 @@ dist
 *.tsbuildinfo
 .vercel
 next-env.d.ts
+
+# Agent skill/tooling (not app code)
+ui-design/
+improve-codebase-architecture/
