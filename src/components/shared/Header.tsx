@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Bell, Globe, LogOut, Moon, Scan, Sun } from "lucide-react";
+import { Bell, Globe, LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/shared/ThemeProvider";
 import { useNotificationDrawer } from "@/components/shared/NotificationDrawer";
 import { cn } from "@/lib/utils";
 
 const labels = {
   en: {
-    brand: "DCS Scanner",
+    brand: "Car Deals Hunter",
     localeLabel: "AR",
     localeTitle: "Switch to Arabic",
     themeTitle: "Toggle theme",
@@ -18,7 +18,7 @@ const labels = {
     logout: "Logout",
   },
   ar: {
-    brand: "DCS Scanner",
+    brand: "صائد عروض السيارات",
     localeLabel: "EN",
     localeTitle: "التبديل إلى الإنجليزية",
     themeTitle: "تبديل المظهر",
@@ -49,9 +49,11 @@ export function Header({ locale }: HeaderProps) {
     >
       <div className="flex h-full items-center justify-between gap-2 px-3 sm:px-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-white">
-            <Scan className="h-4 w-4" />
-          </div>
+          <img
+            src="/logo.png"
+            alt=""
+            className="h-8 w-8 shrink-0 rounded-lg object-cover"
+          />
           <span className="hidden sm:inline text-sm font-bold text-text whitespace-nowrap">
             {t.brand}
           </span>

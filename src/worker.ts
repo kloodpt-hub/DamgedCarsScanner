@@ -17,7 +17,7 @@ async function main(): Promise<void> {
   const engine = new ScraperEngine(prisma);
   let iterations = 0;
 
-  console.log("[worker] DamgedCarsScanner background worker started");
+  console.log("[worker] Car Deals Hunter background worker started");
   console.log(`[worker] Polling due sources every ${POLL_INTERVAL_MS / 1000}s`);
 
   const runIteration = async () => {

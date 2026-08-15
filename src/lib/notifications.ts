@@ -1,5 +1,7 @@
 import { prisma } from "./prisma";
 import { getTelegramConfig } from "./settings";
+import { sendTelegramMessage, sendTelegramPhoto } from "./telegram";
+import { getMessages } from "./telegram/messages";
 import { sendListingAlert } from "./email";
 import {
   sendPushNotification,
@@ -63,16 +65,24 @@ export async function notifyNewListing(
     // 2. Telegram
     if (user.telegramChatId && telegramConfig.token && !user.telegramPaused) {
       try {
-        const text = `🚗 New match: ${listing.title}\n💰 Price: ${listing.price ? '€' + listing.price.toLocaleString() : 'N/A'}\n📅 Year: ${listing.year ?? 'N/A'}\n🔗 ${listing.canonicalUrl}`;
-        await fetch(`https://api.telegram.org/bot${telegramConfig.token}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: user.telegramChatId,
-            text,
-            parse_mode: "HTML",
-          }),
-        });
+        const m = getMessages(user.locale === "ar" ? "ar" : "en");
+        const caption = m.listingCaption(
+          listing.title,
+          listing.price != null
+            ? "€" + listing.price.toLocaleString()
+            : "N/A",
+          listing.year != null ? String(listing.year) : "N/A",
+          listing.mileage != null
+            ? listing.mileage.toLocaleString() + " km"
+            : "N/A",
+          listing.damageStatus ?? "N/A",
+          listing.canonicalUrl
+        );
+        if (listing.imageUrl) {
+          await sendTelegramPhoto(user.telegramChatId, listing.imageUrl, caption);
+        } else {
+          await sendTelegramMessage(user.telegramChatId, caption);
+        }
       } catch (err) {
         console.error("[notifications] Telegram failed:", err);
       }

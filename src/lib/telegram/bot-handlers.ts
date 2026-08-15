@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/prisma";
-import { sendTelegramMessage } from "@/lib/telegram";
+import { sendTelegramMessage, sendTelegramPhoto } from "@/lib/telegram";
 import { evaluateListing } from "@/lib/filters/evaluator";
-import { getMessages, makeKeyboard, makeLocaleKeyboard } from "./messages";
+import {
+  getMessages,
+  makeKeyboard,
+  makeLocaleKeyboard,
+  makeGuestKeyboard,
+} from "./messages";
 import type { BotLocale } from "./messages";
 import type { Filter, Listing, User } from "@prisma/client";
 import { Prisma } from "@prisma/client";
@@ -37,10 +42,13 @@ export async function handleTelegramMessage(
       if (command === "/start" && parts[1]) {
         await handleConnect(chatId, parts[1]);
       } else {
+        const siteUrl =
+          process.env.NEXTAUTH_URL ||
+          "https://damged-cars-scanner-native.onrender.com";
         await sendTelegramMessage(
           chatId,
-          getMessages("en").welcome,
-          makeKeyboard("en")
+          getMessages("en").guestWelcome(siteUrl),
+          makeGuestKeyboard("en", siteUrl)
         );
       }
       return;
@@ -307,19 +315,21 @@ async function handleLatest(
     return;
   }
 
-  const lines = matching.slice(0, 5).map((listing) =>
-    m.latestLine(
+  for (const listing of matching.slice(0, 5)) {
+    const caption = m.listingCaption(
       listing.title,
       formatPrice(listing.price),
       formatYear(listing.year),
+      formatMileage(listing.mileage),
+      listing.damageStatus ?? "N/A",
       listing.canonicalUrl
-    )
-  );
-  await sendTelegramMessage(
-    chatId,
-    [m.latestHeader, ...lines].join("\n"),
-    makeKeyboard(locale)
-  );
+    );
+    if (listing.imageUrl) {
+      await sendTelegramPhoto(chatId, listing.imageUrl, caption);
+    } else {
+      await sendTelegramMessage(chatId, caption);
+    }
+  }
 }
 
 async function handleConversationStep(
@@ -574,6 +584,11 @@ function formatPrice(price: number | null): string {
 
 function formatYear(year: number | null): string {
   return year != null ? String(year) : "N/A";
+}
+
+function formatMileage(mileage: number | null): string {
+  if (mileage == null) return "N/A";
+  return `${mileage.toLocaleString()} km`;
 }
 
 function parseOptionalNumber(text: string): number | null | undefined {

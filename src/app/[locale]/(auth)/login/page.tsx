@@ -8,7 +8,7 @@ import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 const labels = {
   en: {
-    title: "Damaged Cars Scanner",
+    title: "Car Deals Hunter",
     subtitle: "Sign in to your account",
     email: "Email",
     password: "Password",
@@ -22,7 +22,7 @@ const labels = {
     passwordRequired: "Password is required",
   },
   ar: {
-    title: "ماسح السيارات المتضررة",
+    title: "صائد عروض السيارات",
     subtitle: "تسجيل الدخول إلى حسابك",
     email: "البريد الإلكتروني",
     password: "كلمة المرور",

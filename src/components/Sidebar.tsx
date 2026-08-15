@@ -15,7 +15,6 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Scan,
   ArrowLeftRight,
   Settings,
 } from "lucide-react";
@@ -33,7 +32,7 @@ const navLabels = {
     jobs: "Jobs",
     users: "Users",
     logout: "Logout",
-    brand: "DCS Scanner",
+    brand: "Car Deals Hunter",
     adminSection: "Admin",
     userSection: "User",
     switchToUser: "User View",
@@ -52,7 +51,7 @@ const navLabels = {
     jobs: "المهام",
     users: "المستخدمون",
     logout: "تسجيل الخروج",
-    brand: "DCS Scanner",
+    brand: "صائد عروض السيارات",
     adminSection: "الإدارة",
     userSection: "المستخدم",
     switchToUser: "عرض المستخدم",
@@ -127,9 +126,11 @@ export function Sidebar({ locale, role }: SidebarProps) {
           collapsed && "justify-center px-0"
         )}
       >
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-white">
-          <Scan className="h-4 w-4" />
-        </div>
+        <img
+          src="/logo.png"
+          alt=""
+          className="h-8 w-8 shrink-0 rounded-lg object-cover"
+        />
         {!collapsed && (
           <span className="text-lg font-bold text-white whitespace-nowrap">
             {t.brand}

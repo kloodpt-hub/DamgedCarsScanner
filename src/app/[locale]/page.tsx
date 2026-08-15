@@ -14,15 +14,23 @@ import {
   Bell,
   Filter,
   Globe,
+  UserRound,
+  Send,
+  Mail,
+  SlidersHorizontal,
+  CopyCheck,
+  Languages,
 } from "lucide-react";
 
 const labels = {
   en: {
     // Branding
-    appName: "Damaged Cars Scanner",
-    tagline: "Find damaged cars across multiple sites automatically",
+    appName: "Car Deals Hunter",
+    tagline: "Discover damaged car deals across multiple sites automatically",
     // How it works
     howTitle: "How it works",
+    stepSignInTitle: "Sign up or sign in",
+    stepSignInDesc: "Create a free account in seconds to start tracking car deals.",
     step1Title: "Add your sources",
     step1Desc: "Configure car listing sites to monitor — auto-didact.nl, Leboncoin, AutoScout24 and more.",
     step2Title: "Set your filters",
@@ -31,6 +39,39 @@ const labels = {
     step3Desc: "Receive email or Telegram notifications the moment a matching car is listed.",
     step4Title: "Track everything",
     step4Desc: "All scraped cars are stored for deduplication. You only see what matches your filters.",
+    featuresTitle: "What you get",
+    features: [
+      {
+        icon: Send,
+        title: "Telegram bot",
+        desc: "Manage filters and receive car photos right in Telegram.",
+      },
+      {
+        icon: Mail,
+        title: "Email alerts",
+        desc: "Instant notifications the moment a matching car is listed.",
+      },
+      {
+        icon: Globe,
+        title: "Multi-source",
+        desc: "Monitor several listing sites from one dashboard.",
+      },
+      {
+        icon: SlidersHorizontal,
+        title: "Smart filters",
+        desc: "Price, year, mileage, damage status and keyword exclusions.",
+      },
+      {
+        icon: CopyCheck,
+        title: "Deduplication",
+        desc: "Repeated listings are stored and never shown twice.",
+      },
+      {
+        icon: Languages,
+        title: "Two languages",
+        desc: "English and Arabic interface.",
+      },
+    ],
     // Login form
     signIn: "Sign In",
     signInSubtitle: "Sign in to your account",
@@ -48,9 +89,11 @@ const labels = {
     googleError: "Google sign-in failed. Make sure Google OAuth is configured.",
   },
   ar: {
-    appName: "ماسح السيارات المتضررة",
-    tagline: "ابحث عن السيارات المتضررة عبر مواقع متعددة تلقائياً",
+    appName: "صائد عروض السيارات",
+    tagline: "اكتشف عروض السيارات المتضررة عبر مواقع متعددة تلقائياً",
     howTitle: "كيف يعمل",
+    stepSignInTitle: "سجّل أو ادخل إلى حسابك",
+    stepSignInDesc: "أنشئ حساباً مجانياً في ثوانٍ لتبدأ بتتبع عروض السيارات.",
     step1Title: "أضف مصادرك",
     step1Desc: "قم بتكوين مواقع قوائم السيارات لمراقبتها — auto-didact.nl، ليبونكوان، أوتو سكوت 24 والمزيد.",
     step2Title: "اضبط الفلاتر",
@@ -59,6 +102,39 @@ const labels = {
     step3Desc: "تلق إشعارات البريد الإلكتروني أو تيليجرام فور إدراج سيارة مطابقة.",
     step4Title: "تتبع كل شيء",
     step4Desc: "يتم تخزين جميع السيارات المسحوبة لإزالة التكرار. أنت ترى فقط ما يطابق فلاترك.",
+    featuresTitle: "ماذا تحصل عليه",
+    features: [
+      {
+        icon: Send,
+        title: "بوت تيليجرام",
+        desc: "أدر الفلاتر واستقبل صور السيارات مباشرة في تيليجرام.",
+      },
+      {
+        icon: Mail,
+        title: "تنبيهات البريد الإلكتروني",
+        desc: "إشعارات فورية بمجرد إدراج سيارة مطابقة.",
+      },
+      {
+        icon: Globe,
+        title: "مصادر متعددة",
+        desc: "راقب عدة مواقع قوائم من لوحة تحكم واحدة.",
+      },
+      {
+        icon: SlidersHorizontal,
+        title: "فلاتر ذكية",
+        desc: "السعر، السنة، المسافة، حالة الضرر واستبعاد الكلمات المفتاحية.",
+      },
+      {
+        icon: CopyCheck,
+        title: "إزالة التكرار",
+        desc: "يتم تخزين القوائم المتكررة ولا تظهر مرتين أبداً.",
+      },
+      {
+        icon: Languages,
+        title: "لغتان",
+        desc: "واجهة باللغتين الإنجليزية والعربية.",
+      },
+    ],
     signIn: "تسجيل الدخول",
     signInSubtitle: "تسجيل الدخول إلى حسابك",
     email: "البريد الإلكتروني",
@@ -147,6 +223,7 @@ function LandingContent() {
   }
 
   const steps = [
+    { icon: UserRound, title: t.stepSignInTitle, desc: t.stepSignInDesc },
     { icon: Globe, title: t.step1Title, desc: t.step1Desc },
     { icon: Filter, title: t.step2Title, desc: t.step2Desc },
     { icon: Bell, title: t.step3Title, desc: t.step3Desc },
@@ -164,9 +241,7 @@ function LandingContent() {
         <div className="relative z-10 max-w-lg">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">
-              <Scan className="h-6 w-6" />
-            </div>
+            <img src="/logo.png" alt="" className="h-12 w-12 rounded-xl object-cover" />
             <span className="text-2xl font-bold text-text">{t.appName}</span>
           </div>
 
@@ -196,6 +271,30 @@ function LandingContent() {
                       {step.desc}
                     </p>
                   </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-6 mt-10">
+            {t.featuresTitle}
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {t.features.map((feature, i) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={i}
+                  className="rounded-lg bg-surface border border-card-border p-3"
+                >
+                  <Icon className="h-4 w-4 text-primary mb-2" />
+                  <h3 className="text-xs font-semibold text-text">
+                    {feature.title}
+                  </h3>
+                  <p className="text-xs text-text-muted mt-1 leading-relaxed">
+                    {feature.desc}
+                  </p>
                 </div>
               );
             })}

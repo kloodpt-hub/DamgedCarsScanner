@@ -49,6 +49,11 @@ export const messages = {
     latestLine: (title: string, price: string, year: string, url: string) =>
       `• ${title}\n  💰 ${price} · 📅 ${year}\n  🔗 ${url}`,
     latestNone: "None",
+    listingCaption: (title: string, price: string, year: string, mileage: string, damage: string, url: string) =>
+      `🚗 ${title}\n💰 ${price}\n📅 ${year}\n📍 ${mileage}\n⚠️ ${damage}\n🔗 ${url}`,
+    guestWelcome: (url: string) =>
+      `👋 Welcome to Car Deals Hunter!\n\nIt looks like you're not connected yet.\n\n1️⃣ Create your account at ${url}\n2️⃣ Log in and open Alerts\n3️⃣ Tap Connect Telegram\n4️⃣ Send the link here to start receiving car alerts with photos.`,
+    guestConnectButton: "Open the app",
     languageChanged: (locale: string) =>
       locale === "ar" ? "تم تغيير اللغة إلى العربية 🇸🇦" : "Language changed to English 🇬🇧",
     unknown: "Sorry, I didn't understand that. Send /help for available commands.",
@@ -100,6 +105,11 @@ export const messages = {
     latestLine: (title: string, price: string, year: string, url: string) =>
       `• ${title}\n  💰 ${price} · 📅 ${year}\n  🔗 ${url}`,
     latestNone: "لا شيء",
+    listingCaption: (title: string, price: string, year: string, mileage: string, damage: string, url: string) =>
+      `🚗 ${title}\n💰 ${price}\n📅 ${year}\n📍 ${mileage}\n⚠️ ${damage}\n🔗 ${url}`,
+    guestWelcome: (url: string) =>
+      `👋 مرحباً بك في صائد عروض السيارات!\n\nيبدو أنك غير مرتبط بعد.\n\n1️⃣ أنشئ حسابك في ${url}\n2️⃣ سجّل الدخول وافتح التنبيهات\n3️⃣ اضغط ربط تيليجرام\n4️⃣ أرسل الرابط هنا لتبدأ بتلقي تنبيهات السيارات مع الصور.`,
+    guestConnectButton: "افتح التطبيق",
     languageChanged: (locale: string) =>
       locale === "ar" ? "تم تغيير اللغة إلى العربية 🇸🇦" : "Language changed to English 🇬🇧",
     unknown: "عذرًا، لم أفهم ذلك. أرسل /help لعرض الأوامر المتاحة.",
@@ -146,5 +156,21 @@ export function makeLocaleKeyboard(): {
     ],
     resize_keyboard: true,
     one_time_keyboard: true,
+  };
+}
+
+export function makeGuestKeyboard(
+  locale: BotLocale,
+  url: string
+): { inline_keyboard: { text: string; url: string }[][] } {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: locale === "ar" ? "افتح التطبيق" : "Open the app",
+          url,
+        },
+      ],
+    ],
   };
 }

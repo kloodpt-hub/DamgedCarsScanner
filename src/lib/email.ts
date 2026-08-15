@@ -57,7 +57,7 @@ export async function sendListingAlert(
   const subject = `New listing: ${listing.title}`;
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-      <h2 style="color:#1a1a2e;">🚗 New Damaged Car Found</h2>
+      <h2 style="color:#1a1a2e;">🚗 New Car Deal Found</h2>
       <p>Hi ${user.name || "there"},</p>
       <p>A new listing matches your filter <strong>"${filter.name}"</strong>:</p>
       <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin:16px 0;">
@@ -88,7 +88,7 @@ export async function sendDigestEmail(
     source: { name: string };
   }[]
 ): Promise<boolean> {
-  const subject = `DamgedCarsScanner: ${listings.length} new listing(s) today`;
+  const subject = `Car Deals Hunter: ${listings.length} new listing(s) today`;
   const rows = listings
     .map(
       (l) => `
@@ -119,7 +119,7 @@ export async function sendDigestEmail(
 export async function sendTestEmail(to: string): Promise<boolean> {
   return sendEmail({
     to,
-    subject: "Test Email from DamgedCarsScanner",
+    subject: "Test Email from Car Deals Hunter",
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
         <h2 style="color:#6c5ce7;">✅ Email Notifications Working!</h2>

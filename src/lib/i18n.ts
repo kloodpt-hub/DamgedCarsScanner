@@ -158,7 +158,7 @@ export interface Dictionary {
 
 const en: Dictionary = {
   common: {
-    appTitle: "Damaged Cars Scanner",
+    appTitle: "Car Deals Hunter",
     login: "Login",
     logout: "Logout",
     dashboard: "Dashboard",
@@ -314,7 +314,7 @@ const en: Dictionary = {
 
 const ar: Dictionary = {
   common: {
-    appTitle: "ماسح السيارات المتضررة",
+    appTitle: "صائد عروض السيارات",
     login: "تسجيل الدخول",
     logout: "تسجيل الخروج",
     dashboard: "لوحة التحكم",

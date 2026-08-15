@@ -20,7 +20,7 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "Damged Cars Scanner",
+  title: "Car Deals Hunter",
   description:
     "Automated damaged cars listing scanner with real-time alerts and multi-source monitoring",
 };
@@ -63,7 +63,7 @@ export default async function LocaleLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="DCS Scanner" />
+        <meta name="apple-mobile-web-app-title" content="Car Deals Hunter" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <script
           dangerouslySetInnerHTML={{

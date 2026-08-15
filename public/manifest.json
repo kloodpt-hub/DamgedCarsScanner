@@ -1,6 +1,6 @@
 {
-  "name": "Damaged Cars Scanner",
-  "short_name": "DCS Scanner",
+  "name": "Car Deals Hunter",
+  "short_name": "Car Deals Hunter",
   "description": "Automated damaged cars listing scanner with real-time alerts",
   "start_url": "/",
   "display": "standalone",

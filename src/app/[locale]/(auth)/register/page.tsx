@@ -8,7 +8,7 @@ import { getCsrfToken } from "@/lib/csrf-client";
 
 const labels = {
   en: {
-    title: "Damaged Cars Scanner",
+    title: "Car Deals Hunter",
     subtitle: "Create your account",
     name: "Full Name",
     email: "Email",
@@ -28,7 +28,7 @@ const labels = {
     success: "Account created successfully! Redirecting...",
   },
   ar: {
-    title: "ماسح السيارات المتضررة",
+    title: "صائد عروض السيارات",
     subtitle: "إنشاء حساب جديد",
     name: "الاسم الكامل",
     email: "البريد الإلكتروني",
