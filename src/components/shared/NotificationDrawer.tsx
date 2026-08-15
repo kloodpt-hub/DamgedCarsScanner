@@ -269,9 +269,13 @@ export function NotificationDrawerProvider({
         aria-label={t.title}
         aria-hidden={!isOpen}
         className={cn(
-          "fixed top-14 bottom-0 end-0 z-50 flex w-[92vw] max-w-md flex-col bg-bg shadow-xl transition-transform duration-300",
-          isOpen ? "translate-x-0" : isRtl ? "-translate-x-full" : "translate-x-full",
-          !isOpen && "pointer-events-none"
+          "fixed top-14 bottom-0 end-0 z-50 flex w-[92vw] max-w-md flex-col bg-bg shadow-xl",
+          isOpen
+            ? "visible translate-x-0 [transition:transform_300ms,visibility_0s]"
+            : cn(
+                isRtl ? "-translate-x-full" : "translate-x-full",
+                "invisible pointer-events-none [transition:transform_300ms,visibility_0s_300ms]"
+              )
         )}
       >
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-card-border px-4">
