@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ScraperEngine } from "@/lib/scraper/engine";
+import { checkCsrf } from "@/lib/csrf";
 import { z } from "zod";
 
 const runSchema = z.object({
@@ -9,6 +10,9 @@ const runSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const csrfError = checkCsrf(request);
+  if (csrfError) return csrfError;
+
   const session = await auth();
   if (!session?.user || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 
 interface ListingsFiltersProps {
   search: string;
@@ -20,6 +20,8 @@ export function ListingsFilters({
 }: ListingsFiltersProps) {
   const router = useRouter();
   const sp = useSearchParams();
+  const routeParams = useParams<{ locale: string }>();
+  const locale = routeParams?.locale ?? "en";
   const [isPending, startTransition] = useTransition();
 
   const submit = (key: string, value: string) => {
@@ -31,7 +33,7 @@ export function ListingsFilters({
     }
     params.delete("page");
     startTransition(() => {
-      router.push(`/admin/listings?${params.toString()}`);
+      router.push(`/${locale}/admin/listings?${params.toString()}`);
     });
   };
 

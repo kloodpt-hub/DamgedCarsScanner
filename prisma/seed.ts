@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { randomBytes } from "crypto";
 import { hashSync } from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -6,7 +7,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Seeding database...");
 
-  const adminPassword = hashSync("admin123", 10);
+  // Use env-provided admin password, or generate a random one and log it.
+  const tempPassword =
+    process.env.SEED_ADMIN_PASSWORD ?? randomBytes(16).toString("base64url");
+  if (!process.env.SEED_ADMIN_PASSWORD) {
+    console.log(`[seed] Generated admin password: ${tempPassword}`);
+  }
+  const adminPassword = hashSync(tempPassword, 10);
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@damagedcarscanner.com" },

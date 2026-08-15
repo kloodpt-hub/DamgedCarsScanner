@@ -1,15 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual, randomBytes } from "crypto";
 import { hashSync } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { checkCsrf } from "@/lib/csrf";
+
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 export async function POST(request: NextRequest) {
+  const csrfError = checkCsrf(request);
+  if (csrfError) return csrfError;
+
+  // Fail-closed: if the token is not configured, never allow.
+  if (!process.env.SEED_TOKEN) {
+    return NextResponse.json({ error: "Not configured" }, { status: 500 });
+  }
+
   const token = request.headers.get("x-seed-token");
-  if (!process.env.SEED_TOKEN || token !== process.env.SEED_TOKEN) {
+  if (!token || !safeCompare(token, process.env.SEED_TOKEN)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const adminPassword = hashSync("admin123", 10);
+    // Use env-provided password, or generate a random one and surface it once.
+    const tempPassword =
+      process.env.SEED_ADMIN_PASSWORD ?? randomBytes(16).toString("base64url");
+    const adminPassword = hashSync(tempPassword, 10);
 
     await prisma.user.upsert({
       where: { email: "admin@damagedcarscanner.com" },
@@ -21,6 +39,10 @@ export async function POST(request: NextRequest) {
         role: "ADMIN",
       },
     });
+
+    if (!process.env.SEED_ADMIN_PASSWORD) {
+      console.log(`[seed] Generated admin password: ${tempPassword}`);
+    }
 
     await prisma.scraperSource.upsert({
       where: { id: "seed-leboncoin" },
@@ -101,11 +123,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ ok: true, admin: "admin@damagedcarscanner.com" });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Seed failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      ok: true,
+      admin: "admin@damagedcarscanner.com",
+      password: process.env.SEED_ADMIN_PASSWORD ? undefined : tempPassword,
+    });
+  } catch {
+    return NextResponse.json({ error: "Seed failed" }, { status: 500 });
   }
 }

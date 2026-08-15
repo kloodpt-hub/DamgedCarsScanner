@@ -1,4 +1,5 @@
 import webpush from "web-push";
+import type { PushSubscription } from "web-push";
 
 let vapidKeysInitialized = false;
 
@@ -28,14 +29,14 @@ export function isPushConfigured(): boolean {
 }
 
 export async function sendPushNotification(
-  subscription: { endpoint: string; keys: any },
+  subscription: PushSubscription,
   payload: { title: string; body: string; url?: string }
 ): Promise<boolean> {
   initVapid();
   if (!vapidKeysInitialized) return false;
 
   try {
-    await webpush.sendNotification(subscription as any, JSON.stringify(payload));
+    await webpush.sendNotification(subscription, JSON.stringify(payload));
     return true;
   } catch (err) {
     console.error("[push] Failed to send:", err);

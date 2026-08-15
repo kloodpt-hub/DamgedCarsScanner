@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+
+const QuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  view: z.enum(["matched", "all"]).default("matched"),
+  search: z.string().max(100).optional(),
+  sourceId: z.string().optional(),
+  read: z.enum(["read", "unread"]).optional(),
+});
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -9,19 +20,18 @@ export async function GET(request: NextRequest) {
   }
 
   const searchParams = request.nextUrl.searchParams;
+  const parsed = QuerySchema.safeParse(Object.fromEntries(searchParams));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid query params" }, { status: 400 });
+  }
+  const { page, limit, search, sourceId, read } = parsed.data;
 
-  const page = parseInt(searchParams.get("page") ?? "1", 10);
-  const limit = Math.min(parseInt(searchParams.get("limit") ?? "20", 10), 100);
-  const sourceId = searchParams.get("sourceId");
-  const isRead = searchParams.get("isRead");
-  const search = searchParams.get("search");
+  const isAdmin = session.user.role === "ADMIN";
+  const effectiveView = isAdmin ? parsed.data.view : "matched";
+
   const skip = (page - 1) * limit;
 
-  const view = searchParams.get("view");
-  const defaultView = session.user.role === "ADMIN" ? "all" : "matched";
-  const effectiveView = view ?? defaultView;
-
-  const where: Record<string, unknown> = {};
+  const where: Prisma.ListingWhereInput = {};
 
   if (effectiveView === "matched") {
     where.matchedFilters = { some: { userId: session.user.id } };
@@ -31,8 +41,10 @@ export async function GET(request: NextRequest) {
     where.sourceId = sourceId;
   }
 
-  if (isRead !== null && isRead !== "") {
-    where.isRead = isRead === "true";
+  if (read === "read") {
+    where.readBy = { some: { userId: session.user.id } };
+  } else if (read === "unread") {
+    where.NOT = { readBy: { some: { userId: session.user.id } } };
   }
 
   if (search) {

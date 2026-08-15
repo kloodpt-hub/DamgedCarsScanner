@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Play, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getCsrfToken } from "@/lib/csrf-client";
 
 interface RunSourceButtonProps {
   sourceId: string;
@@ -19,9 +20,13 @@ export function RunSourceButton({ sourceId, locale }: RunSourceButtonProps) {
   const handleRun = async () => {
     setLoading(true);
     try {
+      const csrfToken = await getCsrfToken();
       const res = await fetch("/api/scraper/run", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+        },
         body: JSON.stringify({ sourceId }),
       });
       const data = await res.json();

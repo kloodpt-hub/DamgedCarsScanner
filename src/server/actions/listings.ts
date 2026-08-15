@@ -3,6 +3,22 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
+async function requireAuth() {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+  return session;
+}
+
+async function requireAdmin() {
+  const session = await requireAuth();
+  if (session.user.role !== "ADMIN") {
+    throw new Error("Unauthorized: Admin access required");
+  }
+  return session;
+}
+
 export async function getAllListings(params: {
   page?: number;
   limit?: number;
@@ -10,10 +26,7 @@ export async function getAllListings(params: {
   isRead?: boolean;
   search?: string;
 }) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  const session = await requireAuth();
 
   const page = params.page ?? 1;
   const limit = Math.min(params.limit ?? 20, 100);
@@ -60,46 +73,90 @@ export async function getAllListings(params: {
 }
 
 export async function getListing(id: string) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
+  const session = await requireAuth();
+  const isAdmin = session.user.role === "ADMIN";
+
+  if (isAdmin) {
+    return prisma.listing.findUnique({
+      where: { id },
+      include: {
+        source: true,
+        matchedFilters: true,
+        readBy: { where: { userId: session.user.id } },
+      },
+    });
   }
 
   return prisma.listing.findUnique({
-    where: { id },
-    include: { source: true, matchedFilters: true },
+    where: { id, matchedFilters: { some: { userId: session.user.id } } },
+    include: {
+      source: true,
+      matchedFilters: { where: { userId: session.user.id } },
+      readBy: { where: { userId: session.user.id } },
+    },
   });
 }
 
 export async function markAsRead(id: string) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  const session = await requireAuth();
+  const userId = session.user.id;
 
-  return prisma.listing.update({
-    where: { id },
-    data: { isRead: true },
-  });
+  try {
+    // Verify the user has access to this listing (matched filter OR admin)
+    if (session.user.role !== "ADMIN") {
+      const listing = await prisma.listing.findUnique({
+        where: { id },
+        select: { id: true },
+      });
+      const hasAccess = await prisma.filter.findFirst({
+        where: { userId, listings: { some: { id } } },
+        select: { id: true },
+      });
+      if (!listing || !hasAccess) {
+        throw new Error("Unauthorized");
+      }
+    } else {
+      const listing = await prisma.listing.findUnique({
+        where: { id },
+        select: { id: true },
+      });
+      if (!listing) {
+        throw new Error("Unauthorized");
+      }
+    }
+
+    await prisma.userListingRead.upsert({
+      where: { userId_listingId: { userId, listingId: id } },
+      create: { userId, listingId: id },
+      update: { readAt: new Date() },
+    });
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      throw error;
+    }
+    throw new Error("Failed to mark as read");
+  }
 }
 
+// NOTE: Used by the notification pipeline (server-side), which updates
+// isNotified. Any authenticated user may mark a listing as notified.
 export async function markAsNotified(id: string) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  await requireAuth();
 
-  return prisma.listing.update({
-    where: { id },
-    data: { isNotified: true },
-  });
+  try {
+    await prisma.listing.update({
+      where: { id },
+      data: { isNotified: true },
+    });
+    return { success: true };
+  } catch {
+    throw new Error("Failed to mark as notified");
+  }
 }
 
 export async function deleteListing(id: string) {
-  const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    throw new Error("Admin access required");
-  }
-
+  await requireAdmin();
   return prisma.listing.delete({ where: { id } });
 }

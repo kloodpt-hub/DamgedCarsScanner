@@ -12,7 +12,7 @@ export function evaluateListing(listing: Listing, filters: Filter[]): Filter[] {
     if (!matchPrice(listing.price, filter.minPrice, filter.maxPrice)) return false;
     if (!matchMileage(listing.mileage, filter.minMileage, filter.maxMileage)) return false;
     if (!matchDamage(listing.damageStatus, filter.damageStatus)) return false;
-    if (!matchKeywords(`${listing.title} ${listing.description ?? ""}`, filter.excludedKeywords)) return false;
+    if (!matchKeywords(listing.title, listing.description, filter.excludedKeywords)) return false;
     return true;
   });
 }
@@ -21,9 +21,10 @@ function hasActiveConstraints(filter: Filter): boolean {
   const hasYear = filter.minYear != null || filter.maxYear != null;
   const hasPrice = filter.minPrice != null || filter.maxPrice != null;
   const hasMileage = filter.minMileage != null || filter.maxMileage != null;
-  const hasDamage = !!filter.damageStatus;
+  const hasDamage = !!filter.damageStatus && filter.damageStatus !== "";
   const hasKeywords = filter.excludedKeywords && filter.excludedKeywords.length > 0;
-  return hasYear || hasPrice || hasMileage || hasDamage || hasKeywords;
+  const hasSources = filter.sourceIds && filter.sourceIds.length > 0;
+  return hasYear || hasPrice || hasMileage || hasDamage || hasKeywords || hasSources;
 }
 
 export function matchYear(
@@ -33,6 +34,7 @@ export function matchYear(
 ): boolean {
   const hasFilter = minYear != null || maxYear != null;
   if (!hasFilter) return true;
+  // Null listing value fails any active constraint.
   if (listingYear == null) return false;
   if (minYear != null && listingYear < minYear) return false;
   if (maxYear != null && listingYear > maxYear) return false;
@@ -65,31 +67,35 @@ export function matchMileage(
   return true;
 }
 
-export function matchDamage(
-  listingDamage: string | null,
-  filterDamage?: string | null
+function matchDamage(
+  listingDamage: string | null | undefined,
+  filterDamage: string | null | undefined
 ): boolean {
-  if (!filterDamage) return true;
+  if (!filterDamage) return true; // no constraint
   if (!listingDamage) return false;
 
-  const listing = listingDamage.toLowerCase();
-  const filter = filterDamage.toLowerCase();
+  const l = listingDamage.toLowerCase().trim();
+  const f = filterDamage.toLowerCase().trim();
 
-  if (filter === "no damage") {
-    return listing === "no damage" || listing.includes("unfallfrei") || listing.includes("non accident");
-  }
-  if (filter === "damage") {
-    return listing.includes("damage") || listing.includes("accident") || listing.includes("unfall") || listing.includes("schade") || listing.includes("schaden");
-  }
-  if (filter === "total loss") {
-    return listing.includes("total loss") || listing.includes("totaalverlies") || listing.includes("totalschaden") || listing.includes("write-off");
-  }
+  if (f === "no damage") return l === "no damage";
+  if (f === "total loss") return l === "total loss";
+  if (f === "damage") return l === "damage";
 
-  return listing.includes(filter);
+  // fallback for any custom value: exact equality on normalized values
+  return l === f;
 }
 
-export function matchKeywords(title: string, excludedKeywords: string[]): boolean {
-  if (!excludedKeywords || excludedKeywords.length === 0) return true;
-  const lowerTitle = title.toLowerCase();
-  return !excludedKeywords.some((kw) => lowerTitle.includes(kw.toLowerCase()));
+export function matchKeywords(
+  title: string,
+  description: string | null | undefined,
+  excludedKeywords: string[]
+): boolean {
+  if (!excludedKeywords || excludedKeywords.length === 0) return true; // no exclusions = pass
+  const text = `${title} ${description ?? ""}`.toLowerCase();
+  return !excludedKeywords.some((kw) => {
+    const trimmed = kw.trim().toLowerCase();
+    if (!trimmed) return false;
+    const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`\\b${escaped}\\b`, "i").test(text);
+  });
 }

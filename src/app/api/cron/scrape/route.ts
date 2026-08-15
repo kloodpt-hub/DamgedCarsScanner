@@ -1,12 +1,22 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { ScraperEngine } from "@/lib/scraper/engine";
 import { deleteOldListings } from "@/lib/cron/cleanup";
 
-export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+export async function GET(request: Request) {
+  // Fail-closed: if the secret is not configured, never allow.
+  if (!process.env.CRON_SECRET) {
+    return NextResponse.json({ error: "Not configured" }, { status: 500 });
+  }
+
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader || !safeCompare(authHeader, `Bearer ${process.env.CRON_SECRET}`)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -42,13 +52,7 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    console.error("Cron scrape failed:", error);
+    return NextResponse.json({ error: "Scrape failed" }, { status: 500 });
   }
 }

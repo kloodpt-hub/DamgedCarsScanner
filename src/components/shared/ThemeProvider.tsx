@@ -13,14 +13,17 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "dark";
+    return (localStorage.getItem("theme") as Theme) ?? "dark";
+  });
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setMounted flips after hydration so SSR HTML (children without ThemeContext) matches the first client render; a lazy initializer would break SSR/hydration alignment
     setMounted(true);
     const stored = localStorage.getItem("theme") as Theme | null;
     const initial = stored ?? "dark";
-    setThemeState(initial);
     document.documentElement.setAttribute("data-theme", initial);
     if (initial === "dark") {
       document.documentElement.classList.add("dark");

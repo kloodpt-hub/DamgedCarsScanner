@@ -48,7 +48,7 @@ export class SchadeautosAdapter extends BaseAdapter {
     const listings: RawListing[] = [];
 
     const containerSelector = selectors.listingContainer || "a.schadeautos-card";
-    $(containerSelector).each((_: number, element: any) => {
+    $(containerSelector).each((_, element) => {
       try {
         const $el = $(element);
 
@@ -58,7 +58,10 @@ export class SchadeautosAdapter extends BaseAdapter {
         const href = $el.attr("href");
         if (!href) return;
         const canonicalUrl = new URL(href, sourceUrl).href;
-        const externalId = this.generateExternalId(canonicalUrl);
+        const externalId = this.generateExternalId(
+          canonicalUrl,
+          this.sourceId ?? this.sourceIdForExternalId(sourceUrl)
+        );
 
         const dataYear = parseInt($el.attr("data-year") || "", 10);
         const dataPrice = parseInt($el.attr("data-price") || "", 10);

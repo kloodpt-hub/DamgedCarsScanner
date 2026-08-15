@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ScraperEngine } from "@/lib/scraper/engine";
 
+const VALID_STATUSES = ["pending", "running", "completed", "failed"] as const;
+
 async function requireAdmin() {
   const session = await auth();
   if (!session?.user || session.user.role !== "ADMIN") {
@@ -26,18 +28,26 @@ export async function getAllJobs(params: {
   sourceId?: string;
   status?: string;
 }) {
-  await requireAuth();
+  const session = await requireAuth();
+
   const page = params.page ?? 1;
-  const limit = params.limit ?? 20;
+  const limit = Math.min(params.limit ?? 20, 100);
   const skip = (page - 1) * limit;
 
   const where: Record<string, unknown> = {};
+
+  if (session.user.role !== "ADMIN") {
+    where.userId = session.user.id;
+  }
 
   if (params.sourceId) {
     where.sourceId = params.sourceId;
   }
 
-  if (params.status) {
+  if (
+    params.status &&
+    VALID_STATUSES.includes(params.status as (typeof VALID_STATUSES)[number])
+  ) {
     where.status = params.status;
   }
 
@@ -61,11 +71,22 @@ export async function getAllJobs(params: {
 }
 
 export async function getJob(id: string) {
-  await requireAuth();
-  return prisma.scraperJob.findUnique({
+  const session = await requireAuth();
+
+  const job = await prisma.scraperJob.findUnique({
     where: { id },
     include: { source: true },
   });
+
+  if (!job) {
+    throw new Error("Not found");
+  }
+
+  if (session.user.role !== "ADMIN" && job.userId !== session.user.id) {
+    throw new Error("Unauthorized");
+  }
+
+  return job;
 }
 
 export async function runJob(sourceId: string) {

@@ -1,21 +1,36 @@
 const SOLD_INDICATORS = [
   // English
-  "sold", "reserved", "no longer available", "unavailable", "expired",
+  "sold",
   // French
-  "vendu", "vendue", "réservé", "réservée", "indisponible", "non disponible",
+  "vendu",
+  "vendue",
   // German
-  "verkauft", "reserviert", "nicht verfügbar", "abverkauft",
+  "verkauft",
+  "abverkauft",
   // Dutch
-  "verkocht", "gereserveerd", "niet beschikbaar", "niet meer beschikbaar",
+  "verkocht",
   // Italian
-  "venduto", "venduta", "riservato", "riservata", "non disponibile",
+  "venduto",
+  "venduta",
   // Spanish
-  "vendido", "vendida", "reservado", "reservada", "no disponible",
-  // General
-  "pending sale", "under offer", "sous offre", "unter vertrag",
+  "vendido",
+  "vendida",
 ];
 
-export function isListingSold(title: string, description?: string | null): boolean {
-  const text = `${title} ${description ?? ""}`.toLowerCase();
-  return SOLD_INDICATORS.some((indicator) => text.includes(indicator));
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function isListingSold(
+  title: string,
+  description?: string | null
+): boolean {
+  // Match indicators against title + damageStatus only (free-text description
+  // produces too many false positives like "reserved price", "soldier").
+  const text = `${title} ${description ?? ""}`;
+  for (const indicator of SOLD_INDICATORS) {
+    const re = new RegExp(`\\b${escapeRegex(indicator)}\\b`, "i");
+    if (re.test(text)) return true;
+  }
+  return false;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { RotateCcw, Code, Info } from "lucide-react";
@@ -142,13 +142,13 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
 
   const getDefaults = useCallback(() => getDefaultsForAdapter(adapterType), [adapterType]);
 
-  useEffect(() => {
-    if (!isEdit) {
-      const defaults = getDefaultsForAdapter(adapterType);
-      setSelectorValues(defaults);
-      setCustomJson(JSON.stringify(defaults, null, 2));
-    }
-  }, [adapterType, isEdit]);
+  const [prevAdapterType, setPrevAdapterType] = useState(adapterType);
+  if (adapterType !== prevAdapterType && !isEdit) {
+    setPrevAdapterType(adapterType);
+    const defaults = getDefaultsForAdapter(adapterType);
+    setSelectorValues(defaults);
+    setCustomJson(JSON.stringify(defaults, null, 2));
+  }
 
   const buildSelectorsFromFields = (): Record<string, string> => {
     const result: Record<string, string> = {};

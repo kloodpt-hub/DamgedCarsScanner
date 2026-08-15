@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Bell, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { getCsrfToken } from "@/lib/csrf-client";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -69,9 +70,13 @@ export function PushPrompt() {
         applicationServerKey: urlBase64ToUint8Array(statusData.vapidPublicKey) as BufferSource,
       });
 
+      const csrfToken = await getCsrfToken();
       const subRes = await fetch("/api/notifications/subscribe", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+        },
         body: JSON.stringify(subscription),
       });
 

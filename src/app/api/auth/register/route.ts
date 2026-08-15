@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { checkCsrf } from "@/lib/csrf";
 
 const registerSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -11,7 +13,12 @@ const registerSchema = z.object({
   role: z.enum(["USER", "ADMIN"]).optional().default("USER"),
 });
 
-export async function POST(request: Request) {
+const GENERIC_ERROR = "Registration failed. Please try again.";
+
+export async function POST(request: NextRequest) {
+  const csrfError = checkCsrf(request);
+  if (csrfError) return csrfError;
+
   try {
     const body = await request.json();
     const parsed = registerSchema.safeParse(body);
@@ -33,27 +40,27 @@ export async function POST(request: Request) {
       }
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "An account with this email already exists" },
-        { status: 409 }
-      );
-    }
-
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role,
-      },
-    });
+    try {
+      await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          role,
+        },
+      });
+    } catch (error) {
+      // Anti-enumeration: do not reveal whether the email is already in use.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        return NextResponse.json({ error: GENERIC_ERROR }, { status: 409 });
+      }
+      throw error;
+    }
 
     return NextResponse.json(
       { message: "Account created successfully" },

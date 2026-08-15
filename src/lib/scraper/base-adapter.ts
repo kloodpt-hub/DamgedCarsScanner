@@ -1,4 +1,7 @@
 import * as cheerio from "cheerio";
+import type { AnyNode } from "domhandler";
+import { createHash } from "crypto";
+import { ProxyAgent, fetch as undiciFetch } from "undici";
 import type { RawListing, ScraperSelectors, ScraperAdapter } from "./types";
 import { isListingSold } from "./sold-detector";
 import { parsePrice } from "./attribute-parser";
@@ -16,6 +19,8 @@ const USER_AGENTS = [
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
 const DEFAULT_THROTTLE_MS = 1500;
+const REQUEST_TIMEOUT_MS = 30000;
+const DEADLINE_MARGIN_MS = 5000;
 
 function getRandomUserAgent(): string {
   return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
@@ -28,26 +33,48 @@ function sleep(ms: number): Promise<void> {
 export interface BaseAdapterOptions {
   throttleMs?: number;
   proxyUrl?: string;
+  deadline?: Date;
+  sourceId?: string;
 }
 
 export abstract class BaseAdapter implements ScraperAdapter {
-  abstract name: string;
+  name: string = "BaseAdapter";
 
   protected throttleMs: number;
   protected proxyUrl: string | null;
+  protected deadline: Date | null;
+  protected sourceId: string | null = null;
+  private dispatcher: ProxyAgent | null = null;
 
   constructor(options?: BaseAdapterOptions) {
     this.throttleMs = options?.throttleMs ?? DEFAULT_THROTTLE_MS;
-    this.proxyUrl =
-      options?.proxyUrl ?? process.env.PROXY_URL ?? null;
+    this.proxyUrl = options?.proxyUrl ?? process.env.PROXY_URL ?? null;
+    this.deadline = options?.deadline ?? null;
+    this.sourceId = options?.sourceId ?? null;
+    if (this.proxyUrl) {
+      try {
+        this.dispatcher = new ProxyAgent(this.proxyUrl);
+      } catch (err) {
+        console.warn(`[${this.name}] Failed to init ProxyAgent:`, err);
+      }
+    }
   }
 
   abstract scrape(url: string, selectors: ScraperSelectors): Promise<RawListing[]>;
+
+  protected isDeadlineExceeded(): boolean {
+    if (!this.deadline) return false;
+    return Date.now() > this.deadline.getTime() - DEADLINE_MARGIN_MS;
+  }
 
   protected async fetchHtml(url: string): Promise<string> {
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      if (this.isDeadlineExceeded()) {
+        throw new Error(`Deadline exceeded before fetching ${url}`);
+      }
+
       try {
         const headers: Record<string, string> = {
           "User-Agent": getRandomUserAgent(),
@@ -60,28 +87,55 @@ export abstract class BaseAdapter implements ScraperAdapter {
           "Cache-Control": "no-cache",
         };
 
-        const fetchInit: RequestInit = {
+        const fetchInit: RequestInit & { dispatcher?: ProxyAgent } = {
           headers,
-          signal: AbortSignal.timeout(30000),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         };
+        if (this.dispatcher) fetchInit.dispatcher = this.dispatcher;
 
-        if (this.proxyUrl) {
-          console.warn(
-            `[${this.name}] proxyUrl is set but proxy fetching is disabled.`
-          );
-        }
-
-        const response = await fetch(url, fetchInit);
+        // Use undici.fetch so the dispatcher (proxy) option is honoured.
+        const response = await (this.dispatcher
+          ? undiciFetch(url, fetchInit as never)
+          : fetch(url, fetchInit));
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          const status = response.status;
+
+          // 4xx (except 429) → fail fast, do not retry.
+          if (status >= 400 && status < 500 && status !== 429) {
+            throw new NonRetryableError(`HTTP ${status}: ${response.statusText}`);
+          }
+
+          // Retryable: 429, 5xx
+          let retryAfterMs = 0;
+          if (status === 429) {
+            const retryAfter = response.headers.get("Retry-After");
+            if (retryAfter) {
+              const secs = parseInt(retryAfter, 10);
+              if (!isNaN(secs)) retryAfterMs = secs * 1000;
+            }
+          }
+          throw new RetryableError(
+            `HTTP ${status}: ${response.statusText}`,
+            retryAfterMs
+          );
         }
 
         return await response.text();
       } catch (error) {
+        // Non-retryable: real HTTP 4xx we threw above
+        if (error instanceof NonRetryableError) {
+          throw error;
+        }
+
         lastError = error instanceof Error ? error : new Error(String(error));
+
         if (attempt < MAX_RETRIES) {
-          const backoff = RETRY_DELAY_MS * attempt + Math.random() * 1000;
+          let baseDelay = RETRY_DELAY_MS * 2 ** (attempt - 1);
+          if (error instanceof RetryableError && error.retryAfterMs > 0) {
+            baseDelay = Math.max(baseDelay, error.retryAfterMs);
+          }
+          const backoff = baseDelay + Math.random() * 1000;
           await sleep(backoff);
         }
       }
@@ -98,11 +152,21 @@ export abstract class BaseAdapter implements ScraperAdapter {
     return sleep(this.throttleMs + jitter);
   }
 
-  protected parseHtml(html: string, selectors: ScraperSelectors, sourceUrl: string): RawListing[] {
+  protected parseHtml(
+    html: string,
+    selectors: ScraperSelectors,
+    sourceUrl: string
+  ): { listings: RawListing[]; nextPageUrl: string | null } {
     const $ = cheerio.load(html);
+    const listings = this.extractListings($, selectors, sourceUrl);
+    const nextPageUrl = this.extractNextPageUrl($, selectors, sourceUrl);
+    return { listings, nextPageUrl };
+  }
+
+  protected extractListings($: cheerio.CheerioAPI, selectors: ScraperSelectors, sourceUrl: string): RawListing[] {
     const listings: RawListing[] = [];
 
-    $(selectors.listingContainer).each((_: number, element: any) => {
+    $(selectors.listingContainer).each((_, element) => {
       try {
         const $el = $(element);
 
@@ -112,7 +176,10 @@ export abstract class BaseAdapter implements ScraperAdapter {
         const link = this.extractLink($, $el, selectors.link, sourceUrl);
         if (!link) return;
 
-        const externalId = this.generateExternalId(link);
+        const externalId = this.generateExternalId(
+          link,
+          this.sourceId ?? this.sourceIdForExternalId(sourceUrl)
+        );
 
         const price = this.extractNumber($, $el, selectors.price);
         const year = this.extractNumber($, $el, selectors.year);
@@ -147,11 +214,32 @@ export abstract class BaseAdapter implements ScraperAdapter {
     return listings;
   }
 
+  protected extractNextPageUrl(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    $: any,
+    selectors: ScraperSelectors,
+    currentUrl: string
+  ): string | null {
+    if (!selectors.nextPage) return null;
+    const nextHref = $(selectors.nextPage).first().attr("href");
+    if (!nextHref) return null;
+    try {
+      return new URL(nextHref, currentUrl).href;
+    } catch {
+      return null;
+    }
+  }
+
+  protected sourceIdForExternalId(_sourceUrl: string): string {
+    // Overridable; default to adapter name so external IDs stay unique per source type.
+    return this.name;
+  }
+
   protected async fetchAndParse(
     url: string,
     selectors: ScraperSelectors,
     sourceUrl: string
-  ): Promise<RawListing[]> {
+  ): Promise<{ listings: RawListing[]; nextPageUrl: string | null }> {
     const html = await this.fetchHtml(url);
     return this.parseHtml(html, selectors, sourceUrl);
   }
@@ -166,20 +254,16 @@ export abstract class BaseAdapter implements ScraperAdapter {
     const maxPages = 10;
 
     while (currentUrl && pageNum < maxPages) {
-      const listings = await this.fetchAndParse(currentUrl, selectors, baseUrl);
+      if (this.isDeadlineExceeded()) break;
+
+      const { listings, nextPageUrl } = await this.fetchAndParse(
+        currentUrl,
+        selectors,
+        baseUrl
+      );
       allListings.push(...listings);
 
-      if (selectors.nextPage) {
-        const html = await this.fetchHtml(currentUrl);
-        const $ = cheerio.load(html);
-        const nextHref = $(selectors.nextPage).attr("href");
-        currentUrl = nextHref
-          ? new URL(nextHref, currentUrl).href
-          : null;
-      } else {
-        currentUrl = null;
-      }
-
+      currentUrl = nextPageUrl;
       pageNum++;
       if (currentUrl) await this.throttle();
     }
@@ -233,14 +317,13 @@ export abstract class BaseAdapter implements ScraperAdapter {
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected extractAllImages($: any, $el: any, selector: string, baseUrl: string): string[] {
+  protected extractAllImages($: cheerio.CheerioAPI, $el: cheerio.Cheerio<AnyNode>, selector: string, baseUrl: string): string[] {
     if (!selector) return [];
     const images: string[] = [];
     const selectors = selector.split(",").map((s) => s.trim());
 
     for (const sel of selectors) {
-      $el.find(sel).each((_: number, img: any) => {
+      $el.find(sel).each((_, img) => {
         const $img = $(img);
         const src =
           $img.attr("src") || $img.attr("data-src") || $img.attr("data-lazy");
@@ -277,13 +360,24 @@ export abstract class BaseAdapter implements ScraperAdapter {
     return null;
   }
 
-  protected generateExternalId(url: string): string {
-    let hash = 0;
-    for (let i = 0; i < url.length; i++) {
-      const char = url.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash |= 0;
-    }
-    return `ext_${Math.abs(hash).toString(36)}`;
+  protected generateExternalId(url: string, sourceId: string): string {
+    const hash = createHash("sha256").update(url).digest("hex").slice(0, 16);
+    return `${sourceId}_${hash}`;
+  }
+}
+
+class RetryableError extends Error {
+  retryAfterMs: number;
+  constructor(message: string, retryAfterMs = 0) {
+    super(message);
+    this.name = "RetryableError";
+    this.retryAfterMs = retryAfterMs;
+  }
+}
+
+class NonRetryableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NonRetryableError";
   }
 }

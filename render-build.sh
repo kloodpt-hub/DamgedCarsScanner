@@ -1,5 +1,5 @@
 #!/bin/bash
-# Render build script with output capture
+# Render build script
 set -e
 
 echo "=== Node.js version ==="
@@ -13,6 +13,9 @@ npm install
 
 echo "=== Running prisma generate ==="
 npx prisma generate
+
+echo "=== Installing Playwright Chromium ==="
+npx playwright install chromium
 
 echo "=== Running next build ==="
 npx next build

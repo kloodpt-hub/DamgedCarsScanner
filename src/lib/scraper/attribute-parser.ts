@@ -4,72 +4,85 @@
  */
 
 // --- PRICE PARSER ---
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  "€": "EUR", "$": "USD", "£": "GBP", "CHF": "CHF", "zł": "PLN",
-  "kr": "SEK", "DKK": "DKK", "R$": "BRL", "¥": "JPY",
-};
 
 export function parsePrice(text: string): number | null {
   if (!text) return null;
-  
+
   // Remove currency words
-  let cleaned = text
+  const cleaned = text
     .replace(/euro?s?|dollar|pound|franc|zloty|krona|real|yen/gi, "")
     .trim();
-  
-  // Handle European format: 3.430,00 → 3430.00
-  // If text has pattern like 3.430,00 or 3.430
-  const euroPattern = /(\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?)/;
-  const euroMatch = cleaned.match(euroPattern);
-  if (euroMatch) {
-    let numStr = euroMatch[1];
-    // If comma is present, it's decimal separator (European format)
-    if (numStr.includes(",")) {
-      numStr = numStr.replace(/\./g, "").replace(",", ".");
-    } else {
-      // No comma - dots are thousand separators
-      numStr = numStr.replace(/\./g, "");
-    }
-    const num = parseFloat(numStr);
-    if (!isNaN(num) && num > 0) return num;
-  }
-  
-  // Fallback: extract any number
-  const fallback = cleaned.replace(/[^\d.,]/g, "");
-  if (fallback) {
-    // Smart comma/dot handling
-    if (fallback.includes(",") && fallback.includes(".")) {
-      // Both present: last one is decimal
-      const lastComma = fallback.lastIndexOf(",");
-      const lastDot = fallback.lastIndexOf(".");
-      if (lastComma > lastDot) {
-        // Comma is decimal: 1.234,56
-        const num = parseFloat(fallback.replace(/\./g, "").replace(",", "."));
-        if (!isNaN(num)) return num;
-      } else {
-        // Dot is decimal: 1,234.56
-        const num = parseFloat(fallback.replace(/,/g, ""));
-        if (!isNaN(num)) return num;
-      }
-    } else if (fallback.includes(",")) {
-      const parts = fallback.split(",");
-      const lastPart = parts[parts.length - 1];
-      if (lastPart.length <= 2) {
-        // Comma is decimal: 3430,00
-        const num = parseFloat(fallback.replace(",", "."));
-        if (!isNaN(num)) return num;
-      } else {
-        // Comma is thousand separator: 1,234
-        const num = parseFloat(fallback.replace(/,/g, ""));
-        if (!isNaN(num)) return num;
-      }
-    } else {
-      const num = parseFloat(fallback.replace(/\./g, ""));
-      if (!isNaN(num)) return num;
-    }
-  }
-  
+
+  // Extract the first numeric token (with optional separators)
+  const match = cleaned.match(/\d[\d.,]*/);
+  if (!match) return null;
+
+  const num = parseSeparatedNumber(match[0]);
+  if (num !== null && !isNaN(num)) return num;
+
   return null;
+}
+
+/**
+ * Parse a numeric string that may use "." or "," as either a thousands
+ * separator or a decimal separator, using a length heuristic:
+ *  - If a separator is followed by exactly 3 digits AND there is no other
+ *    separator later that is followed by 1-2 digits, treat it as thousands.
+ *  - If a separator is followed by 1-2 digits, treat it as a decimal.
+ *  - If both separators are present, the last one is the decimal separator.
+ */
+export function parseSeparatedNumber(raw: string): number | null {
+  let token = raw.trim();
+  if (!token) return null;
+
+  // Strip spaces used as thousands separators (e.g. "87 471")
+  token = token.replace(/\s/g, "");
+
+  if (token.includes(",") && token.includes(".")) {
+    // Both present: the last one is the decimal separator.
+    const lastComma = token.lastIndexOf(",");
+    const lastDot = token.lastIndexOf(".");
+    if (lastComma > lastDot) {
+      // Comma is decimal: 1.234,56
+      return parseFloat(token.replace(/\./g, "").replace(",", "."));
+    } else {
+      // Dot is decimal: 1,234.56
+      return parseFloat(token.replace(/,/g, ""));
+    }
+  }
+
+  if (token.includes(",")) {
+    const parts = token.split(",");
+    const lastPart = parts[parts.length - 1];
+    if (lastPart.length === 3 && parts.length === 2) {
+      // "1,234" → comma is thousands separator
+      return parseFloat(parts.join(""));
+    }
+    if (lastPart.length === 1 || lastPart.length === 2) {
+      // "3430,00" → comma is decimal separator
+      return parseFloat(token.replace(",", "."));
+    }
+    // Otherwise treat comma as thousands separator
+    return parseFloat(token.replace(/,/g, ""));
+  }
+
+  if (token.includes(".")) {
+    const parts = token.split(".");
+    const lastPart = parts[parts.length - 1];
+    if (parts.length > 1 && lastPart.length === 3) {
+      // "87.471" or "1.234.567" → dots are thousands separators
+      return parseFloat(parts.join(""));
+    }
+    if (lastPart.length === 1 || lastPart.length === 2) {
+      // "1.5" → dot is decimal separator
+      return parseFloat(token);
+    }
+    // Fallback: strip dots as thousands separators
+    return parseFloat(token.replace(/\./g, ""));
+  }
+
+  const parsed = parseFloat(token);
+  return isNaN(parsed) ? null : parsed;
 }
 
 // --- MILEAGE PARSER ---
@@ -84,39 +97,39 @@ const MILEAGE_PATTERNS = [
 
 export function parseMileage(text: string): number | null {
   if (!text) return null;
-  
+
   for (const pattern of MILEAGE_PATTERNS) {
     const match = text.match(pattern);
     if (match) {
-      const cleaned = match[1].replace(/[\s]/g, "").replace(",", ".");
-      // Handle European thousand separators (e.g., 87.471 → 87471)
-      const parts = cleaned.split(".");
-      if (parts.length > 1 && parts.every(p => p.length === 3)) {
-        // All parts are 3 digits → dots are thousand separators
-        const num = parseInt(parts.join(""), 10);
-        if (!isNaN(num) && num > 0) return num;
-      }
-      const num = parseFloat(cleaned);
-      if (!isNaN(num) && num > 0) return num;
+      const token = match[1].replace(/\s/g, "");
+      const num = parseSeparatedNumber(token);
+      if (num !== null && num > 0) return Math.round(num);
     }
   }
-  
+
+  // Fallback: whole text may just be a number with separators
+  const fallback = text.match(/\d[\d\s.,]*/);
+  if (fallback) {
+    const num = parseSeparatedNumber(fallback[0].replace(/\s/g, ""));
+    if (num !== null && num > 0) return Math.round(num);
+  }
+
   return null;
 }
 
 // --- YEAR PARSER ---
 const YEAR_PATTERNS = [
-  /(?:19|20)\d{2}/,
   /(?:EZ|ez|HO|ho)[:\s]*(\d{4})/i,
   /(?:1ste\s*toelating|erstzulassung)[:\s]*(?:\d{1,2}[\/.-])?(\d{4})/i,
   /(?:bouwjaar|année|ano)[:\s]*(\d{4})/i,
   /(?:first\s*reg(?:istration)?)[:\s]*(?:\d{1,2}[\/.-])?(\d{4})/i,
   /(\d{1,2})[\/.-](\d{4})/,
+  /\b(?:19|20)\d{2}\b/,
 ];
 
 export function parseYear(text: string): number | null {
   if (!text) return null;
-  
+
   for (const pattern of YEAR_PATTERNS) {
     const match = text.match(pattern);
     if (match) {
@@ -128,7 +141,7 @@ export function parseYear(text: string): number | null {
       }
     }
   }
-  
+
   return null;
 }
 
@@ -145,12 +158,12 @@ const DAMAGE_KEYWORDS: [RegExp, string][] = [
 export function parseDamageStatus(text: string): string | null {
   if (!text) return null;
   const lower = text.toLowerCase();
-  
+
   for (const [pattern, status] of DAMAGE_KEYWORDS) {
     if (pattern.test(lower)) {
       return status;
     }
   }
-  
+
   return null;
 }

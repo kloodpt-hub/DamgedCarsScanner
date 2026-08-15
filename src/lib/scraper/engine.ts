@@ -3,16 +3,19 @@ import { GenericAdapter } from "./generic-adapter";
 import { LeboncoinAdapter } from "./leboncoin.adapter";
 import { Autoscout24Adapter } from "./autoscout24.adapter";
 import { SchadeautosAdapter } from "./schadeautos.adapter";
+import type { BaseAdapterOptions } from "./base-adapter";
 import type { ScraperAdapter, ScraperJobResult, ScraperSelectors } from "./types";
 import { evaluateListing } from "../filters/evaluator";
 import { notifyNewListing } from "../notifications";
 import { getDueSources, markSourceScraped } from "../cron/scheduler";
 
-const ADAPTERS: Record<string, () => ScraperAdapter> = {
-  generic: () => new GenericAdapter(),
-  leboncoin: () => new LeboncoinAdapter(),
-  autoscout24: () => new Autoscout24Adapter(),
-  schadeautos: () => new SchadeautosAdapter(),
+const JOB_DEADLINE_MS = 5 * 60 * 1000;
+
+const ADAPTERS: Record<string, (options?: BaseAdapterOptions) => ScraperAdapter> = {
+  generic: (o) => new GenericAdapter(o),
+  leboncoin: (o) => new LeboncoinAdapter(o),
+  autoscout24: (o) => new Autoscout24Adapter(o),
+  schadeautos: (o) => new SchadeautosAdapter(o),
 };
 
 export interface ScrapeResult {
@@ -27,9 +30,9 @@ export interface ScrapeResult {
 export class ScraperEngine {
   constructor(private prisma: PrismaClient) {}
 
-  getAdapter(adapterType: string): ScraperAdapter {
+  getAdapter(adapterType: string, options?: BaseAdapterOptions): ScraperAdapter {
     const factory = ADAPTERS[adapterType] ?? ADAPTERS.generic;
-    return factory();
+    return factory(options);
   }
 
   async runJob(sourceId: string): Promise<ScraperJobResult> {
@@ -58,7 +61,22 @@ export class ScraperEngine {
     });
 
     try {
-      const adapter = this.getAdapter(source.adapterType);
+      await this.prisma.scraperSource.update({
+        where: { id: source.id },
+        data: { isScraping: true, isScrapingLockedAt: new Date() },
+      });
+    } catch (err) {
+      console.warn(
+        `[engine] Failed to set scrape lock for source ${source.id}:`,
+        err instanceof Error ? err.message : String(err)
+      );
+    }
+
+    try {
+      const adapter = this.getAdapter(source.adapterType, {
+        sourceId: source.id,
+        deadline: new Date(Date.now() + JOB_DEADLINE_MS),
+      });
       const selectors = source.selectors as unknown as ScraperSelectors;
 
       const rawListings = await adapter.scrape(source.baseUrl, selectors);
@@ -75,7 +93,7 @@ export class ScraperEngine {
         return f.sourceIds.includes(source.id);
       });
 
-      for (const raw of availableListings) {
+      for (const raw of rawListings) {
         try {
           const existing = await this.prisma.listing.findUnique({
             where: { externalId: raw.externalId },
@@ -96,8 +114,11 @@ export class ScraperEngine {
               images: raw.images,
               canonicalUrl: raw.canonicalUrl,
               sourceId: source.id,
+              isSold: raw.isSold ?? false,
             },
           });
+
+          if (raw.isSold) continue;
 
           newListings++;
 
@@ -145,6 +166,18 @@ export class ScraperEngine {
           completedAt: new Date(),
         },
       });
+    } finally {
+      try {
+        await this.prisma.scraperSource.update({
+          where: { id: source.id },
+          data: { isScraping: false, isScrapingLockedAt: null },
+        });
+      } catch (err) {
+        console.warn(
+          `[engine] Failed to release scrape lock for source ${source.id}:`,
+          err instanceof Error ? err.message : String(err)
+        );
+      }
     }
 
     return { listingsFound, newListings, errors };

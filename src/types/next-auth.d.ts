@@ -11,6 +11,7 @@ declare module "next-auth" {
 
   interface User extends DefaultUser {
     role: string;
+    emailVerified?: Date | null;
   }
 }
 

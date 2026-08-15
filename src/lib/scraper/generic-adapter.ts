@@ -42,20 +42,21 @@ export class GenericAdapter extends BaseAdapter {
 
   async scrape(url: string, selectors: ScraperSelectors): Promise<RawListing[]> {
     const html = await this.fetchHtml(url);
-    return this.parseHtml(html, selectors, url);
+    const { listings } = this.parseHtml(html, selectors, url);
+    return listings;
   }
 
   protected override parseHtml(
     html: string,
     selectors: ScraperSelectors,
     sourceUrl: string
-  ): RawListing[] {
+  ): { listings: RawListing[]; nextPageUrl: string | null } {
     const $ = cheerio.load(html);
 
     const effectiveSelectors = this.resolveSelectors($, selectors);
     const listings: RawListing[] = [];
 
-    $(effectiveSelectors.listingContainer).each((_: number, element: any) => {
+    $(effectiveSelectors.listingContainer).each((_, element) => {
       try {
         const $el = $(element);
 
@@ -65,7 +66,10 @@ export class GenericAdapter extends BaseAdapter {
         const link = this.extractLink($, $el, effectiveSelectors.link, sourceUrl);
         if (!link) return;
 
-        const externalId = this.generateExternalId(link);
+        const externalId = this.generateExternalId(
+          link,
+          this.sourceId ?? this.sourceIdForExternalId(sourceUrl)
+        );
 
         const price = this.extractNumber($, $el, effectiveSelectors.price);
         const year = this.extractNumber($, $el, effectiveSelectors.year);
@@ -105,7 +109,8 @@ export class GenericAdapter extends BaseAdapter {
       }
     });
 
-    return listings;
+    const nextPageUrl = this.extractNextPageUrl($, effectiveSelectors, sourceUrl);
+    return { listings, nextPageUrl };
   }
 
   private resolveSelectors($: cheerio.CheerioAPI, base: ScraperSelectors): ScraperSelectors {

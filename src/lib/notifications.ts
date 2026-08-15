@@ -68,7 +68,7 @@ export async function notifyNewListing(
     if (isPushConfigured() && user.pushSubscriptions.length > 0) {
       for (const sub of user.pushSubscriptions) {
         await sendPushNotification(
-          { endpoint: sub.endpoint, keys: sub.keys as any },
+          { endpoint: sub.endpoint, keys: sub.keys as { p256dh: string; auth: string } },
           {
             title: `New match: ${listing.title}`,
             body: `€${listing.price?.toLocaleString() ?? 'N/A'} · ${listing.year ?? 'N/A'} · ${sourceName}`,
