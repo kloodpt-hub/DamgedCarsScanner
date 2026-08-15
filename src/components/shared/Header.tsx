@@ -43,7 +43,7 @@ export function Header({ locale }: HeaderProps) {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-30 h-14 bg-bg/90 backdrop-blur border-b border-card-border lg:inset-x-auto",
+        "fixed inset-x-0 top-0 z-[60] h-14 bg-bg/90 backdrop-blur border-b border-card-border lg:inset-x-auto",
         isRtl ? "lg:left-0 lg:right-64" : "lg:left-64 lg:right-0"
       )}
     >

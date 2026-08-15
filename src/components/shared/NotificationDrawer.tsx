@@ -269,7 +269,7 @@ export function NotificationDrawerProvider({
         aria-label={t.title}
         aria-hidden={!isOpen}
         className={cn(
-          "fixed inset-y-0 inset-inline-end-0 z-50 flex w-[92vw] max-w-md flex-col bg-bg shadow-xl transition-transform duration-300",
+          "fixed top-14 bottom-0 inset-inline-end-0 z-50 flex w-[92vw] max-w-md flex-col bg-bg shadow-xl transition-transform duration-300",
           isOpen ? "translate-x-0" : isRtl ? "-translate-x-full" : "translate-x-full",
           !isOpen && "pointer-events-none"
         )}
