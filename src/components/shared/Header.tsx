@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Globe, LogOut, Moon, Scan, Sun } from "lucide-react";
+import { Bell, Globe, LogOut, Moon, Scan, Sun } from "lucide-react";
 import { useTheme } from "@/components/shared/ThemeProvider";
+import { useNotificationDrawer } from "@/components/shared/NotificationDrawer";
 import { cn } from "@/lib/utils";
 
 const labels = {
@@ -13,6 +14,7 @@ const labels = {
     localeLabel: "AR",
     localeTitle: "Switch to Arabic",
     themeTitle: "Toggle theme",
+    bellTitle: "Notifications",
     logout: "Logout",
   },
   ar: {
@@ -20,6 +22,7 @@ const labels = {
     localeLabel: "EN",
     localeTitle: "التبديل إلى الإنجليزية",
     themeTitle: "تبديل المظهر",
+    bellTitle: "الإشعارات",
     logout: "تسجيل الخروج",
   },
 } as const;
@@ -31,6 +34,7 @@ interface HeaderProps {
 export function Header({ locale }: HeaderProps) {
   const pathname = usePathname() || "";
   const { theme, toggleTheme } = useTheme();
+  const { open, unreadCount } = useNotificationDrawer();
   const isRtl = locale === "ar";
   const t = labels[locale as keyof typeof labels] ?? labels.en;
   const next = locale === "en" ? "ar" : "en";
@@ -63,6 +67,20 @@ export function Header({ locale }: HeaderProps) {
             <Globe className="h-5 w-5" />
             <span className="text-xs font-semibold">{t.localeLabel}</span>
           </Link>
+
+          <button
+            onClick={open}
+            className="relative p-2.5 rounded-lg text-text-muted hover:text-text hover:bg-surface transition-colors"
+            title={t.bellTitle}
+            aria-label={t.bellTitle}
+          >
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute top-0.5 end-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-white">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </button>
 
           <button
             onClick={toggleTheme}

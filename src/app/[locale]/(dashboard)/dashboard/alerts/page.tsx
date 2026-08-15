@@ -19,9 +19,17 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import { getCsrfToken } from "@/lib/csrf-client";
+import {
+  subscribeToPush,
+  unsubscribeFromPush,
+  isSubscribed,
+  isPushSupported,
+  isIosDevice,
+  isIosPwa,
+  getIosPushHint,
+} from "@/lib/push-client";
 
 const labels = {
   en: {
@@ -48,9 +56,19 @@ const labels = {
       title: "Web Push Notifications",
       description: "Get alerts directly in your browser",
       enable: "Enable Push Notifications",
+      disable: "Disable Push Notifications",
       enabled: "Enabled",
       disabled: "Disabled",
       notSupported: "Not supported in this browser",
+      notConfigured: "Push notifications not configured by admin",
+      enableFailed: "Failed to enable push notifications. Try again later.",
+      disableSuccess: "Push notifications disabled",
+      disableFailed: "Failed to disable push notifications",
+      allowFirst:
+        "Push only works after you allow notifications. Click Enable and choose Allow in the browser dialog.",
+      blockedText:
+        "Notifications are blocked by your browser. Enable them in your site settings or browser permissions, then try again.",
+      iosHint: getIosPushHint("en"),
     },
     history: {
       title: "Recent Notifications",
@@ -82,9 +100,19 @@ const labels = {
       title: "إشعارات الويب",
       description: "تلق تنبيهات مباشرة في متصفحك",
       enable: "تفعيل إشعارات الويب",
+      disable: "تعطيل إشعارات الويب",
       enabled: "مفعّل",
       disabled: "معطّل",
       notSupported: "غير مدعوم في هذا المتصفح",
+      notConfigured: "الإشعارات غير مكوّنة من قبل المسؤول",
+      enableFailed: "فشل تفعيل الإشعارات. حاول مرة أخرى لاحقًا.",
+      disableSuccess: "تم تعطيل إشعارات الويب",
+      disableFailed: "فشل تعطيل إشعارات الويب",
+      allowFirst:
+        "تعمل الإشعارات فقط بعد السماح بها. اضغط تفعيل واختر السماح في نافذة المتصفح.",
+      blockedText:
+        "تم حظر الإشعارات بواسطة المتصفح. فعّلها من إعدادات الموقع أو أذونات المتصفح ثم حاول مرة أخرى.",
+      iosHint: getIosPushHint("ar"),
     },
     history: {
       title: "الإشعارات الأخيرة",
@@ -111,13 +139,10 @@ export default function AlertsPage({
   const [emailConfigured, setEmailConfigured] = useState(false);
   const [telegramConnected, setTelegramConnected] = useState(false);
   const [telegramBotUsername, setTelegramBotUsername] = useState("");
-  const [pushEnabled, setPushEnabled] = useState(
-    () =>
-      typeof window !== "undefined" && "Notification" in window
-        ? Notification.permission === "granted"
-        : false
-  );
+  const [pushEnabled, setPushEnabled] = useState(false);
   const [pushSupported, setPushSupported] = useState(false);
+  const [pushBlocked, setPushBlocked] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
   const [recentNotifications, setRecentNotifications] = useState<NotificationListing[]>([]);
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -135,12 +160,20 @@ export default function AlertsPage({
         setEmailConfigured(data.emailConfigured);
         setTelegramConnected(data.telegramConnected);
         setTelegramBotUsername(data.telegramBotUsername || "");
-        setPushSupported(data.pushSupported);
+        setPushSupported(data.pushSupported && isPushSupported());
         setRecentNotifications(data.recentNotifications || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    isSubscribed()
+      .then((subscribed) => setPushEnabled(subscribed))
+      .catch(() => {});
+  }, []);
+
+  const iosHint = pushSupported && isIosDevice() && !isIosPwa();
 
   const handleTestEmail = async () => {
     setSending(true);
@@ -164,22 +197,51 @@ export default function AlertsPage({
   };
 
   const handleEnablePush = async () => {
-    if (typeof window === "undefined" || !("Notification" in window)) {
-      toast.error(t.push.notSupported);
-      return;
-    }
-    const permission = await Notification.requestPermission();
-    setPushEnabled(permission === "granted");
-    if (permission === "granted") {
-      toast.success(t.push.enabled);
-
-      if ("serviceWorker" in navigator) {
-        try {
-          await navigator.serviceWorker.register("/sw.js");
-        } catch {
-          // Service worker registration failed, but notifications still work
-        }
+    if (pushBusy) return;
+    setPushBusy(true);
+    setPushBlocked(false);
+    try {
+      const result = await subscribeToPush();
+      if (result.ok) {
+        setPushEnabled(true);
+        toast.success(t.push.enabled);
+        return;
       }
+      if (result.reason === "denied") {
+        setPushBlocked(true);
+        return;
+      }
+      if (result.reason === "no-vapid") {
+        toast.error(t.push.notConfigured);
+        return;
+      }
+      if (result.reason === "no-permission" || result.reason === "default") {
+        toast(t.push.allowFirst);
+        return;
+      }
+      if (result.reason === "unsupported") {
+        toast.error(t.push.notSupported);
+        return;
+      }
+      toast.error(t.push.enableFailed);
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
+  const handleDisablePush = async () => {
+    if (pushBusy) return;
+    setPushBusy(true);
+    try {
+      const result = await unsubscribeFromPush();
+      if (result.ok) {
+        setPushEnabled(false);
+        toast.success(t.push.disableSuccess);
+      } else {
+        toast.error(t.push.disableFailed);
+      }
+    } finally {
+      setPushBusy(false);
     }
   };
 
@@ -285,16 +347,33 @@ export default function AlertsPage({
         <CardContent className="space-y-4">
           <p className="text-sm text-text-muted">{t.push.description}</p>
           {pushSupported ? (
-            <div className="flex items-center justify-between">
-              <Badge variant={pushEnabled ? "success" : "default"}>
-                {pushEnabled ? t.push.enabled : t.push.disabled}
-              </Badge>
-              {!pushEnabled && (
-                <Button onClick={handleEnablePush} size="sm">
-                  {t.push.enable}
-                </Button>
+            <>
+              <div className="flex items-center justify-between">
+                <Badge variant={pushEnabled ? "success" : "default"}>
+                  {pushEnabled ? t.push.enabled : t.push.disabled}
+                </Badge>
+                {pushEnabled ? (
+                  <Button
+                    onClick={handleDisablePush}
+                    size="sm"
+                    variant="outline"
+                    disabled={pushBusy}
+                  >
+                    {t.push.disable}
+                  </Button>
+                ) : (
+                  <Button onClick={handleEnablePush} size="sm" disabled={pushBusy}>
+                    {t.push.enable}
+                  </Button>
+                )}
+              </div>
+              {pushBlocked && (
+                <p className="text-xs text-danger">{t.push.blockedText}</p>
               )}
-            </div>
+              {iosHint && !pushEnabled && (
+                <p className="text-xs text-warning">{t.push.iosHint}</p>
+              )}
+            </>
           ) : (
             <Badge variant="warning">{t.push.notSupported}</Badge>
           )}

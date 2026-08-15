@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import type { PushSubscription } from "web-push";
+import { prisma } from "./prisma";
 
 let vapidKeysInitialized = false;
 
@@ -28,9 +29,22 @@ export function isPushConfigured(): boolean {
   );
 }
 
+export type RichPushPayload = {
+  title: string;
+  body: string;
+  icon?: string;
+  badge?: string;
+  image?: string;
+  tag?: string;
+  renotify?: boolean;
+  actions?: { action: string; title: string }[];
+  url?: string;
+  data?: Record<string, unknown>;
+};
+
 export async function sendPushNotification(
   subscription: PushSubscription,
-  payload: { title: string; body: string; url?: string }
+  payload: RichPushPayload
 ): Promise<boolean> {
   initVapid();
   if (!vapidKeysInitialized) return false;
@@ -39,6 +53,16 @@ export async function sendPushNotification(
     await webpush.sendNotification(subscription, JSON.stringify(payload));
     return true;
   } catch (err) {
+    const statusCode = (err as { statusCode?: number })?.statusCode;
+    if (statusCode === 404 || statusCode === 410) {
+      try {
+        await prisma.pushSubscription.deleteMany({
+          where: { endpoint: subscription.endpoint },
+        });
+      } catch (cleanupErr) {
+        console.error("[push] Failed to clean up dead subscription:", cleanupErr);
+      }
+    }
     console.error("[push] Failed to send:", err);
     return false;
   }

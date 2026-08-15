@@ -1,6 +1,10 @@
 import { prisma } from "./prisma";
 import { sendListingAlert } from "./email";
-import { sendPushNotification, isPushConfigured } from "./push";
+import {
+  sendPushNotification,
+  isPushConfigured,
+  type RichPushPayload,
+} from "./push";
 
 export async function notifyNewListing(
   listing: {
@@ -67,13 +71,34 @@ export async function notifyNewListing(
     // 3. Web Push
     if (isPushConfigured() && user.pushSubscriptions.length > 0) {
       for (const sub of user.pushSubscriptions) {
+        const payload: RichPushPayload = {
+          title: `New match: ${listing.title}`,
+          body: `€${listing.price?.toLocaleString() ?? 'N/A'} · ${listing.year ?? 'N/A'} · ${sourceName}`,
+          icon: "/icon-192.png",
+          badge: "/icon-192.png",
+          tag: `listing-${listing.id}`,
+          renotify: false,
+          actions: [
+            { action: "view", title: "View" },
+            { action: "dismiss", title: "Dismiss" },
+          ],
+          data: {
+            url: listing.canonicalUrl,
+            listingId: listing.id,
+            title: listing.title,
+            price: listing.price,
+            year: listing.year,
+            mileage: listing.mileage,
+            sourceName,
+            imageUrl: listing.imageUrl,
+          },
+        };
+        if (listing.imageUrl) {
+          payload.image = listing.imageUrl;
+        }
         await sendPushNotification(
           { endpoint: sub.endpoint, keys: sub.keys as { p256dh: string; auth: string } },
-          {
-            title: `New match: ${listing.title}`,
-            body: `€${listing.price?.toLocaleString() ?? 'N/A'} · ${listing.year ?? 'N/A'} · ${sourceName}`,
-            url: listing.canonicalUrl,
-          }
+          payload
         );
       }
     }
