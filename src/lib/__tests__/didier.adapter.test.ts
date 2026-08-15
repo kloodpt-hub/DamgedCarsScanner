@@ -43,6 +43,12 @@ describe("DidierAdapter", () => {
     expect(tesla.price).toBe(6600);
     expect(tesla.year).toBe(2022);
     expect(tesla.mileage).toBe(66178);
+    expect(tesla.imageUrl).toBe(
+      "https://www.cars2repair.be/files/Product/overview/didier_756741.jpg"
+    );
+    expect(tesla.images).toEqual([
+      "https://www.cars2repair.be/files/Product/overview/didier_756741.jpg",
+    ]);
     expect(tesla.canonicalUrl).toBe(
       "https://www.cars2repair.be/en/store/buy-damaged-salvage-cars/tesla-model-3-dd60766"
     );
@@ -54,6 +60,9 @@ describe("DidierAdapter", () => {
     expect(skoda.price).toBe(6500);
     expect(skoda.year).toBe(2019);
     expect(skoda.mileage).toBe(58925);
+    expect(skoda.imageUrl).toBe(
+      "https://www.cars2repair.be/files/Product/overview/didier_756766.jpg"
+    );
     expect(skoda.canonicalUrl).toContain("-dd62773");
 
     expect(tesla.externalId).not.toBe(skoda.externalId);

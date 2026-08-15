@@ -60,6 +60,8 @@ export class DidierAdapter extends BaseAdapter {
           const year = this.extractAttributeValue($, $el, "icon-firstuseyear");
           const mileage = this.extractAttributeValue($, $el, "icon-mileage");
 
+          const imageUrl = this.extractBackgroundImage($, $el, sourceUrl);
+
           listings.push({
             externalId,
             title,
@@ -68,8 +70,8 @@ export class DidierAdapter extends BaseAdapter {
             mileage,
             damageStatus: undefined,
             description: undefined,
-            imageUrl: undefined,
-            images: [],
+            imageUrl: imageUrl ?? undefined,
+            images: imageUrl ? [imageUrl] : [],
             canonicalUrl: link,
             sourceUrl,
             isSold: false,
@@ -84,6 +86,31 @@ export class DidierAdapter extends BaseAdapter {
     );
 
     return listings;
+  }
+
+  private extractBackgroundImage(
+    $: cheerio.CheerioAPI,
+    $el: cheerio.Cheerio<AnyNode>,
+    baseUrl: string
+  ): string | null {
+    const $image = $el
+      .closest("li.c-category-products__item")
+      .find("a.c-category-products__image")
+      .first();
+    if (!$image.length) return null;
+
+    const style = $image.attr("style") || "";
+    const match = style.match(/background-image\s*:\s*url\(([^)]+)\)/i);
+    if (!match) return null;
+
+    const src = match[1].trim().replace(/^['"]|['"]$/g, "");
+    if (!src) return null;
+
+    try {
+      return new URL(src, baseUrl).href;
+    } catch {
+      return null;
+    }
   }
 
   private extractAttributeValue(
