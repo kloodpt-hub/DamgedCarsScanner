@@ -45,6 +45,19 @@ export async function createTelegramConnectLink(): Promise<{ url?: string; error
   return { url: `https://t.me/${config.username}?start=${token}` };
 }
 
+export async function disconnectTelegram(): Promise<{ ok: boolean; error?: string }> {
+  const userId = await requireAuth();
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      telegramChatId: null,
+      telegramConnectToken: null,
+      telegramConnectTokenExpiresAt: null,
+    },
+  });
+  return { ok: true };
+}
+
 export async function registerTelegramWebhook(): Promise<{ ok: boolean; error?: string }> {
   await requireAdmin();
   const config = await getTelegramConfig();
@@ -52,9 +65,15 @@ export async function registerTelegramWebhook(): Promise<{ ok: boolean; error?: 
     return { ok: false, error: "Telegram bot token is not configured" };
   }
 
+  let secret = await getSetting("TELEGRAM_WEBHOOK_SECRET");
+  if (!secret) {
+    secret = randomBytes(32).toString("base64url");
+    await setSetting("TELEGRAM_WEBHOOK_SECRET", secret);
+  }
+
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const webhookUrl = `${baseUrl}/api/telegram/webhook`;
-  const result = await registerWebhook(webhookUrl);
+  const result = await registerWebhook(webhookUrl, secret);
   if (!result.ok) {
     return { ok: false, error: result.description || "Failed to register webhook" };
   }

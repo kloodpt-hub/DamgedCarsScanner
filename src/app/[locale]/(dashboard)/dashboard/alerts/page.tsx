@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Bell,
   Mail,
@@ -10,6 +10,7 @@ import {
   Loader2,
   CheckCircle,
   AlertCircle,
+  X,
 } from "lucide-react";
 import {
   Card,
@@ -21,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getCsrfToken } from "@/lib/csrf-client";
-import { createTelegramConnectLink } from "@/server/actions/telegram";
+import { createTelegramConnectLink, disconnectTelegram } from "@/server/actions/telegram";
 import {
   subscribeToPush,
   unsubscribeFromPush,
@@ -51,6 +52,9 @@ const labels = {
       connect: "Connect Telegram Bot",
       connected: "Connected",
       notConnected: "Not connected",
+      disconnect: "Disconnect",
+      disconnected: "Telegram disconnected",
+      disconnectFailed: "Failed to disconnect Telegram. Try again later.",
       setupHint: "Click the button below to open Telegram and connect your account",
       connectFailed: "Could not create Telegram connection link. Try again later.",
     },
@@ -98,6 +102,9 @@ const labels = {
       connect: "ربط بوت تيليجرام",
       connected: "متصل",
       notConnected: "غير متصل",
+      disconnect: "قطع الاتصال",
+      disconnected: "تم قطع الاتصال بتيليجرام",
+      disconnectFailed: "فشل قطع الاتصال بتيليجرام. حاول مجددًا لاحقًا.",
       setupHint: "انقر على الزر أدناه لفتح تيليجرام وربط حسابك",
       connectFailed: "تعذر إنشاء رابط ربط تيليجرام. حاول مجددًا لاحقًا.",
     },
@@ -161,20 +168,32 @@ export default function AlertsPage({
     params.then((p) => setLocale(p.locale ?? "en"));
   }, [params]);
 
-  useEffect(() => {
-    fetch("/api/notifications/status")
-      .then((r) => r.json())
-      .then((data) => {
-        setEmailConfigured(data.emailConfigured);
-        setTelegramConnected(data.telegramConnected);
-        setTelegramBotUsername(data.telegramBotUsername || "");
-        setPushSupported(data.pushSupported && isPushSupported());
-        setServerPushCount(data.pushSubscriptionCount || 0);
-        setRecentNotifications(data.recentNotifications || []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+  const loadStatus = useCallback(async () => {
+    try {
+      const data = await fetch("/api/notifications/status").then((r) => r.json());
+      setEmailConfigured(data.emailConfigured);
+      setTelegramConnected(data.telegramConnected);
+      setTelegramBotUsername(data.telegramBotUsername || "");
+      setPushSupported(data.pushSupported && isPushSupported());
+      setServerPushCount(data.pushSubscriptionCount || 0);
+      setRecentNotifications(data.recentNotifications || []);
+    } catch {
+      // ignore transient failures; next poll will retry
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    const initial = setTimeout(() => {
+      void loadStatus();
+    }, 0);
+    const interval = setInterval(loadStatus, 10_000);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(interval);
+    };
+  }, [loadStatus]);
 
   useEffect(() => {
     isSubscribed()
@@ -277,6 +296,24 @@ export default function AlertsPage({
     }
   };
 
+  const handleDisconnectTelegram = async () => {
+    if (telegramBusy) return;
+    setTelegramBusy(true);
+    try {
+      const result = await disconnectTelegram();
+      if (result.ok) {
+        setTelegramConnected(false);
+        toast.success(t.telegram.disconnected);
+      } else {
+        toast.error(result.error || t.telegram.disconnectFailed);
+      }
+    } catch {
+      toast.error(t.telegram.disconnectFailed);
+    } finally {
+      setTelegramBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6 max-w-2xl">
@@ -341,10 +378,25 @@ export default function AlertsPage({
         <CardContent className="space-y-4">
           <p className="text-sm text-text-muted">{t.telegram.description}</p>
           {telegramConnected ? (
-            <Badge variant="success">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              {t.telegram.connected}
-            </Badge>
+            <div className="flex items-center justify-between">
+              <Badge variant="success">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                {t.telegram.connected}
+              </Badge>
+              <Button
+                onClick={handleDisconnectTelegram}
+                variant="outline"
+                size="sm"
+                disabled={telegramBusy}
+              >
+                {telegramBusy ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                ) : (
+                  <X className="h-4 w-4 mr-1" />
+                )}
+                {t.telegram.disconnect}
+              </Button>
+            </div>
           ) : (
             <>
               <p className="text-xs text-text-muted">{t.telegram.setupHint}</p>

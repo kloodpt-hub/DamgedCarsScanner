@@ -24,7 +24,8 @@ export async function sendTelegramMessage(
 }
 
 export async function registerTelegramWebhook(
-  webhookUrl: string
+  webhookUrl: string,
+  secretToken?: string
 ): Promise<{ ok: boolean; description?: string }> {
   const { token } = await getTelegramConfig();
   if (!token) {
@@ -38,6 +39,7 @@ export async function registerTelegramWebhook(
       body: JSON.stringify({
         url: webhookUrl,
         allowed_updates: ["message"],
+        ...(secretToken ? { secret_token: secretToken } : {}),
       }),
     }
   );
