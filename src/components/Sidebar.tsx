@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -18,8 +18,6 @@ import {
   Scan,
   ArrowLeftRight,
   Settings,
-  Menu,
-  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -81,17 +79,11 @@ export function Sidebar({ locale, role }: SidebarProps) {
       typeof window !== "undefined" &&
       localStorage.getItem("sidebar-collapsed") === "true"
   );
-  const [mobileOpen, setMobileOpen] = useState(false);
   const rawPathname = usePathname() || "";
   const pathname = rawPathname.replace(/^\/(en|ar)(?=\/|$)/, "") || "/";
   const t = navLabels[locale as keyof typeof navLabels] ?? navLabels.en;
   const isAdmin = role === "ADMIN";
   const isRtl = locale === "ar";
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentionally close the mobile drawer whenever the route changes; resetting state on prop change is the documented use of this pattern
-    setMobileOpen(false);
-  }, [pathname]);
 
   const toggleCollapsed = () => {
     const next = !collapsed;
@@ -242,45 +234,6 @@ export function Sidebar({ locale, role }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile hamburger button */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 start-4 z-40 p-2.5 rounded-lg bg-gray-900 text-white shadow-lg"
-        aria-label="Open menu"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-
-      {/* Mobile backdrop */}
-      {mobileOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Mobile drawer */}
-      <aside
-        className={cn(
-          "lg:hidden fixed inset-y-0 z-50 flex flex-col bg-gray-900 text-gray-300 transition-transform duration-300 w-64",
-          isRtl ? "right-0" : "left-0",
-          mobileOpen
-            ? "translate-x-0"
-            : isRtl
-              ? "translate-x-full"
-              : "-translate-x-full"
-        )}
-      >
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="absolute top-4 end-4 z-10 p-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
-          aria-label="Close menu"
-        >
-          <X className="h-5 w-5" />
-        </button>
-        {sidebarInner}
-      </aside>
-
       {/* Desktop sidebar */}
       <aside
         className={cn(

@@ -51,12 +51,12 @@ export function ConfirmDialog({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onCancel}
       />
-      <div className="relative bg-card-bg border border-card-border rounded-xl shadow-xl p-6 max-w-md w-full mx-4 z-10">
+      <div className="relative bg-card-bg border border-card-border rounded-xl shadow-xl p-6 max-w-md w-full z-10 max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <h2 className="text-lg font-semibold text-text mb-2">{title}</h2>
         <p className="text-sm text-text-muted mb-6">{message}</p>
         <div className="flex justify-end gap-3">

@@ -52,6 +52,14 @@ export class ScraperEngine {
       return { listingsFound: 0, newListings: 0, errors: [`Source ${source.name} is inactive`] };
     }
 
+    if (
+      source.isScraping &&
+      source.isScrapingLockedAt &&
+      Date.now() - source.isScrapingLockedAt.getTime() < JOB_DEADLINE_MS
+    ) {
+      return { listingsFound: 0, newListings: 0, errors: [], skipped: true };
+    }
+
     const job = await this.prisma.scraperJob.create({
       data: {
         sourceId: source.id,
@@ -99,10 +107,9 @@ export class ScraperEngine {
             where: { externalId: raw.externalId },
           });
 
-          if (existing) continue;
-
-          const listing = await this.prisma.listing.create({
-            data: {
+          const listing = await this.prisma.listing.upsert({
+            where: { externalId: raw.externalId },
+            create: {
               externalId: raw.externalId,
               title: raw.title,
               price: raw.price,
@@ -116,9 +123,22 @@ export class ScraperEngine {
               sourceId: source.id,
               isSold: raw.isSold ?? false,
             },
+            update: {
+              price: raw.price,
+              year: raw.year,
+              mileage: raw.mileage,
+              damageStatus: raw.damageStatus,
+              description: raw.description,
+              imageUrl: raw.imageUrl,
+              images: raw.images,
+              canonicalUrl: raw.canonicalUrl,
+              isSold: raw.isSold ?? false,
+            },
           });
 
           if (raw.isSold) continue;
+
+          if (existing) continue;
 
           newListings++;
 
@@ -195,7 +215,7 @@ export class ScraperEngine {
       results.push({
         sourceId: source.id,
         sourceName: source.name,
-        status: result.errors.length > 0 ? "failed" : "completed",
+        status: result.skipped ? "skipped" : result.errors.length > 0 ? "failed" : "completed",
         listingsFound: result.listingsFound,
         newListings: result.newListings,
         errors: result.errors,
@@ -214,7 +234,7 @@ export class ScraperEngine {
       results.push({
         sourceId: source.id,
         sourceName: source.name,
-        status: result.errors.length > 0 ? "failed" : "completed",
+        status: result.skipped ? "skipped" : result.errors.length > 0 ? "failed" : "completed",
         listingsFound: result.listingsFound,
         newListings: result.newListings,
         errors: result.errors,

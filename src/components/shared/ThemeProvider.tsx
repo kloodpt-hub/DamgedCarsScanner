@@ -48,7 +48,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme, setTheme]);
 
   if (!mounted) {
-    return <>{children}</>;
+    // Provide a stable SSR-safe context value so consumers can call useTheme()
+    // without throwing while the server HTML and first client render stay in sync
+    return (
+      <ThemeContext.Provider value={{ theme: "dark", toggleTheme, setTheme }}>
+        {children}
+      </ThemeContext.Provider>
+    );
   }
 
   return (

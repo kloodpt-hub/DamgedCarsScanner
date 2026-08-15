@@ -21,7 +21,7 @@ export function getNextRunTime(source: ScraperSource): Date | null {
 
 export async function getDueSources(prisma: PrismaClient): Promise<ScraperSource[]> {
   const sources = await prisma.scraperSource.findMany({
-    where: { isActive: true },
+    where: { isActive: true, isScraping: false },
   });
 
   const now = Date.now();

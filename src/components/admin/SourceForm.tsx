@@ -373,6 +373,11 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
             </Button>
           </div>
         </div>
+        <p className="text-xs text-text-muted">
+          {isRtl
+            ? "المحولات المدمجة (leboncoin، autoscout24، schadeautos) تتبع تلقائيًا باستخدام منطق مدمج ولا تتطلب هذه المحددات. المحددات اختيارية وتُستخدم فقط كمُتجاوزات عند استخدام محول generic لموقع مخصص."
+            : "Built-in adapters (leboncoin, autoscout24, schadeautos) scrape automatically using built-in logic and do not require these selectors. Selectors are optional overrides only needed when using the generic adapter for a custom site."}
+        </p>
 
         {useCustomJson ? (
           <Textarea

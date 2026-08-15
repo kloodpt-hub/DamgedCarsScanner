@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { Select } from "@/components/ui/select";
 import { createFilter, updateFilter } from "@/server/actions/filters";
 
@@ -32,7 +33,9 @@ const labels = {
     filterCreated: "Filter created",
     failedToSave: "Failed to save filter",
     sources: "Sources",
+    allSources: "All sources",
     noSources: "No sources available",
+    sourcesSelected: (count: number) => `${count} selected`,
   },
   ar: {
     filterName: "اسم الفلتر",
@@ -52,7 +55,9 @@ const labels = {
     filterCreated: "تم إنشاء الفلتر",
     failedToSave: "فشل حفظ الفلتر",
     sources: "المصادر",
+    allSources: "كل المصادر",
     noSources: "لا توجد مصادر متاحة",
+    sourcesSelected: (count: number) => `تم اختيار ${count}`,
   },
 } as const;
 
@@ -156,28 +161,18 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
 
       <div>
         <label className="label">{t.sources}</label>
-        <div className="space-y-2 rounded-lg border border-border bg-input-bg/30 p-3 max-h-40 overflow-y-auto">
-          {sources.map((s) => (
-            <label key={s.id} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedSourceIds.includes(s.id)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedSourceIds((prev) => [...prev, s.id]);
-                  } else {
-                    setSelectedSourceIds((prev) => prev.filter((id) => id !== s.id));
-                  }
-                }}
-                className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
-              />
-              <span className="text-sm text-text">{s.name}</span>
-            </label>
-          ))}
-          {sources.length === 0 && (
-            <p className="text-xs text-text-muted">{t.noSources}</p>
-          )}
-        </div>
+        {sources.length === 0 ? (
+          <p className="text-xs text-text-muted">{t.noSources}</p>
+        ) : (
+          <MultiSelect
+            value={selectedSourceIds}
+            onChange={setSelectedSourceIds}
+            options={sources.map((s) => ({ value: s.id, label: s.name }))}
+            placeholder={t.allSources}
+            selectedLabel={t.sourcesSelected}
+            ariaLabel={t.sources}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

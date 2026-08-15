@@ -35,4 +35,5 @@ export interface ScraperJobResult {
   listingsFound: number;
   newListings: number;
   errors: string[];
+  skipped?: boolean;
 }
