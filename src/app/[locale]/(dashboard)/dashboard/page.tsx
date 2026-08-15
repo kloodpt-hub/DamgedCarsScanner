@@ -41,13 +41,17 @@ export default async function DashboardPage({
   ] = await Promise.all([
     userId
       ? prisma.listing.count({
-          where: { matchedFilters: { some: { userId } } },
+          where: {
+            isSold: false,
+            matchedFilters: { some: { userId } },
+          },
         })
       : 0,
     userId
       ? prisma.listing.count({
           where: {
             isRead: false,
+            isSold: false,
             matchedFilters: { some: { userId } },
           },
         })
@@ -57,12 +61,17 @@ export default async function DashboardPage({
       : 0,
     userId
       ? prisma.listing.count({
-          where: { isNotified: true, matchedFilters: { some: { userId } } },
+          where: {
+            isNotified: true,
+            isSold: false,
+            matchedFilters: { some: { userId } },
+          },
         })
       : 0,
     userId
       ? prisma.listing.findMany({
           where: {
+            isSold: false,
             matchedFilters: { some: { userId } },
             createdAt: { gte: todayStart },
           },

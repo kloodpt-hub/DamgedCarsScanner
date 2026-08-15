@@ -12,6 +12,7 @@ export async function GET() {
 
   const notifiedWhere = {
     isNotified: true,
+    isSold: false,
     matchedFilters: { some: { userId } },
   };
 

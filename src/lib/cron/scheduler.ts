@@ -2,13 +2,15 @@ import type { PrismaClient, ScraperSource } from "@prisma/client";
 
 export const SCRAPE_LOCK_DEADLINE_MS = 10 * 60 * 1000;
 
+export const SCRAPE_INTERVAL_MINUTES = 5;
+
 export function isDueForScraping(source: ScraperSource): boolean {
   if (!source.isActive) return false;
   if (!source.lastScrapedAt) return true;
 
   const now = new Date();
   const lastScraped = new Date(source.lastScrapedAt);
-  const intervalMs = source.scrapeIntervalMinutes * 60 * 1000;
+  const intervalMs = SCRAPE_INTERVAL_MINUTES * 60 * 1000;
 
   return now.getTime() - lastScraped.getTime() >= intervalMs;
 }
@@ -18,7 +20,7 @@ export function getNextRunTime(source: ScraperSource): Date | null {
   if (!source.lastScrapedAt) return new Date();
 
   const lastScraped = new Date(source.lastScrapedAt);
-  return new Date(lastScraped.getTime() + source.scrapeIntervalMinutes * 60 * 1000);
+  return new Date(lastScraped.getTime() + SCRAPE_INTERVAL_MINUTES * 60 * 1000);
 }
 
 export async function getDueSources(prisma: PrismaClient): Promise<ScraperSource[]> {
@@ -38,7 +40,7 @@ export async function getDueSources(prisma: PrismaClient): Promise<ScraperSource
 
     if (!source.lastScrapedAt) return true;
     const lastScraped = new Date(source.lastScrapedAt).getTime();
-    const intervalMs = source.scrapeIntervalMinutes * 60 * 1000;
+    const intervalMs = SCRAPE_INTERVAL_MINUTES * 60 * 1000;
     return now - lastScraped >= intervalMs;
   });
 }

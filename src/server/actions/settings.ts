@@ -1,6 +1,8 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { isLocale } from "@/lib/i18n/routing";
 
 const ALLOWED_ENV_KEYS = new Set([
   "GOOGLE_CLIENT_ID",
@@ -67,4 +69,18 @@ export async function redeployService() {
     body: JSON.stringify({}),
   });
   return { ok: true };
+}
+
+export async function updateUserLocale(locale: string) {
+  try {
+    if (!isLocale(locale)) return;
+    const session = await auth();
+    if (!session?.user) return;
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { locale },
+    });
+  } catch {
+    // Fail silently — navigation should still proceed.
+  }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { locales, isLocale, defaultLocale, type Locale } from "@/lib/i18n/routing";
 
 const protectedRoutes = ["/dashboard", "/admin"];
@@ -39,7 +40,31 @@ function detectLocale(acceptLanguage: string | null): Locale {
   return defaultLocale;
 }
 
-export default function proxy(request: NextRequest) {
+// Saved locale priority: explicit `locale` cookie (most recent choice) →
+// signed-in user's saved locale from the session JWT → accept-language → default.
+async function resolveSavedLocale(request: NextRequest): Promise<Locale> {
+  const cookieLocale = request.cookies.get("locale")?.value;
+  if (typeof cookieLocale === "string" && isLocale(cookieLocale)) {
+    return cookieLocale;
+  }
+
+  try {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+    });
+    const tokenLocale = token?.locale;
+    if (typeof tokenLocale === "string" && isLocale(tokenLocale)) {
+      return tokenLocale;
+    }
+  } catch {
+    // ignore — fall through to accept-language
+  }
+
+  return detectLocale(request.headers.get("accept-language"));
+}
+
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip non-app paths (static assets, _next, favicon) — just add security headers
@@ -58,9 +83,9 @@ export default function proxy(request: NextRequest) {
   );
 
   if (!pathnameHasLocale) {
-    // Detect locale and redirect to locale-prefixed path
-    const detectedLocale = detectLocale(request.headers.get("accept-language"));
-    const newUrl = new URL(`/${detectedLocale}${pathname}`, request.url);
+    // Redirect to the saved/preferred locale-prefixed path
+    const savedLocale = await resolveSavedLocale(request);
+    const newUrl = new URL(`/${savedLocale}${pathname}`, request.url);
     // Preserve search params
     newUrl.search = request.nextUrl.search;
     return getSecurityHeaders(NextResponse.redirect(newUrl));

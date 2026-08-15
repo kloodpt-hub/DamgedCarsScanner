@@ -115,6 +115,13 @@ export class ScraperEngine {
 
       for (const raw of rawListings) {
         try {
+          if (raw.isSold) {
+            await this.prisma.listing.deleteMany({
+              where: { externalId: raw.externalId },
+            });
+            continue;
+          }
+
           const existing = await this.prisma.listing.findUnique({
             where: { externalId: raw.externalId },
           });

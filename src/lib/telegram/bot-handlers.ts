@@ -302,6 +302,7 @@ async function handleLatest(
   }
 
   const listings: Listing[] = await prisma.listing.findMany({
+    where: { isSold: false },
     orderBy: { createdAt: "desc" },
     take: 30,
   });

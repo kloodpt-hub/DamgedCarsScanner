@@ -34,6 +34,8 @@ export async function getAllListings(params: {
 
   const where: Record<string, unknown> = {};
 
+  where.isSold = false;
+
   if (session.user.role !== "ADMIN") {
     where.matchedFilters = { some: { userId: session.user.id } };
   }

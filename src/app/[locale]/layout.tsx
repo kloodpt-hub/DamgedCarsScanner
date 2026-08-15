@@ -70,7 +70,7 @@ export default async function LocaleLayout({
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('theme') || 'dark';
+                  var theme = localStorage.getItem('theme') || 'light';
                   document.documentElement.setAttribute('data-theme', theme);
                   if (theme === 'dark') document.documentElement.classList.add('dark');
                 } catch(e) {}

@@ -22,6 +22,7 @@ export async function GET() {
   const recentNotifications = await prisma.listing.findMany({
     where: {
       isNotified: true,
+      isSold: false,
       matchedFilters: { some: { userId: session.user.id } },
     },
     include: { source: true },

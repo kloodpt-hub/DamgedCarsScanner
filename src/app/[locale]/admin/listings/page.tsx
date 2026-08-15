@@ -41,6 +41,8 @@ export default async function AdminListingsPage({
 
   const where: Record<string, unknown> = {};
 
+  where.isSold = false;
+
   if (sourceId) {
     where.sourceId = sourceId;
   }

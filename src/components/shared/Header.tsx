@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import { Bell, Globe, LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/shared/ThemeProvider";
 import { useNotificationDrawer } from "@/components/shared/NotificationDrawer";
+import { updateUserLocale } from "@/server/actions/settings";
 import { cn } from "@/lib/utils";
 
 const labels = {
@@ -62,6 +63,10 @@ export function Header({ locale }: HeaderProps) {
         <div className="flex items-center gap-1">
           <Link
             href={href}
+            onClick={() => {
+              document.cookie = `locale=${next};path=/;max-age=31536000;samesite=lax`;
+              updateUserLocale(next).catch(() => {});
+            }}
             className="flex items-center gap-1.5 p-2.5 rounded-lg text-text-muted hover:text-text hover:bg-surface transition-colors"
             title={t.localeTitle}
             aria-label={t.localeTitle}

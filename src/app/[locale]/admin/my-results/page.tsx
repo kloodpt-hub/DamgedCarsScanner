@@ -30,6 +30,7 @@ export default async function AdminMyResultsPage({
   const skip = (page - 1) * PAGE_SIZE;
 
   const where = {
+    isSold: false,
     matchedFilters: { some: { userId } },
   };
 

@@ -43,7 +43,7 @@ export default async function AdminDashboardPage({
   ] = await Promise.all([
     prisma.scraperSource.count(),
     prisma.scraperSource.count({ where: { isActive: true } }),
-    prisma.listing.count(),
+    prisma.listing.count({ where: { isSold: false } }),
     prisma.scraperJob.count(),
     prisma.scraperJob.count({ where: { status: "completed" } }),
     prisma.scraperJob.findMany({

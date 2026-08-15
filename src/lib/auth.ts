@@ -152,12 +152,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!token.role || token.role === "USER") {
           const dbUser = await prisma.user.findUnique({
             where: { email: user.email as string },
-            select: { id: true, role: true },
+            select: { id: true, role: true, locale: true },
           });
           if (dbUser) {
             token.id = dbUser.id;
             token.role = dbUser.role;
+            token.locale = dbUser.locale;
           }
+        }
+
+        // Persist the user's saved locale into the session token so middleware
+        // can redirect to the right locale even without a cookie. Only runs at
+        // sign-in (user is present).
+        if (!token.locale) {
+          token.locale =
+            (user as { locale?: string })?.locale ??
+            (await prisma.user.findUnique({
+              where: { email: user.email as string },
+              select: { locale: true },
+            }))?.locale ??
+            "en";
         }
       }
       return token;
@@ -166,6 +180,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.locale = token.locale as string;
       }
       return session;
     },

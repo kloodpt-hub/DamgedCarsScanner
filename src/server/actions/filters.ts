@@ -11,12 +11,13 @@ async function matchExistingListings(filterId: string) {
   const filter = await prisma.filter.findUnique({ where: { id: filterId } });
   if (!filter) return;
 
-  const totalListings = await prisma.listing.count();
+  const totalListings = await prisma.listing.count({ where: { isSold: false } });
   for (let skip = 0; skip < totalListings; skip += BATCH_SIZE) {
     const listings = await prisma.listing.findMany({
       skip,
       take: BATCH_SIZE,
       orderBy: { createdAt: "desc" },
+      where: { isSold: false },
     });
 
     const matchingIds = listings

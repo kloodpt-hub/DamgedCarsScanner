@@ -14,8 +14,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "dark";
-    return (localStorage.getItem("theme") as Theme) ?? "dark";
+    if (typeof window === "undefined") return "light";
+    return (localStorage.getItem("theme") as Theme) ?? "light";
   });
   const [mounted, setMounted] = useState(false);
 
@@ -23,7 +23,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- setMounted flips after hydration so SSR HTML (children without ThemeContext) matches the first client render; a lazy initializer would break SSR/hydration alignment
     setMounted(true);
     const stored = localStorage.getItem("theme") as Theme | null;
-    const initial = stored ?? "dark";
+    const initial = stored ?? "light";
     document.documentElement.setAttribute("data-theme", initial);
     if (initial === "dark") {
       document.documentElement.classList.add("dark");
@@ -51,7 +51,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Provide a stable SSR-safe context value so consumers can call useTheme()
     // without throwing while the server HTML and first client render stay in sync
     return (
-      <ThemeContext.Provider value={{ theme: "dark", toggleTheme, setTheme }}>
+      <ThemeContext.Provider value={{ theme: "light", toggleTheme, setTheme }}>
         {children}
       </ThemeContext.Provider>
     );

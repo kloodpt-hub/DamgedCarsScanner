@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
 
   const where: Prisma.ListingWhereInput = {};
 
+  where.isSold = false;
+
   if (effectiveView === "matched") {
     where.matchedFilters = { some: { userId: session.user.id } };
   }

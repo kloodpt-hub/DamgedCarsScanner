@@ -51,7 +51,7 @@ export default async function NotificationsPage({
     pushSubscriptionCount,
   ] = await Promise.all([
     prisma.listing.findMany({
-      where: { isNotified: true },
+      where: { isNotified: true, isSold: false },
       include: { source: true },
       orderBy: { updatedAt: "desc" },
       take: 20,
@@ -66,7 +66,7 @@ export default async function NotificationsPage({
       },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.listing.count({ where: { isNotified: true } }),
+    prisma.listing.count({ where: { isNotified: true, isSold: false } }),
     prisma.user.count({
       where: {
         OR: [
