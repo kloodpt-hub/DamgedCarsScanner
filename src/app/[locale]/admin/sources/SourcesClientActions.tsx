@@ -100,8 +100,8 @@ export function SourcesClientActions({
                   baseUrl: "",
                   adapterType: "generic",
                   selectors: {},
-                  isActive: true,
-                  scrapeIntervalMinutes: 60,
+                  isActive: false,
+                  scrapeIntervalMinutes: 6,
                 }}
                 locale={locale}
                 onSuccess={() => {

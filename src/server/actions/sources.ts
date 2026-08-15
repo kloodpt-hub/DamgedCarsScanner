@@ -10,8 +10,8 @@ const createSourceSchema = z.object({
   baseUrl: z.string().url("Must be a valid URL"),
   adapterType: z.string().default("generic"),
   selectors: z.record(z.string()),
-  isActive: z.boolean().default(true),
-  scrapeIntervalMinutes: z.number().int().min(1).default(60),
+  isActive: z.boolean().default(false),
+  scrapeIntervalMinutes: z.number().int().min(1).default(6),
 });
 
 const updateSourceSchema = createSourceSchema.partial();

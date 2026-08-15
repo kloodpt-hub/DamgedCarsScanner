@@ -136,9 +136,9 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
   const [baseUrl, setBaseUrl] = useState(source?.baseUrl ?? "");
   const [adapterType, setAdapterType] = useState(source?.adapterType ?? "generic");
   const [scrapeIntervalMinutes, setScrapeIntervalMinutes] = useState(
-    source?.scrapeIntervalMinutes ?? 60
+    source?.scrapeIntervalMinutes ?? 6
   );
-  const [isActive, setIsActive] = useState(source?.isActive ?? true);
+  const [isActive, setIsActive] = useState(source?.isActive ?? false);
   const [useCustomJson, setUseCustomJson] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
