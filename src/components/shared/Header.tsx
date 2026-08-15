@@ -34,7 +34,7 @@ interface HeaderProps {
 export function Header({ locale }: HeaderProps) {
   const pathname = usePathname() || "";
   const { theme, toggleTheme } = useTheme();
-  const { open, unreadCount } = useNotificationDrawer();
+  const { toggle, unreadCount } = useNotificationDrawer();
   const isRtl = locale === "ar";
   const t = labels[locale as keyof typeof labels] ?? labels.en;
   const next = locale === "en" ? "ar" : "en";
@@ -69,7 +69,7 @@ export function Header({ locale }: HeaderProps) {
           </Link>
 
           <button
-            onClick={open}
+            onClick={toggle}
             className="relative p-2.5 rounded-lg text-text-muted hover:text-text hover:bg-surface transition-colors"
             title={t.bellTitle}
             aria-label={t.bellTitle}

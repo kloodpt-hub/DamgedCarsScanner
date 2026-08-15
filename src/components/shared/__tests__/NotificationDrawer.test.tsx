@@ -88,10 +88,12 @@ function dispatchOpenNotification() {
 }
 
 function Harness({ locale = "en" }: { locale?: string }) {
-  const { open, unreadCount } = useNotificationDrawer();
+  const { open, close, toggle, unreadCount } = useNotificationDrawer();
   return (
     <div>
       <button onClick={open}>open drawer</button>
+      <button onClick={close}>close drawer</button>
+      <button onClick={toggle}>toggle drawer</button>
       <span data-testid="unread">{unreadCount}</span>
       <span data-testid="locale">{locale}</span>
     </div>
@@ -134,6 +136,28 @@ describe("NotificationDrawer", () => {
     expect(dialog).toHaveAttribute("aria-hidden", "false");
     expect(screen.getByText("Notifications")).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText("Close notifications"));
+    expect(dialog).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("toggles the drawer open and closed from the hook", async () => {
+    vi.stubGlobal("fetch", mockFetch());
+    renderApp();
+    const dialog = getDialog();
+    const toggleButton = screen.getByText("toggle drawer");
+    expect(dialog).toHaveAttribute("aria-hidden", "true");
+    fireEvent.click(toggleButton);
+    expect(dialog).toHaveAttribute("aria-hidden", "false");
+    fireEvent.click(toggleButton);
+    expect(dialog).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("closes the drawer on Escape when open", async () => {
+    vi.stubGlobal("fetch", mockFetch());
+    renderApp();
+    const dialog = getDialog();
+    fireEvent.click(screen.getByText("open drawer"));
+    expect(dialog).toHaveAttribute("aria-hidden", "false");
+    fireEvent.keyDown(window, { key: "Escape" });
     expect(dialog).toHaveAttribute("aria-hidden", "true");
   });
 

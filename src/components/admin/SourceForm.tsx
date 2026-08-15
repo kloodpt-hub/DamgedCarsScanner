@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createSource, updateSource } from "@/server/actions/sources";
+import { getCsrfToken } from "@/lib/csrf-client";
+import { SITE_CATALOG, type SiteCatalogEntry } from "@/lib/scraper/catalog";
 
 const LEBONCOIN_DEFAULTS = {
   listingContainer: '[data-qa-id="aditem_container"], [data-qa-id="listitem_ad"], .styles_adCard__',
@@ -62,6 +64,20 @@ const SCHADEAUTOS_DEFAULTS = {
   nextPage: ".schadeautos-pagination__nav--next",
 };
 
+const VEHICLE_GRID_DEFAULTS = {
+  listingContainer:
+    '[class*="listing"], [class*="card"], [class*="vehicle"], [class*="annonce"]',
+  title: 'h2, h3, [class*="title"], [class*="heading"]',
+  price: '[class*="price"], [class*="prix"], [itemprop="price"]',
+  year: '[class*="year"], [class*="registration"], [class*="annee"]',
+  mileage: '[class*="mileage"], [class*="km"], [class*="kilometr"]',
+  damageStatus: '[class*="damage"], [class*="state"], [class*="condition"]',
+  description: '[class*="description"], [class*="desc"], p',
+  imageUrl: "img",
+  link: "a[href]",
+  nextPage: '[rel="next"], a[class*="next"], [class*="pagination"] a',
+};
+
 type SelectorField = keyof typeof GENERIC_DEFAULTS;
 
 const SELECTOR_FIELDS: { key: SelectorField; label: string; placeholder: string }[] = [
@@ -84,7 +100,13 @@ function getDefaultsForAdapter(type: string): Record<SelectorField, string> {
     case "autoscout24":
       return { ...AUTOSCOUT24_DEFAULTS };
     case "schadeautos":
+    case "schadeauto-zoeker":
+    case "schadeautos-nl":
       return { ...SCHADEAUTOS_DEFAULTS };
+    case "autos-motos":
+    case "didier":
+    case "dsm":
+      return { ...VEHICLE_GRID_DEFAULTS };
     default:
       return { ...GENERIC_DEFAULTS };
   }
@@ -175,6 +197,23 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
     toast.success(isRtl ? "تم تعبئة القيم الافتراضية" : "Default selectors filled");
   };
 
+  const handleCatalogSelect = (site: SiteCatalogEntry) => {
+    setName(site.name);
+    setBaseUrl(site.baseUrl);
+    setAdapterType(site.adapterType);
+    setScrapeIntervalMinutes(site.defaultInterval);
+    const defaults = getDefaultsForAdapter(site.adapterType);
+    setSelectorValues(defaults);
+    setCustomJson(JSON.stringify(defaults, null, 2));
+    setPrevAdapterType(site.adapterType);
+    setErrors({});
+    toast.success(
+      isRtl
+        ? `تم اختيار ${site.nameAr ?? site.name} — يمكنك تعديل التفاصيل قبل الحفظ`
+        : `Picked ${site.name} — review the details before saving`
+    );
+  };
+
   const handleSelectorFieldChange = (key: SelectorField, value: string) => {
     const next = { ...selectorValues, [key]: value };
     setSelectorValues(next);
@@ -240,7 +279,7 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
         });
         toast.success(isRtl ? "تم التحديث" : "Updated successfully");
       } else {
-        await createSource({
+        const result = await createSource({
           name,
           baseUrl,
           adapterType,
@@ -249,6 +288,38 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
           selectors,
         });
         toast.success(isRtl ? "تم الإنشاء" : "Created successfully");
+
+        try {
+          const csrfToken = await getCsrfToken();
+          const runRes = await fetch("/api/scraper/run", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+            },
+            body: JSON.stringify({ sourceId: result.source.id }),
+          });
+          const data = await runRes.json();
+          if (runRes.ok) {
+            toast.success(
+              isRtl
+                ? `تم السحب: ${data.listingsFound} إعلان، ${data.newListings} جديد`
+                : `Scraped: ${data.listingsFound} listings, ${data.newListings} new`
+            );
+          } else {
+            toast.warning(
+              isRtl
+                ? `تم إنشاء المصدر لكن فشل السحب: ${data.error ?? "خطأ"}`
+                : `Source created but the fetch failed: ${data.error ?? "error"}`
+            );
+          }
+        } catch {
+          toast.warning(
+            isRtl
+              ? "تم إنشاء المصدر لكن فشل تشغيل السحب"
+              : "Source created but the fetch could not be triggered"
+          );
+        }
       }
       onSuccess?.();
       router.refresh();
@@ -280,10 +351,64 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
       en: "Optimized for Debels.com damage cars promo page. Parses the promo grid directly without custom selectors.",
       ar: "محسّن لصفحة عروض سيارات التصادم في موقع Debels. يقرأ شبكة العروض مباشرة دون الحاجة إلى محددات مخصصة.",
     },
+    "schadeauto-zoeker": {
+      en: "Optimized for SchadeAuto-Zoeker.nl (Schadeautos WordPress plugin). Reads data-* attributes for reliable extraction.",
+      ar: "محسّن لموقع SchadeAuto-Zoeker.nl (إضافة Schadeautos). يقرأ البيانات من سمات data-* لاستخراج موثوق.",
+    },
+    "schadeautos-nl": {
+      en: "Optimized for Schadeautos.nl (Schadeautos WordPress plugin). Reads data-* attributes for reliable extraction.",
+      ar: "محسّن لموقع Schadeautos.nl (إضافة Schadeautos). يقرأ البيانات من سمات data-* لاستخراج موثوق.",
+    },
+    "autos-motos": {
+      en: "Generic vehicle-grid adapter used for Declerck Autohandel and Inter-Cars. Provide selectors or rely on common patterns.",
+      ar: "محول شبكة سيارات عام يُستخدم لموقعي Declerck Autohandel وInter-Cars. قدّم محددات أو اعتمد على الأنماط الشائعة.",
+    },
+    didier: {
+      en: "Optimized for Cars2Repair (Didier). Provide selectors or rely on common vehicle listing patterns.",
+      ar: "محسّن لموقع Cars2Repair (ديدييه). قدّم محددات أو اعتمد على أنماط إعلانات السيارات الشائعة.",
+    },
+    dsm: {
+      en: "Optimized for DSM Belgium (Used & Damaged catalogs). Provide selectors or rely on common vehicle listing patterns.",
+      ar: "محسّن لموقع دي إس إم بلجيكا (كتالوجات المستعمل والمتضرر). قدّم محددات أو اعتمد على الأنماط الشائعة.",
+    },
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {!isEdit && (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-text">
+            {isRtl
+              ? "اختر من الكتالوج (اختياري)"
+              : "Pick from catalog (optional)"}
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {SITE_CATALOG.map((site) => (
+              <button
+                key={site.id}
+                type="button"
+                onClick={() => handleCatalogSelect(site)}
+                className="text-start rounded-lg border border-border bg-surface/50 hover:border-primary hover:bg-surface px-3 py-2 transition-colors cursor-pointer"
+              >
+                <span className="block text-sm font-medium text-text">
+                  {isRtl && site.nameAr ? site.nameAr : site.name}
+                </span>
+                <span className="block text-xs text-text-muted mt-0.5">
+                  {isRtl && site.descriptionAr
+                    ? site.descriptionAr
+                    : site.description}
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-text-muted">
+            {isRtl
+              ? "يتم تعبئة الاسم والرابط والمحول والفترة تلقائيًا عند الاختيار. يمكنك تعديلها قبل الحفظ."
+              : "Selecting a site pre-fills name, URL, adapter and interval. You can still edit them before saving."}
+          </p>
+        </div>
+      )}
+
       <div className="space-y-2">
         <label className="block text-sm font-medium text-text">
           {isRtl ? "اسم المصدر" : "Source Name"}
@@ -329,6 +454,11 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
             <option value="autoscout24">AutoScout24</option>
             <option value="schadeautos">Schadeautos (WordPress)</option>
             <option value="debels">Debels</option>
+            <option value="schadeauto-zoeker">SchadeAuto-Zoeker.nl</option>
+            <option value="schadeautos-nl">Schadeautos.nl</option>
+            <option value="autos-motos">Autos &amp; Motos</option>
+            <option value="didier">Didier (cars2repair)</option>
+            <option value="dsm">DSM Belgium</option>
           </Select>
           {adapterHelperText[adapterType] && (
             <p className="text-xs text-text-muted mt-1">
@@ -380,8 +510,8 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
         </div>
         <p className="text-xs text-text-muted">
           {isRtl
-            ? "المحولات المدمجة (leboncoin، autoscout24، schadeautos، debels) تتبع تلقائيًا باستخدام منطق مدمج ولا تتطلب هذه المحددات. المحددات اختيارية وتُستخدم فقط كمُتجاوزات عند استخدام محول generic لموقع مخصص."
-            : "Built-in adapters (leboncoin, autoscout24, schadeautos, debels) scrape automatically using built-in logic and do not require these selectors. Selectors are optional overrides only needed when using the generic adapter for a custom site."}
+            ? "المحولات المدمجة (leboncoin، autoscout24، schadeautos، schadeauto-zoeker، schadeautos-nl، debels) تتبع تلقائيًا باستخدام منطق مدمج ولا تتطلب هذه المحددات. المحددات اختيارية وتُستخدم كمُتجاوزات. المحولات الأخرى (generic، autos-motos، didier، dsm) تستخدم هذه المحددات — تُعبَّأ القيم الافتراضية تلقائيًا ويمكنك تحسينها."
+            : "Built-in adapters (leboncoin, autoscout24, schadeautos, schadeauto-zoeker, schadeautos-nl, debels) scrape automatically using built-in logic and do not require these selectors; they are optional overrides. Other adapters (generic, autos-motos, didier, dsm) use these selectors — sensible defaults are pre-filled and can be tuned."}
         </p>
 
         {useCustomJson ? (

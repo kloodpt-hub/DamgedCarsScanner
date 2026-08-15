@@ -76,6 +76,8 @@ interface RecentNotification {
 
 interface NotificationDrawerContextValue {
   open: () => void;
+  close: () => void;
+  toggle: () => void;
   unreadCount: number;
 }
 
@@ -127,6 +129,7 @@ export function NotificationDrawerProvider({
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
+  const toggle = useCallback(() => setIsOpen((v) => !v), []);
 
   const refreshUnreadCount = useCallback(async () => {
     try {
@@ -201,6 +204,15 @@ export function NotificationDrawerProvider({
     };
   }, [refreshUnreadCount]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, close]);
+
   const handleOpenListing = (item: RecentNotification) => {
     if (item.canonicalUrl) {
       window.open(item.canonicalUrl, "_blank", "noopener");
@@ -231,7 +243,10 @@ export function NotificationDrawerProvider({
     setIsOpen(false);
   };
 
-  const contextValue = useMemo(() => ({ open, unreadCount }), [open, unreadCount]);
+  const contextValue = useMemo(
+    () => ({ open, close, toggle, unreadCount }),
+    [open, close, toggle, unreadCount]
+  );
 
   const listItems = live
     ? recent.filter((item) => item.id !== live.listingId)

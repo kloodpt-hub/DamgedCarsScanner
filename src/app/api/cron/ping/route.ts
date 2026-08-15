@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { startKeepAlive } from "@/lib/cron/keep-alive";
+import { startScrapeScheduler } from "@/lib/cron/scrape-scheduler";
 
 function safeCompare(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -18,8 +19,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Start the internal keep-alive if not already running
+  // Start the internal keep-alive and scrape scheduler if not already running
   startKeepAlive();
+  startScrapeScheduler();
 
   return NextResponse.json({
     status: "ok",

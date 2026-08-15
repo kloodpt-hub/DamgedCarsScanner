@@ -130,7 +130,7 @@ export function SourcesClientActions({
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowForm(false)}
           />
-          <div className="relative bg-card-bg border border-card-border rounded-xl shadow-xl p-6 max-w-lg w-full z-10 max-h-[calc(100dvh-2rem)] overflow-y-auto">
+          <div className="relative bg-card-bg border border-card-border rounded-xl shadow-xl p-6 max-w-xl w-full z-10 max-h-[calc(100dvh-2rem)] overflow-y-auto">
             <h2 className="text-lg font-semibold text-text mb-4">
               {isRtl ? "إضافة مصدر جديد" : "Add New Source"}
             </h2>

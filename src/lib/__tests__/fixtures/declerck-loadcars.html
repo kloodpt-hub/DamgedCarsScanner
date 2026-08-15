@@ -1,0 +1,164 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css">
+<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+      <link rel="stylesheet" href="assets/css/style.css">
+      <link rel="stylesheet" href="assets/css/responsive.css">
+      <link rel="stylesheet" href="assets/css/jquery.mCustomScrollbar.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-T1RJDPRH4G"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-T1RJDPRH4G');
+        </script>
+</head>
+
+
+<style>
+.makeBox {
+	padding: 10px;
+	font-size: 14pt;
+}
+
+.w3-black,
+.w3-hover-black:hover {
+	color: #fff!important;
+	background-color: #000!important
+}
+
+.box1car {
+	position: relative;
+	max-width: 440px;
+  	max-height: 520px;
+ 	padding: 2px;
+    margin: 10px;
+	float: left;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+  	background-color: red;
+}
+.box1carImage {
+    width:100%;
+  	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+    border:2px solid #fff;
+}
+
+.box1carInfo {
+	height: 100px;
+	font-size: 130%;
+    font-weight:bold;
+    color:#fff;
+	border-bottom: 2px solid #fff;
+	text-align: center;
+	overflow: hidden;
+	background-color: red;
+}
+
+.box1carPrice {
+    color:#fff;
+	text-align: center;
+	overflow: hidden;
+    font-size: 150%;
+    font-weight:bold;
+}
+
+
+.hide600 {
+	display: block!important;
+}
+
+.swiper {
+    width: 98%;
+}
+
+@media only screen and (max-width: 900px) {
+    .box1car {
+	    max-width: 94%;
+     	max-height: 750px;
+
+    }
+}
+
+</style>
+
+    <div class='row' style='align-items:center;justify-content:center;'>
+    <div class="box1car">
+<a href='#ourcars' onclick='fillContentBox("17828308761573564642");'>
+<img class="box1carImage"VOLKSWAGEN TRANSPORTER DUBBELE CABINE 5PL -  2023 - 65448 km."  alt="" src="https://autos-motos.net/pictures/BE466342148/1979/image-01-B.JPG"></a>
+<div class="box1carInfo">
+TRANSPORTER 3/2023<br>1968cc Diesel.<br>
+</div>
+</div>
+
+<div class="box1car">
+<a href='#ourcars' onclick='fillContentBox("17624379841297794835");'>
+<img class="box1carImage"NISSAN MICRA  -  2020 - 141450 km."  alt="" src="https://autos-motos.net/pictures/BE466342148/1973/image-01-B.JPG"></a>
+<div class="box1carInfo">
+MICRA 1/2020<br>999cc Petrol.<br>
+</div>
+</div>
+
+<div class="box1car">
+<a href='#ourcars' onclick='fillContentBox("17568850781810175900");'>
+<img class="box1carImage"CITROËN C5 X  -  2022 - 15638 km."  alt="" src="https://autos-motos.net/pictures/BE466342148/1970/image-01-B.JPG"></a>
+<div class="box1carInfo">
+C5 X 12/2022<br>1199cc Petrol.<br>
+</div>
+</div>
+
+<div class="box1car">
+<a href='#ourcars' onclick='fillContentBox("17508534972026229454");'>
+<img class="box1carImage"CITROËN C4 SPACETOURER  -  2022 - 51379 km."  alt="" src="https://autos-motos.net/pictures/BE466342148/1968/image-01-B.JPG"></a>
+<div class="box1carInfo">
+C4 SPACETOURER 3/2022<br>1499cc Diesel.<br>
+</div>
+</div>
+
+<div class="box1car">
+<a href='#ourcars' onclick='fillContentBox("1750853262407817056");'>
+<img class="box1carImage"CITROËN C4 AIRCROSS  -  2016 - 100150 km."  alt="" src="https://autos-motos.net/pictures/BE466342148/1967/image-01-B.JPG"></a>
+<div class="box1carInfo">
+C4 AIRCROSS 7/2016<br>1560cc Diesel.<br>
+</div>
+</div>
+
+<div class="box1car">
+<a href='#ourcars' onclick='fillContentBox("17465316521896485884");'>
+<img class="box1carImage"NISSAN PULSAR  -  2018 - 126174 km."  alt="" src="https://autos-motos.net/pictures/BE466342148/1966/image-01-B.JPG"></a>
+<div class="box1carInfo">
+PULSAR 10/2018<br>1461cc Diesel.<br>
+</div>
+</div>
+
+    </div>
+       <script>
+   var swiper = new Swiper('.swiper', {
+  // Optional parameters
+       direction: 'horizontal',
+          loop: true,
+
+  // If we need pagination
+  pagination: {
+    el: '.swiper-pagination',
+  },
+
+  // Navigation arrows
+  navigation: {
+    nextEl: '.swiper-button-next',
+    prevEl: '.swiper-button-prev',
+  },
+
+  // And if we need scrollbar
+  scrollbar: {
+    el: '.swiper-scrollbar',
+  },
+});
+   </script>
+</html>

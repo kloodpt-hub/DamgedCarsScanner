@@ -4,6 +4,11 @@ import { LeboncoinAdapter } from "./leboncoin.adapter";
 import { Autoscout24Adapter } from "./autoscout24.adapter";
 import { SchadeautosAdapter } from "./schadeautos.adapter";
 import { DebelsAdapter } from "./debels.adapter";
+import { SchadeautoZoekerAdapter } from "./schadeauto-zoeker.adapter";
+import { SchadeautosNlAdapter } from "./schadeautos-nl.adapter";
+import { AutosMotosAdapter } from "./autos-motos.adapter";
+import { DidierAdapter } from "./didier.adapter";
+import { DsmAdapter } from "./dsm.adapter";
 import type { BaseAdapterOptions } from "./base-adapter";
 import type { ScraperAdapter, ScraperJobResult, ScraperSelectors } from "./types";
 import { evaluateListing } from "../filters/evaluator";
@@ -18,6 +23,11 @@ const ADAPTERS: Record<string, (options?: BaseAdapterOptions) => ScraperAdapter>
   autoscout24: (o) => new Autoscout24Adapter(o),
   schadeautos: (o) => new SchadeautosAdapter(o),
   debels: (o) => new DebelsAdapter(o),
+  "schadeauto-zoeker": (o) => new SchadeautoZoekerAdapter(o),
+  "schadeautos-nl": (o) => new SchadeautosNlAdapter(o),
+  "autos-motos": (o) => new AutosMotosAdapter(o),
+  didier: (o) => new DidierAdapter(o),
+  dsm: (o) => new DsmAdapter(o),
 };
 
 export interface ScrapeResult {

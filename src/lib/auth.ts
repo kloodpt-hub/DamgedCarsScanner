@@ -48,6 +48,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          emailVerified: profile.email_verified ? new Date() : null,
+          role: "USER",
+        };
+      },
       // NextAuth v5 does NOT set allowDangerousEmailAccountLinking by default,
       // so a Google account sharing an email with an existing credentials
       // account will NOT be auto-linked. This prevents account-takeover via
