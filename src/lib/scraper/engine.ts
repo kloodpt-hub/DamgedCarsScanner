@@ -13,7 +13,7 @@ import type { BaseAdapterOptions } from "./base-adapter";
 import type { ScraperAdapter, ScraperJobResult, ScraperSelectors } from "./types";
 import { evaluateListing } from "../filters/evaluator";
 import { notifyNewListing } from "../notifications";
-import { getDueSources, markSourceScraped } from "../cron/scheduler";
+import { getDueSources, markSourceScraped, releaseStaleLocks } from "../cron/scheduler";
 
 const JOB_DEADLINE_MS = 5 * 60 * 1000;
 
@@ -238,6 +238,11 @@ export class ScraperEngine {
   }
 
   async runDueJobs(): Promise<ScrapeResult[]> {
+    const released = await releaseStaleLocks(this.prisma);
+    if (released > 0) {
+      console.log(`[engine] Released ${released} stale scrape locks`);
+    }
+
     const sources = await getDueSources(this.prisma);
     const results: ScrapeResult[] = [];
 

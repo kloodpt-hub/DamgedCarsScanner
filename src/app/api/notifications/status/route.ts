@@ -11,7 +11,11 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { telegramChatId: true, email: true },
+    select: {
+      telegramChatId: true,
+      email: true,
+      pushSubscriptions: { select: { id: true } },
+    },
   });
 
   const recentNotifications = await prisma.listing.findMany({
@@ -28,6 +32,7 @@ export async function GET() {
     emailConfigured: isEmailConfigured(),
     telegramConnected: !!user?.telegramChatId,
     telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || "",
+    pushSubscriptionCount: user?.pushSubscriptions.length ?? 0,
     pushSupported: true,
     pushConfigured:
       !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY &&

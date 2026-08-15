@@ -67,12 +67,18 @@ export async function POST(request: NextRequest) {
     payload.image = latestListing.imageUrl;
   }
 
+  const results = [];
   for (const sub of subscriptions) {
-    await sendPushNotification(
+    const ok = await sendPushNotification(
       { endpoint: sub.endpoint, keys: sub.keys as { p256dh: string; auth: string } },
       payload
     );
+    results.push({ endpoint: sub.endpoint.slice(-40), ok });
   }
 
-  return NextResponse.json({ success: true, sent: subscriptions.length });
+  const sent = results.filter((r) => r.ok).length;
+  const failed = results.length - sent;
+  console.log(`[push] test-push: sent=${sent} failed=${failed}`);
+
+  return NextResponse.json({ success: sent > 0, sent, failed, results });
 }

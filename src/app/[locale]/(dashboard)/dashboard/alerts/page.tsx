@@ -66,6 +66,8 @@ const labels = {
       disableFailed: "Failed to disable push notifications",
       allowFirst:
         "Push only works after you allow notifications. Click Enable and choose Allow in the browser dialog.",
+      notSaved:
+        "Your browser is subscribed but the server has no saved subscription. Click Disable, then Enable again to fix this.",
       blockedText:
         "Notifications are blocked by your browser. Enable them in your site settings or browser permissions, then try again.",
       iosHint: getIosPushHint("en"),
@@ -110,6 +112,8 @@ const labels = {
       disableFailed: "فشل تعطيل إشعارات الويب",
       allowFirst:
         "تعمل الإشعارات فقط بعد السماح بها. اضغط تفعيل واختر السماح في نافذة المتصفح.",
+      notSaved:
+        "متصفحك مشترك في الإشعارات لكن الخادم لا يملك اشتراكًا محفوظًا. اضغط «تعطيل» ثم «تفعيل» مرة أخرى لإصلاح ذلك.",
       blockedText:
         "تم حظر الإشعارات بواسطة المتصفح. فعّلها من إعدادات الموقع أو أذونات المتصفح ثم حاول مرة أخرى.",
       iosHint: getIosPushHint("ar"),
@@ -139,7 +143,8 @@ export default function AlertsPage({
   const [emailConfigured, setEmailConfigured] = useState(false);
   const [telegramConnected, setTelegramConnected] = useState(false);
   const [telegramBotUsername, setTelegramBotUsername] = useState("");
-  const [pushEnabled, setPushEnabled] = useState(false);
+  const [browserSubscribed, setBrowserSubscribed] = useState(false);
+  const [serverPushCount, setServerPushCount] = useState(0);
   const [pushSupported, setPushSupported] = useState(false);
   const [pushBlocked, setPushBlocked] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
@@ -161,6 +166,7 @@ export default function AlertsPage({
         setTelegramConnected(data.telegramConnected);
         setTelegramBotUsername(data.telegramBotUsername || "");
         setPushSupported(data.pushSupported && isPushSupported());
+        setServerPushCount(data.pushSubscriptionCount || 0);
         setRecentNotifications(data.recentNotifications || []);
       })
       .catch(() => {})
@@ -169,9 +175,11 @@ export default function AlertsPage({
 
   useEffect(() => {
     isSubscribed()
-      .then((subscribed) => setPushEnabled(subscribed))
+      .then((subscribed) => setBrowserSubscribed(subscribed))
       .catch(() => {});
   }, []);
+
+  const pushEnabled = browserSubscribed && serverPushCount > 0;
 
   const iosHint = pushSupported && isIosDevice() && !isIosPwa();
 
@@ -203,7 +211,8 @@ export default function AlertsPage({
     try {
       const result = await subscribeToPush();
       if (result.ok) {
-        setPushEnabled(true);
+        setBrowserSubscribed(true);
+        setServerPushCount(1);
         toast.success(t.push.enabled);
         return;
       }
@@ -235,7 +244,8 @@ export default function AlertsPage({
     try {
       const result = await unsubscribeFromPush();
       if (result.ok) {
-        setPushEnabled(false);
+        setBrowserSubscribed(false);
+        setServerPushCount(0);
         toast.success(t.push.disableSuccess);
       } else {
         toast.error(t.push.disableFailed);
@@ -369,6 +379,9 @@ export default function AlertsPage({
               </div>
               {pushBlocked && (
                 <p className="text-xs text-danger">{t.push.blockedText}</p>
+              )}
+              {!pushEnabled && browserSubscribed && (
+                <p className="text-xs text-warning">{t.push.notSaved}</p>
               )}
               {iosHint && !pushEnabled && (
                 <p className="text-xs text-warning">{t.push.iosHint}</p>

@@ -1,5 +1,7 @@
 import type { PrismaClient, ScraperSource } from "@prisma/client";
 
+export const SCRAPE_LOCK_DEADLINE_MS = 10 * 60 * 1000;
+
 export function isDueForScraping(source: ScraperSource): boolean {
   if (!source.isActive) return false;
   if (!source.lastScrapedAt) return true;
@@ -21,16 +23,56 @@ export function getNextRunTime(source: ScraperSource): Date | null {
 
 export async function getDueSources(prisma: PrismaClient): Promise<ScraperSource[]> {
   const sources = await prisma.scraperSource.findMany({
-    where: { isActive: true, isScraping: false },
+    where: { isActive: true },
   });
 
   const now = Date.now();
   return sources.filter((source) => {
+    if (
+      source.isScraping &&
+      source.isScrapingLockedAt &&
+      now - new Date(source.isScrapingLockedAt).getTime() < SCRAPE_LOCK_DEADLINE_MS
+    ) {
+      return false;
+    }
+
     if (!source.lastScrapedAt) return true;
     const lastScraped = new Date(source.lastScrapedAt).getTime();
     const intervalMs = source.scrapeIntervalMinutes * 60 * 1000;
     return now - lastScraped >= intervalMs;
   });
+}
+
+export async function releaseStaleLocks(prisma: PrismaClient): Promise<number> {
+  const now = Date.now();
+  const sources = await prisma.scraperSource.findMany({
+    where: { isActive: true, isScraping: true },
+  });
+
+  const stale = sources.filter(
+    (source) =>
+      source.isScrapingLockedAt &&
+      now - new Date(source.isScrapingLockedAt).getTime() >= SCRAPE_LOCK_DEADLINE_MS
+  );
+
+  for (const source of stale) {
+    await prisma.$transaction([
+      prisma.scraperJob.updateMany({
+        where: { sourceId: source.id, status: "running" },
+        data: {
+          status: "failed",
+          errorMessage: "Stale lock released (process died mid-job)",
+          completedAt: new Date(),
+        },
+      }),
+      prisma.scraperSource.update({
+        where: { id: source.id },
+        data: { isScraping: false, isScrapingLockedAt: null },
+      }),
+    ]);
+  }
+
+  return stale.length;
 }
 
 export async function markSourceScraped(
