@@ -280,7 +280,7 @@ function LandingContent() {
             {/* Left: value proposition */}
             <Reveal>
               <div>
-                <h1 className="mt-8 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-text leading-[1.08] tracking-tight">
+                <h1 className="mt-8 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text leading-[1.12] tracking-tight">
                   {t.tagline}
                 </h1>
 
