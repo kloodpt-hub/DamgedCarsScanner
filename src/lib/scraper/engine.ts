@@ -195,8 +195,6 @@ export class ScraperEngine {
           completedAt: new Date(),
         },
       });
-
-      await markSourceScraped(this.prisma, source.id);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       errors.push(errorMessage);
@@ -211,6 +209,7 @@ export class ScraperEngine {
       });
     } finally {
       try {
+        await markSourceScraped(this.prisma, source.id);
         await this.prisma.scraperSource.update({
           where: { id: source.id },
           data: { isScraping: false, isScrapingLockedAt: null },
@@ -227,6 +226,8 @@ export class ScraperEngine {
   }
 
   async runAllActiveJobs(): Promise<ScrapeResult[]> {
+    await releaseStaleLocks(this.prisma);
+
     const sources = await this.prisma.scraperSource.findMany({
       where: { isActive: true },
     });
