@@ -144,7 +144,7 @@ export default async function DashboardPage({
             href={`/${locale}/dashboard/results`}
             className="text-sm text-primary hover:text-primary-hover transition-colors"
           >
-            {t.dashboard.viewAll} &rarr;
+            {t.dashboard.viewAll} <span className="inline-block rtl:rotate-180">&rarr;</span>
           </Link>
         </CardHeader>
         <CardContent>

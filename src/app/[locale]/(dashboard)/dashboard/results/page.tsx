@@ -262,7 +262,7 @@ export default function ResultsPage({
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
               {t.previous}
             </Button>
             <Button
@@ -272,7 +272,7 @@ export default function ResultsPage({
               onClick={() => setPage((p) => p + 1)}
             >
               {t.next}
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </Button>
           </div>
         </div>

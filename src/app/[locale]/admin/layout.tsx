@@ -31,7 +31,7 @@ export default async function AdminLayout({
         <Sidebar locale={safeLocale} role={session.user.role} />
         <Header locale={safeLocale} />
         <MobileBottomNav locale={safeLocale} role={session.user.role} />
-        <div className="lg:ml-64 transition-all duration-300">
+        <div className="lg:ms-64 transition-all duration-300">
           <main className="px-4 pt-20 pb-24 lg:px-6 lg:pt-20 lg:pb-6">{children}</main>
         </div>
       </div>

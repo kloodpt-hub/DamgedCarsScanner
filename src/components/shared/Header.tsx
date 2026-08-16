@@ -36,7 +36,6 @@ export function Header({ locale }: HeaderProps) {
   const pathname = usePathname() || "";
   const { theme, toggleTheme } = useTheme();
   const { toggle, unreadCount } = useNotificationDrawer();
-  const isRtl = locale === "ar";
   const t = labels[locale as keyof typeof labels] ?? labels.en;
   const next = locale === "en" ? "ar" : "en";
   const href = `/${next}${pathname.replace(/^\/(en|ar)(?=\/|$)/, "")}`;
@@ -44,8 +43,7 @@ export function Header({ locale }: HeaderProps) {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-[60] h-14 bg-bg/90 backdrop-blur border-b border-card-border lg:inset-x-auto",
-        isRtl ? "lg:left-0 lg:right-64" : "lg:left-64 lg:right-0"
+        "fixed inset-x-0 top-0 z-[60] h-14 bg-bg/90 backdrop-blur border-b border-card-border lg:inset-x-auto lg:start-64 lg:end-0"
       )}
     >
       <div className="flex h-full items-center justify-between gap-2 px-3 sm:px-4">
