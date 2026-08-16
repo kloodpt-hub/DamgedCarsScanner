@@ -50,7 +50,7 @@ export class AutosMotosAdapter extends BaseAdapter {
       try {
         const $el = $(element);
 
-        const title = this.extractTitle($el);
+        const title = this.extractTitle($, $el);
         if (!title) return;
 
         const vehicleId = this.extractVehicleId($el);
@@ -97,11 +97,14 @@ export class AutosMotosAdapter extends BaseAdapter {
     return listings;
   }
 
-  private extractTitle($el: cheerio.Cheerio<AnyNode>): string | null {
+  private extractTitle(
+    $: cheerio.CheerioAPI,
+    $el: cheerio.Cheerio<AnyNode>
+  ): string | null {
     const infoTitle = $el.find(".box1carInfo > div").first().text().trim();
     if (infoTitle) return infoTitle;
 
-    const imgLabel = this.extractImgLabel($el);
+    const imgLabel = this.extractImgLabel($, $el);
     if (imgLabel?.name) return imgLabel.name;
 
     const infoText = $el.find(".box1carInfo").first().text().trim();
@@ -111,11 +114,20 @@ export class AutosMotosAdapter extends BaseAdapter {
     return null;
   }
 
-  private extractImgLabel($el: cheerio.Cheerio<AnyNode>): ImgLabel | null {
+  private extractImgLabel(
+    $: cheerio.CheerioAPI,
+    $el: cheerio.Cheerio<AnyNode>
+  ): ImgLabel | null {
     const img = $el.find("img.box1carImage").first();
     const label = img.attr("title") || img.attr("alt");
-    if (!label) return null;
+    if (label) return this.parseImgLabel(label);
 
+    const recovered = this.recoverImgLabel($.html(img));
+    if (!recovered) return null;
+    return this.parseImgLabel(recovered);
+  }
+
+  private parseImgLabel(label: string): ImgLabel | null {
     const match = label.match(/^(.*?)\s*-\s*(\d{4})\s*-\s*([\d., ]+)\s*km/i);
     if (!match) return null;
 
@@ -124,6 +136,44 @@ export class AutosMotosAdapter extends BaseAdapter {
       year: parseYear(match[2]) ?? undefined,
       mileage: parseMileage(match[3]) ?? undefined,
     };
+  }
+
+  private recoverImgLabel(outerHtml: string): string | null {
+    const tokens = Array.from(
+      outerHtml.matchAll(/(?:^|\s)([^\s="]+)=""(?=\s|$)/g),
+      (m) => m[1]
+    );
+
+    const nameParts: string[] = [];
+    let year: number | undefined;
+    let mileage: number | undefined;
+
+    for (const token of tokens) {
+      if (/^\d+$/.test(token)) {
+        const num = parseInt(token, 10);
+        if (
+          year === undefined &&
+          num >= 1950 &&
+          num <= new Date().getFullYear() + 1
+        ) {
+          year = num;
+        } else if (mileage === undefined) {
+          mileage = num;
+        }
+      } else if (
+        token !== "class" &&
+        token !== "title" &&
+        token !== "alt" &&
+        token !== "src" &&
+        token !== "-"
+      ) {
+        nameParts.push(token);
+      }
+    }
+
+    const name = nameParts.join(" ").toUpperCase();
+    if (!name || year === undefined || mileage === undefined) return null;
+    return `${name} - ${year} - ${mileage} km`;
   }
 
   private extractYearAndMileage(
@@ -155,7 +205,7 @@ export class AutosMotosAdapter extends BaseAdapter {
     }
 
     if (year === undefined || mileage === undefined) {
-      const imgLabel = this.extractImgLabel($el);
+      const imgLabel = this.extractImgLabel($, $el);
       if (year === undefined) year = imgLabel?.year;
       if (mileage === undefined) mileage = imgLabel?.mileage;
     }

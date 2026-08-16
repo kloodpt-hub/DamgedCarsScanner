@@ -72,16 +72,19 @@ describe("AutosMotosAdapter", () => {
     expect(listings).toHaveLength(6);
 
     const first = listings[0];
-    expect(first.title).toContain("TRANSPORTER");
+    expect(first.title).toContain("VOLKSWAGEN TRANSPORTER");
     expect(first.price).toBeUndefined();
     expect(first.year).toBe(2023);
-    expect(first.mileage).toBeUndefined();
+    expect(first.mileage).toBe(65448);
     expect(first.canonicalUrl).toBe(
       "https://declerckautohandel.be/vehicle/17828308761573564642"
     );
     expect(first.imageUrl).toContain("https://autos-motos.net/pictures/");
 
     const nissan = listings[1];
+    expect(nissan.title).toContain("NISSAN MICRA");
+    expect(nissan.year).toBe(2020);
+    expect(nissan.mileage).toBe(141450);
     expect(nissan.canonicalUrl).toBe(
       "https://declerckautohandel.be/vehicle/17624379841297794835"
     );

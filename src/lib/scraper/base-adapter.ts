@@ -44,6 +44,7 @@ export abstract class BaseAdapter implements ScraperAdapter {
   protected proxyUrl: string | null;
   protected deadline: Date | null;
   protected sourceId: string | null = null;
+  protected seenExternalIds: Set<string> = new Set();
   private dispatcher: ProxyAgent | null = null;
 
   constructor(options?: BaseAdapterOptions) {

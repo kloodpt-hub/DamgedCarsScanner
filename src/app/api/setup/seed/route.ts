@@ -3,6 +3,7 @@ import { timingSafeEqual, randomBytes } from "crypto";
 import { hashSync } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { checkCsrf } from "@/lib/csrf";
+import { SITE_CATALOG } from "@/lib/scraper/catalog";
 
 function safeCompare(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.scraperSource.upsert({
       where: { id: "seed-leboncoin" },
-      update: {},
+      update: { isActive: false },
       create: {
         id: "seed-leboncoin",
         name: "LeBonCoin",
@@ -72,11 +73,11 @@ export async function POST(request: NextRequest) {
 
     await prisma.scraperSource.upsert({
       where: { id: "seed-autoscout24" },
-      update: {},
+      update: { baseUrl: "https://www.autoscout24.com/lst/damaged" },
       create: {
         id: "seed-autoscout24",
         name: "AutoScout24",
-        baseUrl: "https://www.autoscout24.com",
+        baseUrl: "https://www.autoscout24.com/lst/damaged",
         adapterType: "autoscout24",
         selectors: JSON.parse(
           JSON.stringify({
@@ -122,6 +123,23 @@ export async function POST(request: NextRequest) {
         isActive: false,
       },
     });
+
+    for (const entry of SITE_CATALOG) {
+      const source = await prisma.scraperSource.upsert({
+        where: { id: entry.id },
+        update: {},
+        create: {
+          id: entry.id,
+          name: entry.name,
+          baseUrl: entry.baseUrl,
+          adapterType: entry.adapterType,
+          selectors: {},
+          scrapeIntervalMinutes: entry.defaultInterval,
+          isActive: true,
+        },
+      });
+      console.log(`Seeded catalog scraper source: ${source.name} (${source.id})`);
+    }
 
     return NextResponse.json({
       ok: true,
