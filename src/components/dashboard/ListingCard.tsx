@@ -24,6 +24,10 @@ const labels = {
     failed: "Failed",
     markedRead: "Marked as read",
     notified: "Notification sent",
+    year: "Year",
+    mileage: "Mileage",
+    price: "Price",
+    date: "Date",
   },
   ar: {
     view: "عرض",
@@ -34,6 +38,10 @@ const labels = {
     failed: "فشل",
     markedRead: "تم التحديد كمقروء",
     notified: "تم الإرسال",
+    year: "السنة",
+    mileage: "عدد الكيلومترات",
+    price: "السعر",
+    date: "التاريخ",
   },
 } as const;
 
@@ -116,27 +124,40 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
         </div>
 
         <CardContent className="space-y-3 p-4">
-          <div>
+          <div className="min-w-0">
             <h3 className="text-sm font-semibold leading-snug text-text line-clamp-2 min-h-[2.5rem]">
               {truncate(listing.title, 60)}
             </h3>
-            <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
-              {listing.year && <span>{listing.year}</span>}
-              {listing.mileage != null && (
-                <span>{listing.mileage.toLocaleString()} km</span>
-              )}
-            </div>
           </div>
 
-          {listing.price != null && (
-            <p className="text-lg font-bold tabular-nums text-primary">
-              {formatCurrency(listing.price)}
-            </p>
-          )}
-
-          <p className="text-xs text-text-muted">
-            {formatDate(listing.createdAt, locale)}
-          </p>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+            <div className="min-w-0">
+              <p className="text-xs text-text-muted">{t.year}</p>
+              <p className="mt-0.5 text-sm font-medium text-text break-words">
+                {listing.year ?? "—"}
+              </p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-text-muted">{t.mileage}</p>
+              <p className="mt-0.5 text-sm font-medium text-text break-words">
+                {listing.mileage != null
+                  ? `${listing.mileage.toLocaleString()} km`
+                  : "—"}
+              </p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-text-muted">{t.price}</p>
+              <p className="mt-0.5 text-lg font-bold tabular-nums text-primary break-words">
+                {listing.price != null ? formatCurrency(listing.price) : "—"}
+              </p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-text-muted">{t.date}</p>
+              <p className="mt-0.5 text-sm font-medium text-text break-words">
+                {formatDate(listing.createdAt, locale)}
+              </p>
+            </div>
+          </div>
 
           <div className="flex items-center gap-2 pt-3 border-t border-card-border/70">
             <a

@@ -4,7 +4,7 @@
   "description": "Automated damaged cars listing scanner with real-time alerts",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#030712",
+  "background_color": "#ffffff",
   "theme_color": "#2563eb",
   "icons": [
     {

@@ -119,9 +119,9 @@ export default async function NotificationsPage({
                 <span className="text-text-muted">Provider</span>
                 <span className="text-text font-medium">Resend</span>
               </div>
-              <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
+              <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between gap-3`}>
                 <span className="text-text-muted">API Key</span>
-                <span className="text-text font-medium font-mono">
+                <span className="min-w-0 text-text font-medium font-mono break-all text-end">
                   {hasResendKey ? maskValue(process.env.RESEND_API_KEY) : "-"}
                 </span>
               </div>
@@ -164,9 +164,9 @@ export default async function NotificationsPage({
           {hasTelegramBot ? (
             <>
               <div className="rounded-xl border border-border/60 bg-surface/40 p-4 space-y-2.5 text-sm">
-                <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
+                <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between gap-3`}>
                   <span className="text-text-muted">Bot Token</span>
-                  <span className="text-text font-medium font-mono">
+                  <span className="min-w-0 text-text font-medium font-mono break-all text-end">
                     {maskValue(telegramConfig.token ?? "")}
                   </span>
                 </div>

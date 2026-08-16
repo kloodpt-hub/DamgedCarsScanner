@@ -283,11 +283,6 @@ function LandingContent() {
             <Reveal>
               <div>
                 <div className="inline-flex items-center gap-3 rounded-full border border-card-border bg-surface/70 px-4 py-2 shadow-ambient">
-                  <img
-                    src="/logo.png"
-                    alt=""
-                    className="h-8 w-8 rounded-full object-cover"
-                  />
                   <span className="text-sm sm:text-base font-extrabold text-text">
                     {t.appName}
                   </span>

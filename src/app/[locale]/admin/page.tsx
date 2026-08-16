@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getDictionary, type Locale } from "@/lib/i18n";
-import { formatDate } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -125,7 +125,7 @@ export default async function AdminDashboardPage({
         <RunAllButton locale={locale} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -133,9 +133,9 @@ export default async function AdminDashboardPage({
               key={stat.label}
               className="transition-all duration-300 ease-premium hover:-translate-y-1 hover:shadow-ambient"
             >
-              <CardContent className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-text-muted">{stat.label}</p>
+              <CardContent className="flex items-start justify-between p-3 sm:p-4">
+                <div className="min-w-0">
+                  <p className="truncate text-sm text-text-muted">{stat.label}</p>
                   <p className="text-2xl font-bold text-text mt-1">{stat.value}</p>
                   {stat.sub && (
                     <p className="text-xs text-text-muted mt-0.5">{stat.sub}</p>
@@ -189,7 +189,7 @@ export default async function AdminDashboardPage({
                           <TableCell className="text-text">{job.listingsFound}</TableCell>
                           <TableCell className="text-text">{job.newListings}</TableCell>
                           <TableCell className="text-text-muted">
-                            {formatDate(job.createdAt, locale)}
+                            {formatDateTime(job.createdAt, locale)}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -230,7 +230,7 @@ export default async function AdminDashboardPage({
                         </div>
                       </dl>
                       <p className="mt-3 text-xs text-text-muted">
-                        {formatDate(job.createdAt, locale)}
+                        {formatDateTime(job.createdAt, locale)}
                       </p>
                     </div>
                   ))}
