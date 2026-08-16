@@ -141,6 +141,8 @@ export class ScraperEngine {
               canonicalUrl: raw.canonicalUrl,
               sourceId: source.id,
               isSold: raw.isSold ?? false,
+              make: raw.make ?? null,
+              model: raw.model ?? null,
             },
             update: {
               price: raw.price,
@@ -152,6 +154,8 @@ export class ScraperEngine {
               images: raw.images,
               canonicalUrl: raw.canonicalUrl,
               isSold: raw.isSold ?? false,
+              make: raw.make ?? undefined,
+              model: raw.model ?? undefined,
             },
           });
 

@@ -66,6 +66,8 @@ export class SchadeautosNlAdapter extends BaseAdapter {
           const description =
             $el.find("p.model-type").first().text().trim() || undefined;
 
+          const make = $el.attr("data-make-label") || undefined;
+
           const imageUrl = this.extractImage($, $el, ".car-image img", sourceUrl);
 
           listings.push({
@@ -81,6 +83,7 @@ export class SchadeautosNlAdapter extends BaseAdapter {
             canonicalUrl,
             sourceUrl,
             isSold: false,
+            make,
           });
         } catch (err) {
           console.warn(

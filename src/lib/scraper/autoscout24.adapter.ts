@@ -76,6 +76,8 @@ export class Autoscout24Adapter extends BaseAdapter {
         const year = this.parseFirstRegistrationYear(
           $el.attr("data-first-registration")
         );
+        const make = $el.attr("data-make") || undefined;
+        const model = $el.attr("data-model") || undefined;
 
         const description = $el
           .find(SUBTITLE_SELECTOR)
@@ -98,6 +100,8 @@ export class Autoscout24Adapter extends BaseAdapter {
           canonicalUrl,
           sourceUrl,
           isSold: false,
+          make,
+          model,
         });
       } catch (err) {
         console.warn(

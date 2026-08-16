@@ -20,6 +20,8 @@ interface FilterDraft {
   minMileage?: number | null;
   maxMileage?: number | null;
   damageStatus?: string | null;
+  excludeHeavyDamage?: boolean;
+  brands?: string[];
   excludedKeywords?: string[];
 }
 
@@ -443,6 +445,39 @@ async function handleConversationStep(
       await saveDraft(
         user.id,
         { ...draft, damageStatus },
+        "excludeHeavyDamage",
+        chatId,
+        m.addHeavyDamagePrompt
+      );
+      return;
+    }
+    case "excludeHeavyDamage": {
+      const trimmed = text.trim().toLowerCase();
+      let excludeHeavyDamage: boolean;
+      if (trimmed === "yes" || trimmed === "نعم") {
+        excludeHeavyDamage = true;
+      } else if (trimmed === "no" || trimmed === "لا") {
+        excludeHeavyDamage = false;
+      } else if (ANY_ANSWER.has(trimmed) || trimmed === "") {
+        excludeHeavyDamage = false;
+      } else {
+        await sendTelegramMessage(chatId, m.addInvalid);
+        return;
+      }
+      await saveDraft(
+        user.id,
+        { ...draft, excludeHeavyDamage },
+        "brands",
+        chatId,
+        m.addBrandsPrompt
+      );
+      return;
+    }
+    case "brands": {
+      const brands = parseBrands(text);
+      await saveDraft(
+        user.id,
+        { ...draft, brands },
         "excludedKeywords",
         chatId,
         m.addKeywordsPrompt
@@ -490,6 +525,8 @@ async function handleConversationStep(
           minMileage: draft.minMileage ?? null,
           maxMileage: draft.maxMileage ?? null,
           damageStatus: draft.damageStatus ?? null,
+          excludeHeavyDamage: draft.excludeHeavyDamage ?? false,
+          brands: draft.brands ?? [],
           excludedKeywords: draft.excludedKeywords ?? [],
           sourceIds: resolvedSourceIds,
           isActive: true,
@@ -561,6 +598,14 @@ function buildFilterDetail(filter: Filter, locale: BotLocale): string {
 
   if (filter.damageStatus) {
     parts.push(filter.damageStatus);
+  }
+
+  if (filter.excludeHeavyDamage) {
+    parts.push("no heavy damage");
+  }
+
+  if (filter.brands && filter.brands.length > 0) {
+    parts.push(`brands: ${filter.brands.join(",")}`);
   }
 
   if (filter.excludedKeywords && filter.excludedKeywords.length > 0) {
@@ -643,4 +688,15 @@ function parseSourceIds(
     return undefined;
   }
   return numbers;
+}
+
+function parseBrands(text: string): string[] {
+  const trimmed = text.trim().toLowerCase();
+  if (trimmed === "all" || ANY_ANSWER.has(trimmed) || trimmed === "") {
+    return [];
+  }
+  return text
+    .split(",")
+    .map((brand) => brand.trim())
+    .filter((brand) => brand.length > 0);
 }

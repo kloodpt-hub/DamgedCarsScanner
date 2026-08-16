@@ -64,23 +64,25 @@ model TargetUrl {
 }
 
 model Filter {
-  id                String    @id @default(cuid())
-  name              String
-  minYear           Int?
-  maxYear           Int?
-  minPrice          Float?
-  maxPrice          Float?
-  damageStatus      String?
-  excludedKeywords  String[]
-  sourceIds         String[]  @default([])
-  minMileage        Int?
-  maxMileage        Int?
-  isActive          Boolean   @default(true)
-  userId            String
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listings          Listing[] @relation("FilteredListings")
+  id                  String    @id @default(cuid())
+  name                String
+  minYear             Int?
+  maxYear             Int?
+  minPrice            Float?
+  maxPrice            Float?
+  damageStatus        String?
+  excludedKeywords    String[]
+  sourceIds           String[]  @default([])
+  minMileage          Int?
+  maxMileage          Int?
+  excludeHeavyDamage  Boolean   @default(false)
+  brands              String[]  @default([])
+  isActive            Boolean   @default(true)
+  userId              String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listings            Listing[] @relation("FilteredListings")
 
   @@index([userId])
 }
@@ -98,6 +100,8 @@ model Listing {
   images        String[]
   canonicalUrl  String
   sourceId      String?
+  make          String?
+  model         String?
   isRead        Boolean   @default(false)
   isNotified    Boolean   @default(false)
   isSold        Boolean   @default(false)

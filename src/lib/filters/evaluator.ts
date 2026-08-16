@@ -1,4 +1,5 @@
 import type { Listing, Filter } from "@prisma/client";
+import { isHeavyDamage } from "@/lib/damage-detector";
 
 export function evaluateListing(listing: Listing, filters: Filter[]): Filter[] {
   return filters.filter((filter) => {
@@ -14,6 +15,14 @@ export function evaluateListing(listing: Listing, filters: Filter[]): Filter[] {
     if (!matchMileage(listing.mileage, filter.minMileage, filter.maxMileage)) return false;
     if (!matchDamage(listing.damageStatus, filter.damageStatus)) return false;
     if (!matchKeywords(listing.title, listing.description, filter.excludedKeywords)) return false;
+    if (filter.excludeHeavyDamage) {
+      if (isHeavyDamage(listing.title, listing.description, listing.damageStatus)) return false;
+    }
+    if (filter.brands && filter.brands.length > 0) {
+      if (!listing.make) return false;
+      const listingMake = listing.make.toLowerCase().trim();
+      if (!filter.brands.some((b) => b.toLowerCase().trim() === listingMake)) return false;
+    }
     return true;
   });
 }
@@ -25,7 +34,9 @@ function hasActiveConstraints(filter: Filter): boolean {
   const hasDamage = !!filter.damageStatus && filter.damageStatus !== "";
   const hasKeywords = filter.excludedKeywords && filter.excludedKeywords.length > 0;
   const hasSources = filter.sourceIds && filter.sourceIds.length > 0;
-  return hasYear || hasPrice || hasMileage || hasDamage || hasKeywords || hasSources;
+  const hasHeavyDamage = !!filter.excludeHeavyDamage;
+  const hasBrands = filter.brands && filter.brands.length > 0;
+  return hasYear || hasPrice || hasMileage || hasDamage || hasKeywords || hasSources || hasHeavyDamage || hasBrands;
 }
 
 export function matchYear(

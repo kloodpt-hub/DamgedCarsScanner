@@ -68,6 +68,7 @@ export class DebelsAdapter extends BaseAdapter {
           canonicalUrl,
           sourceUrl,
           isSold: false,
+          make: brandPart,
         });
       } catch (err) {
         console.warn(

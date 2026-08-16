@@ -106,6 +106,8 @@ export class SchadeautoZoekerAdapter extends BaseAdapter {
           sourceUrl
         );
 
+        const make = $el.find("p.merk").first().text().trim() || undefined;
+
         listings.push({
           externalId,
           title,
@@ -119,6 +121,7 @@ export class SchadeautoZoekerAdapter extends BaseAdapter {
           canonicalUrl: link,
           sourceUrl,
           isSold: false,
+          make,
         });
       } catch (err) {
         console.warn(

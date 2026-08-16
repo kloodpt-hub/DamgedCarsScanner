@@ -16,6 +16,8 @@ function makeListing(partial: Partial<Listing> = {}): Listing {
     images: [],
     canonicalUrl: "https://example.com/car/1",
     sourceId: "src-a",
+    make: null,
+    model: null,
     isRead: false,
     isNotified: false,
     isSold: false,
@@ -39,6 +41,8 @@ function makeFilter(partial: Partial<Filter> = {}): Filter {
     sourceIds: [],
     minMileage: null,
     maxMileage: null,
+    excludeHeavyDamage: false,
+    brands: [],
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -152,6 +156,100 @@ describe("evaluateListing", () => {
         [filter]
       );
       expect(result).toEqual([]);
+    });
+  });
+
+  describe("excludeHeavyDamage", () => {
+    it("excludes a listing with Total Loss damageStatus", () => {
+      const filter = makeFilter({ excludeHeavyDamage: true });
+      const result = evaluateListing(
+        makeListing({ damageStatus: "Total Loss" }),
+        [filter]
+      );
+      expect(result).toEqual([]);
+    });
+
+    it("excludes a listing with heavy damage keyword in title", () => {
+      const filter = makeFilter({ excludeHeavyDamage: true });
+      const result = evaluateListing(
+        makeListing({ title: "BMW 320d wreck" }),
+        [filter]
+      );
+      expect(result).toEqual([]);
+    });
+
+    it("excludes a listing with heavy damage keyword in description", () => {
+      const filter = makeFilter({ excludeHeavyDamage: true });
+      const result = evaluateListing(
+        makeListing({ title: "BMW 320d", description: "fire damage" }),
+        [filter]
+      );
+      expect(result).toEqual([]);
+    });
+
+    it("matches a normal listing when excludeHeavyDamage is true", () => {
+      const filter = makeFilter({ excludeHeavyDamage: true });
+      const result = evaluateListing(
+        makeListing({ title: "BMW 320d", damageStatus: "Damage" }),
+        [filter]
+      );
+      expect(result).toEqual([filter]);
+    });
+
+    it("does not filter when excludeHeavyDamage is false", () => {
+      const filter = makeFilter({ excludeHeavyDamage: false, minYear: 2000 });
+      const result = evaluateListing(
+        makeListing({ damageStatus: "Total Loss", year: 2018 }),
+        [filter]
+      );
+      expect(result).toEqual([filter]);
+    });
+  });
+
+  describe("brands", () => {
+    it("matches a listing whose make is in the filter brands", () => {
+      const filter = makeFilter({ brands: ["BMW", "Audi"] });
+      const result = evaluateListing(
+        makeListing({ make: "BMW" }),
+        [filter]
+      );
+      expect(result).toEqual([filter]);
+    });
+
+    it("matches case-insensitively", () => {
+      const filter = makeFilter({ brands: ["bmw"] });
+      const result = evaluateListing(
+        makeListing({ make: "BMW" }),
+        [filter]
+      );
+      expect(result).toEqual([filter]);
+    });
+
+    it("excludes a listing whose make is not in the filter brands", () => {
+      const filter = makeFilter({ brands: ["BMW"] });
+      const result = evaluateListing(
+        makeListing({ make: "Audi" }),
+        [filter]
+      );
+      expect(result).toEqual([]);
+    });
+
+    it("excludes a listing with null make when brands filter is active", () => {
+      const filter = makeFilter({ brands: ["BMW"] });
+      const result = evaluateListing(
+        makeListing({ make: null }),
+        [filter]
+      );
+      expect(result).toEqual([]);
+    });
+
+    it("does not filter when brands array is empty", () => {
+      const filter = makeFilter({ brands: [], minYear: 2000 });
+      const result = evaluateListing(
+        makeListing({ make: "BMW", year: 2018 }),
+        [filter]
+      );
+      expect(result).toEqual([filter]);
     });
   });
 });

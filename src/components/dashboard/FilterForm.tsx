@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { createFilter, updateFilter } from "@/server/actions/filters";
 
 interface Source {
@@ -37,6 +38,11 @@ const labels = {
     allSources: "All sources",
     noSources: "No sources available",
     sourcesSelected: (count: number) => `${count} selected`,
+    excludeHeavyDamage: "Exclude heavily damaged cars",
+    brands: "Brands",
+    allBrands: "All brands",
+    noBrands: "No brands available",
+    brandsSelected: (count: number) => `${count} selected`,
   },
   ar: {
     filterName: "اسم الفلتر",
@@ -59,6 +65,11 @@ const labels = {
     allSources: "كل المصادر",
     noSources: "لا توجد مصادر متاحة",
     sourcesSelected: (count: number) => `تم اختيار ${count}`,
+    excludeHeavyDamage: "استبعاد السيارات المتضررة بشدة",
+    brands: "العلامات التجارية",
+    allBrands: "كل العلامات",
+    noBrands: "لا توجد علامات متاحة",
+    brandsSelected: (count: number) => `تم اختيار ${count}`,
   },
 } as const;
 
@@ -74,6 +85,8 @@ interface FilterData {
   minMileage?: number | null;
   maxMileage?: number | null;
   sourceIds?: string[];
+  excludeHeavyDamage?: boolean;
+  brands?: string[];
 }
 
 interface FilterFormProps {
@@ -100,12 +113,19 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
   const [maxMileage, setMaxMileage] = useState(filter?.maxMileage?.toString() ?? "");
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>(filter?.sourceIds ?? []);
+  const [excludeHeavyDamage, setExcludeHeavyDamage] = useState(filter?.excludeHeavyDamage ?? false);
+  const [brandOptions, setBrandOptions] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(filter?.brands ?? []);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetch("/api/sources")
       .then((r) => r.json())
       .then((data) => setSources(data.sources ?? data))
+      .catch(() => {});
+    fetch("/api/brands")
+      .then((r) => r.json())
+      .then((data) => setBrandOptions(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
 
@@ -132,6 +152,8 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         minMileage: minMileage ? parseInt(minMileage) : undefined,
         maxMileage: maxMileage ? parseInt(maxMileage) : undefined,
         sourceIds: selectedSourceIds,
+        excludeHeavyDamage,
+        brands: selectedBrands,
       };
 
       if (isEdit && filter?.id) {
@@ -235,6 +257,30 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
           <option value="No Damage">No Damage</option>
           <option value="Total Loss">Total Loss</option>
         </Select>
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border border-card-border p-3">
+        <Label className="cursor-pointer">{t.excludeHeavyDamage}</Label>
+        <Switch
+          checked={excludeHeavyDamage}
+          onCheckedChange={setExcludeHeavyDamage}
+        />
+      </div>
+
+      <div>
+        <Label>{t.brands}</Label>
+        {brandOptions.length === 0 ? (
+          <p className="text-xs text-text-muted">{t.noBrands}</p>
+        ) : (
+          <MultiSelect
+            value={selectedBrands}
+            onChange={setSelectedBrands}
+            options={brandOptions.map((b) => ({ value: b, label: b }))}
+            placeholder={t.allBrands}
+            selectedLabel={t.brandsSelected}
+            ariaLabel={t.brands}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

@@ -85,6 +85,10 @@ export interface Dictionary {
     reset: string;
     activeFilters: string;
     results: string;
+    excludeHeavyDamage: string;
+    brands: string;
+    allBrands: string;
+    noBrands: string;
   };
   listings: {
     listingTitle: string;
@@ -243,6 +247,10 @@ const en: Dictionary = {
     reset: "Reset",
     activeFilters: "Active Filters",
     results: "Results",
+    excludeHeavyDamage: "Exclude heavily damaged cars",
+    brands: "Brands",
+    allBrands: "All brands",
+    noBrands: "No brands available",
   },
   listings: {
     listingTitle: "Listing Title",
@@ -401,6 +409,10 @@ const ar: Dictionary = {
     reset: "إعادة تعيين",
     activeFilters: "الفلاتر النشطة",
     results: "النتائج",
+    excludeHeavyDamage: "استبعاد السيارات المتضررة بشدة",
+    brands: "العلامات التجارية",
+    allBrands: "كل العلامات",
+    noBrands: "لا توجد علامات متاحة",
   },
   listings: {
     listingTitle: "عنوان الإعلان",

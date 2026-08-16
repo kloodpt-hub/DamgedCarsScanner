@@ -11,6 +11,8 @@ export interface RawListing {
   canonicalUrl: string;
   sourceUrl: string;
   isSold?: boolean;
+  make?: string;
+  model?: string;
 }
 
 export interface ScraperSelectors {
