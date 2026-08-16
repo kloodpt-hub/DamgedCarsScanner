@@ -29,7 +29,6 @@ import { cn } from "@/lib/utils";
 const labels = {
   en: {
     // Branding
-    appName: "Car Deals Hunter",
     tagline: "Discover damaged car deals across multiple sites automatically",
     getStarted: "Get Started",
     viewFeatures: "See what you get",
@@ -99,7 +98,6 @@ const labels = {
     googleError: "Google sign-in failed. Make sure Google OAuth is configured.",
   },
   ar: {
-    appName: "صائد عروض السيارات",
     tagline: "اكتشف عروض السيارات المتضررة عبر مواقع متعددة تلقائياً",
     getStarted: "ابدأ الآن",
     viewFeatures: "شاهد ما ستحصل عليه",
@@ -282,12 +280,6 @@ function LandingContent() {
             {/* Left: value proposition */}
             <Reveal>
               <div>
-                <div className="inline-flex items-center gap-3 rounded-full border border-card-border bg-surface/70 px-4 py-2 shadow-ambient">
-                  <span className="text-sm sm:text-base font-extrabold text-text">
-                    {t.appName}
-                  </span>
-                </div>
-
                 <h1 className="mt-8 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-text leading-[1.08] tracking-tight">
                   {t.tagline}
                 </h1>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2, Eye, EyeOff, AlertCircle, CheckCircle, UserRound } from "lucide-react";
+import { Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
 import { getCsrfToken } from "@/lib/csrf-client";
 
 const labels = {
@@ -141,9 +141,6 @@ export default function RegisterPage() {
       <div className="rounded-[2rem] p-1.5 bg-surface/50 ring-1 ring-card-border">
         <div className="rounded-[calc(2rem-0.375rem)] bg-bg p-6 sm:p-8 shadow-ambient">
           <div className="text-center mb-8">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <UserRound className="h-5 w-5" />
-            </div>
             <h1 className="text-2xl font-bold text-text">{t.title}</h1>
             <p className="text-text-muted mt-2">{t.subtitle}</p>
           </div>
