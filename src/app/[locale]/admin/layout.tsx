@@ -4,6 +4,8 @@ import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/shared/Header";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { NotificationDrawerProvider } from "@/components/shared/NotificationDrawer";
+import { SidebarProvider } from "@/components/shared/SidebarProvider";
+import { ShellMain } from "@/components/shared/ShellMain";
 import { isLocale, type Locale } from "@/lib/i18n/routing";
 
 export default async function AdminLayout({
@@ -27,14 +29,14 @@ export default async function AdminLayout({
 
   return (
     <NotificationDrawerProvider locale={safeLocale}>
-      <div className="min-h-screen bg-bg">
-        <Sidebar locale={safeLocale} role={session.user.role} />
-        <Header locale={safeLocale} />
-        <MobileBottomNav locale={safeLocale} role={session.user.role} />
-        <div className="lg:ms-64 transition-all duration-300">
-          <main className="px-4 pt-20 pb-24 lg:px-6 lg:pt-20 lg:pb-6">{children}</main>
+      <SidebarProvider>
+        <div className="min-h-screen bg-bg">
+          <Sidebar locale={safeLocale} role={session.user.role} />
+          <Header locale={safeLocale} />
+          <MobileBottomNav locale={safeLocale} role={session.user.role} />
+          <ShellMain>{children}</ShellMain>
         </div>
-      </div>
+      </SidebarProvider>
     </NotificationDrawerProvider>
   );
 }

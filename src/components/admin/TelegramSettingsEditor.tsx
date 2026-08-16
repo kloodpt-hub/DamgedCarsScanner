@@ -102,7 +102,7 @@ export function TelegramSettingsEditor({
       </div>
 
       {configured && (
-        <div className="rounded-lg border border-border p-3 bg-surface/50 space-y-2 text-sm">
+        <div className="rounded-xl border border-border/60 bg-surface/40 p-4 space-y-2.5 text-sm">
           <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
             <span className="text-text-muted">{t.username}</span>
             <span className="text-text font-medium">@{username ?? "-"}</span>
@@ -132,7 +132,7 @@ export function TelegramSettingsEditor({
 
       <div className={`flex flex-wrap items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
         <Button onClick={handleSave} loading={saving} disabled={saving} size="sm">
-          <Save className="h-4 w-4 mr-1" />
+          <Save className="h-4 w-4 me-1" />
           {t.save}
         </Button>
         <Button
@@ -142,7 +142,7 @@ export function TelegramSettingsEditor({
           disabled={registering}
           size="sm"
         >
-          <Webhook className="h-4 w-4 mr-1" />
+          <Webhook className="h-4 w-4 me-1" />
           {t.register}
         </Button>
       </div>

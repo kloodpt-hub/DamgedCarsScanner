@@ -64,7 +64,7 @@ function SettingRow({
   isRtl: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-border p-3 bg-surface/50 space-y-2">
+    <div className="rounded-xl border border-border/60 bg-surface/40 p-4 transition-colors duration-200 ease-premium hover:border-border">
       <div
         className={`flex items-center justify-between gap-2 ${
           isRtl ? "flex-row-reverse" : ""
@@ -72,14 +72,14 @@ function SettingRow({
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm font-medium text-text">{label}</span>
-          <code className="text-xs text-text-muted bg-bg px-1.5 py-0.5 rounded min-w-0 break-all">
+          <code className="hidden sm:inline text-xs text-text-muted bg-bg px-1.5 py-0.5 rounded min-w-0 break-all">
             {envVar}
           </code>
         </div>
         <StatusBadge configured={configured} />
       </div>
-      <div className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
-        <div className="flex-1 min-w-0 rounded-md border border-border bg-bg px-3 py-2 font-mono text-sm text-text truncate">
+      <div className={`mt-2.5 flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
+        <div className="flex h-10 flex-1 min-w-0 items-center rounded-xl border border-border bg-bg px-3 font-mono text-sm text-text truncate">
           {configured ? maskValue(value) : <span className="text-text-muted">— not set —</span>}
         </div>
         {copyable && configured && <CopyButton value={value} />}
@@ -90,13 +90,20 @@ function SettingRow({
 
 function StepList({ items }: { items: React.ReactNode[] }) {
   return (
-    <ol className="list-decimal list-inside space-y-2 text-sm text-text-muted mt-2">
+    <ol className="mt-3 space-y-3">
       {items.map((item, i) => (
-        <li key={i}>{item}</li>
+        <li key={i} className="flex items-start gap-3">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+            {i + 1}
+          </span>
+          <span className="text-sm text-text-muted leading-relaxed pt-0.5">{item}</span>
+        </li>
       ))}
     </ol>
   );
 }
+
+const setupShell = "rounded-xl border border-border/60 bg-surface/40 p-4 text-sm text-text-muted";
 
 export default async function SettingsPage({
   params,
@@ -168,17 +175,21 @@ export default async function SettingsPage({
   return (
     <div className="space-y-6">
       <div className={`flex items-center justify-between ${isRtl ? "flex-row-reverse" : ""}`}>
-        <div>
-          <h1 className="text-2xl font-bold text-text">{t.common.settings}</h1>
-          <p className="text-text-muted text-sm mt-1">
+        <div className="space-y-1.5">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {isRtl ? "الإدارة" : "Admin"}
+          </span>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{t.common.settings}</h1>
+          <p className="text-text-muted text-sm">
             Configure OAuth, email, Telegram, and web push credentials. Values are
             stored as environment variables on Render.
           </p>
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-surface/30 p-4 text-sm text-text-muted">
-        <p className="font-medium text-text mb-1">How to update these settings</p>
+      <div className="rounded-2xl border border-card-border bg-surface/40 p-5 text-sm text-text-muted shadow-sm">
+        <p className="font-medium text-text mb-1.5">How to update these settings</p>
         {renderConfigured ? (
           <p>
             Values below can be edited directly from this page — changes are
@@ -266,29 +277,29 @@ export default async function SettingsPage({
             </>
           )}
 
-          <div className="rounded-lg border border-border p-4 bg-surface/50 space-y-2">
+          <div className={setupShell}>
             <div className={`flex items-center justify-between gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-sm font-medium text-text">Redirect URI</span>
-                <code className="text-xs text-text-muted bg-bg px-1.5 py-0.5 rounded">
+                <code className="hidden sm:inline text-xs text-text-muted bg-bg px-1.5 py-0.5 rounded">
                   Authorized redirect URI
                 </code>
               </div>
               <Badge variant="default">Required</Badge>
             </div>
-            <div className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
-              <div className="flex-1 min-w-0 rounded-md border border-border bg-bg px-3 py-2 font-mono text-sm text-text truncate">
+            <div className={`mt-2.5 flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
+              <div className="flex h-10 flex-1 min-w-0 items-center rounded-xl border border-border bg-bg px-3 font-mono text-sm text-text truncate">
                 {GOOGLE_REDIRECT_URI}
               </div>
               <CopyButton value={GOOGLE_REDIRECT_URI} />
             </div>
-            <p className="text-xs text-text-muted mt-1">
+            <p className="text-xs text-text-muted mt-2">
               Add this exact URI to your Google Cloud Console OAuth client under
               <strong> Authorized redirect URIs</strong>.
             </p>
           </div>
 
-          <div className="rounded-lg border border-border p-4 bg-surface/50 text-sm text-text-muted">
+          <div className={setupShell}>
             <p className="font-medium text-text mb-1">Google OAuth setup steps</p>
             <StepList
               items={[
@@ -361,7 +372,7 @@ export default async function SettingsPage({
             </>
           )}
 
-          <div className="rounded-lg border border-border p-4 bg-surface/50 text-sm text-text-muted">
+          <div className={setupShell}>
             <p className="font-medium text-text mb-1">Resend email setup steps</p>
             <StepList
               items={[
@@ -418,7 +429,7 @@ export default async function SettingsPage({
             username={telegramBotUsername}
           />
 
-          <div className="rounded-lg border border-border p-4 bg-surface/50 text-sm text-text-muted">
+          <div className={setupShell}>
             <p className="font-medium text-text mb-1">Telegram bot setup steps</p>
             <StepList
               items={[
@@ -480,7 +491,7 @@ export default async function SettingsPage({
             </>
           )}
 
-          <div className="rounded-lg border border-border p-4 bg-surface/50 text-sm text-text-muted">
+          <div className={setupShell}>
             <p className="font-medium text-text mb-1">Web push setup steps</p>
             <StepList
               items={[

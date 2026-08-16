@@ -8,6 +8,7 @@ import {
   Trash2,
   X,
   Loader2,
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -169,79 +170,96 @@ export default function FiltersPage({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-text">{t.title}</h1>
-          <p className="text-text-muted text-sm mt-1">
-            {filters.length} {t.filtersCount}
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-text-muted">
+            {t.title}
           </p>
+          <h1 className="text-2xl font-bold text-text">{t.title}</h1>
         </div>
-        <Button onClick={() => { setEditingFilter(undefined); setShowForm(true); }}>
+        <Button onClick={() => { setEditingFilter(undefined); setShowForm(true); }} className="rounded-full">
           <Plus className="h-4 w-4" />
           {t.addFilter}
         </Button>
       </div>
 
       {showForm && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>
-              {editingFilter ? t.editFilter : t.addFilter}
-            </CardTitle>
-            <button
-              onClick={() => { setShowForm(false); setEditingFilter(undefined); }}
-              className="p-2.5 -m-2.5 rounded text-text-muted hover:text-text hover:bg-surface transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </CardHeader>
-          <CardContent>
-            <FilterForm
-              key={editingFilter?.id ?? "new"}
-              filter={editingFilter}
-              locale={locale}
-              onSuccess={handleFormSuccess}
-              onCancel={() => { setShowForm(false); setEditingFilter(undefined); }}
-            />
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl bg-surface/70 p-1.5 ring-1 ring-border/80">
+          <Card className="rounded-[calc(1rem-0.375rem)] shadow-none">
+            <CardHeader className="mb-5 flex flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  {editingFilter ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                </div>
+                <CardTitle className="text-base">
+                  {editingFilter ? t.editFilter : t.addFilter}
+                </CardTitle>
+              </div>
+              <button
+                onClick={() => { setShowForm(false); setEditingFilter(undefined); }}
+                className="p-2.5 -m-2.5 rounded-lg text-text-muted transition-all duration-300 ease-premium hover:text-text hover:bg-surface active:scale-95"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </CardHeader>
+            <CardContent>
+              <FilterForm
+                key={editingFilter?.id ?? "new"}
+                filter={editingFilter}
+                locale={locale}
+                onSuccess={handleFormSuccess}
+                onCancel={() => { setShowForm(false); setEditingFilter(undefined); }}
+              />
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {loading ? (
-        <div className="py-12 text-center text-text-muted">
+        <div className="py-16 text-center text-sm text-text-muted">
           {t.loading}
         </div>
       ) : filters.length === 0 ? (
-        <div className="py-12 text-center text-text-muted">{t.noFilters}</div>
+        <div className="rounded-2xl bg-surface/70 p-1.5 ring-1 ring-border/80">
+          <div className="rounded-[calc(1rem-0.375rem)] border border-dashed border-border bg-card-bg py-16 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-surface text-text-muted">
+              <Filter className="h-5 w-5" />
+            </div>
+            <p className="text-sm text-text-muted">{t.noFilters}</p>
+          </div>
+        </div>
       ) : (
         <div className="space-y-3">
           {filters.map((filter) => (
-            <Card key={filter.id}>
-              <CardContent className="p-4">
+            <Card
+              key={filter.id}
+              className="transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:shadow-ambient hover:border-primary/25"
+            >
+              <CardContent className="p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="mb-1.5 flex flex-wrap items-center gap-2">
                       <h3 className="text-sm font-semibold text-text">{filter.name}</h3>
                       <Badge variant={filter.isActive ? "success" : "secondary"}>
                         {t.active}
                       </Badge>
                     </div>
-                    <p className="text-xs text-text-muted truncate">
+                    <p className="truncate text-xs leading-relaxed text-text-muted">
                       {getFilterSummary(filter)}
                     </p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => handleEdit(filter)}
-                      className="p-2.5 -m-2.5 rounded text-text-muted hover:text-primary hover:bg-surface transition-colors"
+                      className="p-2.5 -m-2.5 rounded-lg text-text-muted transition-all duration-300 ease-premium hover:text-primary hover:bg-surface active:scale-95"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(filter.id)}
                       disabled={deleting === filter.id}
-                      className="p-2.5 -m-2.5 rounded text-text-muted hover:text-danger hover:bg-surface transition-colors disabled:opacity-50"
+                      className="p-2.5 -m-2.5 rounded-lg text-text-muted transition-all duration-300 ease-premium hover:text-danger hover:bg-surface active:scale-95 disabled:opacity-50"
                     >
                       {deleting === filter.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />

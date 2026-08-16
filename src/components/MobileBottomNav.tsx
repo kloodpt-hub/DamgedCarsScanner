@@ -117,7 +117,7 @@ export function MobileBottomNav({ locale, role }: MobileBottomNavProps) {
   return (
     <>
       <nav
-        className="lg:hidden fixed inset-x-0 bottom-0 z-30 bg-bg/90 backdrop-blur border-t border-card-border pb-[env(safe-area-inset-bottom)]"
+        className="lg:hidden fixed inset-x-0 bottom-0 z-30 bg-bg/95 backdrop-blur-xl border-t border-card-border pb-[env(safe-area-inset-bottom)]"
         aria-label={t.more}
       >
         <div className="grid h-16 grid-cols-4">
@@ -129,12 +129,19 @@ export function MobileBottomNav({ locale, role }: MobileBottomNavProps) {
                 key={item.href}
                 href={`/${locale}${item.href}`}
                 className={cn(
-                  "flex h-16 flex-col items-center justify-center gap-1 text-xs",
-                  active ? "text-primary" : "text-text-muted"
+                  "flex h-16 flex-col items-center justify-center gap-1 text-xs transition-all duration-300 ease-premium active:scale-[0.98]",
+                  active ? "text-primary" : "text-text-muted hover:text-text"
                 )}
                 title={item.label}
               >
-                <Icon className="h-5 w-5" />
+                <span
+                  className={cn(
+                    "flex h-8 w-14 items-center justify-center rounded-full transition-colors duration-300 ease-premium",
+                    active && "bg-primary/10"
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
                 <span>{item.label}</span>
               </Link>
             );
@@ -143,12 +150,19 @@ export function MobileBottomNav({ locale, role }: MobileBottomNavProps) {
             <button
               onClick={() => setSheetOpen(true)}
               className={cn(
-                "flex h-16 flex-col items-center justify-center gap-1 text-xs",
-                sheetOpen || isInMore ? "text-primary" : "text-text-muted"
+                "flex h-16 flex-col items-center justify-center gap-1 text-xs transition-all duration-300 ease-premium active:scale-[0.98]",
+                sheetOpen || isInMore ? "text-primary" : "text-text-muted hover:text-text"
               )}
               title={t.more}
             >
-              <MoreHorizontal className="h-5 w-5" />
+              <span
+                className={cn(
+                  "flex h-8 w-14 items-center justify-center rounded-full transition-colors duration-300 ease-premium",
+                  (sheetOpen || isInMore) && "bg-primary/10"
+                )}
+              >
+                <MoreHorizontal className="h-5 w-5" />
+              </span>
               <span>{t.more}</span>
             </button>
           )}
@@ -164,7 +178,7 @@ export function MobileBottomNav({ locale, role }: MobileBottomNavProps) {
           <div
             className={cn(
               "absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))]",
-              "rounded-t-2xl border-t border-card-border bg-bg shadow-xl"
+              "rounded-t-3xl border-t border-card-border bg-bg/95 shadow-ambient backdrop-blur-xl"
             )}
           >
             <div className="flex flex-col p-3 pt-4">
@@ -183,7 +197,7 @@ export function MobileBottomNav({ locale, role }: MobileBottomNavProps) {
                     href={`/${locale}${item.href}`}
                     onClick={() => setSheetOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-300 ease-premium active:scale-[0.98]",
                       active
                         ? "bg-primary/10 text-primary"
                         : "text-text hover:bg-surface"
@@ -198,7 +212,7 @@ export function MobileBottomNav({ locale, role }: MobileBottomNavProps) {
               <Link
                 href={`/${locale}/dashboard`}
                 onClick={() => setSheetOpen(false)}
-                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
+                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-primary transition-all duration-300 ease-premium hover:bg-primary/10 active:scale-[0.98]"
               >
                 <ArrowLeftRight className="h-5 w-5 shrink-0" />
                 <span>{t.userView}</span>

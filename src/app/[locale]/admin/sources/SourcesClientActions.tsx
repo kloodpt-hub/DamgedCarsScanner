@@ -59,6 +59,7 @@ export function SourcesClientActions({
           size="sm"
           onClick={() => setShowForm(true)}
           title={isRtl ? "تعديل" : "Edit"}
+          aria-label={isRtl ? "تعديل" : "Edit"}
         >
           <Pencil className="h-4 w-4" />
         </Button>
@@ -67,6 +68,7 @@ export function SourcesClientActions({
           size="sm"
           onClick={() => setShowDelete(true)}
           title={isRtl ? "حذف" : "Delete"}
+          aria-label={isRtl ? "حذف" : "Delete"}
         >
           <Trash2 className="h-4 w-4 text-danger" />
         </Button>
@@ -90,7 +92,7 @@ export function SourcesClientActions({
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={() => setShowForm(false)}
               />
-              <div className="relative w-full max-w-lg mx-auto flex flex-col max-h-[90vh] rounded-xl border border-card-border bg-card-bg shadow-xl">
+              <div className="relative w-full max-w-lg mx-auto flex flex-col max-h-[90vh] rounded-2xl border border-card-border bg-card-bg shadow-ambient animate-[slide-up-fade_300ms_cubic-bezier(0.32,0.72,0,1)]">
                 <div className="flex items-center justify-between gap-3 border-b border-card-border px-5 sm:px-6 py-4 shrink-0">
                   <h2 className="text-base sm:text-lg font-semibold text-text">
                     {isRtl ? "تعديل المصدر" : "Edit Source"}
@@ -98,7 +100,7 @@ export function SourcesClientActions({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="ms-auto"
+                    className="ms-auto h-9 w-9 p-0"
                     onClick={() => setShowForm(false)}
                     aria-label={isRtl ? "إغلاق" : "Close"}
                   >
@@ -146,7 +148,7 @@ export function SourcesClientActions({
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setShowForm(false)}
             />
-            <div className="relative w-full max-w-lg mx-auto flex flex-col max-h-[90vh] rounded-xl border border-card-border bg-card-bg shadow-xl">
+            <div className="relative w-full max-w-lg mx-auto flex flex-col max-h-[90vh] rounded-2xl border border-card-border bg-card-bg shadow-ambient animate-[slide-up-fade_300ms_cubic-bezier(0.32,0.72,0,1)]">
               <div className="flex items-center justify-between gap-3 border-b border-card-border px-5 sm:px-6 py-4 shrink-0">
                 <h2 className="text-base sm:text-lg font-semibold text-text">
                   {isRtl ? "إضافة مصدر جديد" : "Add New Source"}
@@ -154,7 +156,7 @@ export function SourcesClientActions({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="ms-auto"
+                  className="ms-auto h-9 w-9 p-0"
                   onClick={() => setShowForm(false)}
                   aria-label={isRtl ? "إغلاق" : "Close"}
                 >

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Select } from "@/components/ui/select";
 import { createFilter, updateFilter } from "@/server/actions/filters";
@@ -149,9 +150,9 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="label">{t.filterName}</label>
+        <Label>{t.filterName}</Label>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -160,7 +161,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
       </div>
 
       <div>
-        <label className="label">{t.sources}</label>
+        <Label>{t.sources}</Label>
         {sources.length === 0 ? (
           <p className="text-xs text-text-muted">{t.noSources}</p>
         ) : (
@@ -175,9 +176,9 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div>
-          <label className="label">{t.minYear}</label>
+          <Label>{t.minYear}</Label>
           <Input
             type="number"
             value={minYear}
@@ -188,7 +189,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
           />
         </div>
         <div>
-          <label className="label">{t.maxYear}</label>
+          <Label>{t.maxYear}</Label>
           <Input
             type="number"
             value={maxYear}
@@ -200,9 +201,9 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div>
-          <label className="label">{t.minPrice}</label>
+          <Label>{t.minPrice}</Label>
           <Input
             type="number"
             value={minPrice}
@@ -212,7 +213,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
           />
         </div>
         <div>
-          <label className="label">{t.maxPrice}</label>
+          <Label>{t.maxPrice}</Label>
           <Input
             type="number"
             value={maxPrice}
@@ -224,7 +225,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
       </div>
 
       <div>
-        <label className="label">{t.damageStatus}</label>
+        <Label>{t.damageStatus}</Label>
         <Select
           value={damageStatus}
           onChange={(e) => setDamageStatus(e.target.value)}
@@ -236,9 +237,9 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         </Select>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div>
-          <label className="label">{t.minMileage}</label>
+          <Label>{t.minMileage}</Label>
           <Input
             type="number"
             value={minMileage}
@@ -248,7 +249,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
           />
         </div>
         <div>
-          <label className="label">{t.maxMileage}</label>
+          <Label>{t.maxMileage}</Label>
           <Input
             type="number"
             value={maxMileage}
@@ -260,7 +261,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
       </div>
 
       <div>
-        <label className="label">{t.excludedKeywords}</label>
+        <Label>{t.excludedKeywords}</Label>
         <Input
           value={excludedKeywords}
           onChange={(e) => setExcludedKeywords(e.target.value)}
@@ -268,7 +269,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         />
       </div>
 
-      <div className="flex items-center gap-3 pt-4 border-t border-border">
+      <div className="flex flex-wrap items-center gap-3 pt-5 border-t border-card-border">
         <Button type="submit" disabled={loading}>
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {loading ? t.creating : t.save}

@@ -15,6 +15,7 @@ import {
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -327,40 +328,45 @@ export default function AlertsPage({
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div>
+    <div className="space-y-8 max-w-2xl">
+      <div className="space-y-1.5">
+        <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-text-muted">
+          {t.title}
+        </p>
         <h1 className="text-2xl font-bold text-text">{t.title}</h1>
-        <p className="text-text-muted text-sm mt-1">{t.subtitle}</p>
+        <p className="text-sm text-text-muted">{t.subtitle}</p>
       </div>
 
       {/* Email Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5 text-primary" />
-            {t.email.title}
-          </CardTitle>
+      <Card className="transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:shadow-ambient">
+        <CardHeader className="mb-4 flex flex-row items-start gap-3 space-y-0 pb-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Mail className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 pt-0.5">
+            <CardTitle className="text-base">{t.email.title}</CardTitle>
+            <CardDescription className="mt-1">{t.email.description}</CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-text-muted">{t.email.description}</p>
+        <CardContent className="mt-4">
           {emailConfigured ? (
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-card-border/70 bg-surface/50 px-3.5 py-3 sm:px-4">
               <Badge variant="success">
-                <CheckCircle className="h-3 w-3 mr-1" />
+                <CheckCircle className="me-1 h-3 w-3" />
                 {t.email.configured}
               </Badge>
-              <Button onClick={handleTestEmail} disabled={sending} size="sm">
+              <Button onClick={handleTestEmail} disabled={sending} size="sm" className="rounded-full">
                 {sending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4 mr-1" />
+                  <Send className="h-4 w-4" />
                 )}
                 {t.email.testSend}
               </Button>
             </div>
           ) : (
             <Badge variant="warning">
-              <AlertCircle className="h-3 w-3 mr-1" />
+              <AlertCircle className="me-1 h-3 w-3" />
               {t.email.notConfigured}
             </Badge>
           )}
@@ -368,19 +374,21 @@ export default function AlertsPage({
       </Card>
 
       {/* Telegram */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-primary" />
-            {t.telegram.title}
-          </CardTitle>
+      <Card className="transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:shadow-ambient">
+        <CardHeader className="mb-4 flex flex-row items-start gap-3 space-y-0 pb-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <MessageCircle className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 pt-0.5">
+            <CardTitle className="text-base">{t.telegram.title}</CardTitle>
+            <CardDescription className="mt-1">{t.telegram.description}</CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-text-muted">{t.telegram.description}</p>
+        <CardContent className="mt-4">
           {telegramConnected ? (
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-card-border/70 bg-surface/50 px-3.5 py-3 sm:px-4">
               <Badge variant="success">
-                <CheckCircle className="h-3 w-3 mr-1" />
+                <CheckCircle className="me-1 h-3 w-3" />
                 {t.telegram.connected}
               </Badge>
               <Button
@@ -388,22 +396,23 @@ export default function AlertsPage({
                 variant="outline"
                 size="sm"
                 disabled={telegramBusy}
+                className="rounded-full"
               >
                 {telegramBusy ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <X className="h-4 w-4 mr-1" />
+                  <X className="h-4 w-4" />
                 )}
                 {t.telegram.disconnect}
               </Button>
             </div>
           ) : (
-            <>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-card-border/70 bg-surface/50 px-3.5 py-3 sm:px-4">
               <p className="text-xs text-text-muted">{t.telegram.setupHint}</p>
               <Button
                 onClick={handleConnectTelegram}
                 disabled={!telegramBotUsername || telegramBusy}
-                className="gap-1"
+                className="rounded-full"
               >
                 {telegramBusy ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -412,24 +421,26 @@ export default function AlertsPage({
                 )}
                 {t.telegram.connect}
               </Button>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>
 
       {/* Web Push */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-primary" />
-            {t.push.title}
-          </CardTitle>
+      <Card className="transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:shadow-ambient">
+        <CardHeader className="mb-4 flex flex-row items-start gap-3 space-y-0 pb-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success">
+            <Bell className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 pt-0.5">
+            <CardTitle className="text-base">{t.push.title}</CardTitle>
+            <CardDescription className="mt-1">{t.push.description}</CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-text-muted">{t.push.description}</p>
+        <CardContent className="mt-4">
           {pushSupported ? (
             <>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-card-border/70 bg-surface/50 px-3.5 py-3 sm:px-4">
                 <Badge variant={pushEnabled ? "success" : "default"}>
                   {pushEnabled ? t.push.enabled : t.push.disabled}
                 </Badge>
@@ -439,55 +450,59 @@ export default function AlertsPage({
                     size="sm"
                     variant="outline"
                     disabled={pushBusy}
+                    className="rounded-full"
                   >
                     {t.push.disable}
                   </Button>
                 ) : (
-                  <Button onClick={handleEnablePush} size="sm" disabled={pushBusy}>
+                  <Button onClick={handleEnablePush} size="sm" disabled={pushBusy} className="rounded-full">
                     {t.push.enable}
                   </Button>
                 )}
               </div>
               {pushBlocked && (
-                <p className="text-xs text-danger">{t.push.blockedText}</p>
+                <p className="mt-3 text-xs text-danger">{t.push.blockedText}</p>
               )}
               {!pushEnabled && browserSubscribed && (
-                <p className="text-xs text-warning">{t.push.notSaved}</p>
+                <p className="mt-3 text-xs text-warning">{t.push.notSaved}</p>
               )}
               {iosHint && !pushEnabled && (
-                <p className="text-xs text-warning">{t.push.iosHint}</p>
+                <p className="mt-3 text-xs text-warning">{t.push.iosHint}</p>
               )}
             </>
           ) : (
-            <Badge variant="warning">{t.push.notSupported}</Badge>
+            <Badge variant="warning">
+              <AlertCircle className="me-1 h-3 w-3" />
+              {t.push.notSupported}
+            </Badge>
           )}
         </CardContent>
       </Card>
 
       {/* Recent Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-primary" />
-            {t.history.title}
-          </CardTitle>
+      <Card className="transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:shadow-ambient">
+        <CardHeader className="mb-0 flex flex-row items-center gap-3 space-y-0 pb-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface text-text-muted ring-1 ring-border/70">
+            <Bell className="h-5 w-5" />
+          </div>
+          <CardTitle className="text-base">{t.history.title}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="mt-4">
           {recentNotifications.length === 0 ? (
-            <p className="text-sm text-text-muted text-center py-8">{t.history.empty}</p>
+            <p className="py-8 text-center text-sm text-text-muted">{t.history.empty}</p>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-border/60">
               {recentNotifications.map((n) => (
                 <div
                   key={n.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-surface/50"
+                  className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
                 >
-                  <div className="h-8 w-8 rounded bg-surface flex items-center justify-center shrink-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface ring-1 ring-border/60">
                     {n.imageUrl ? (
                       <img
                         src={n.imageUrl}
                         alt=""
-                        className="h-full w-full object-cover rounded"
+                        className="h-full w-full object-cover"
                       />
                     ) : (
                       <Bell className="h-4 w-4 text-text-muted" />

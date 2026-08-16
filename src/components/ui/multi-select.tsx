@@ -99,9 +99,9 @@ const MultiSelect = forwardRef<HTMLDivElement, MultiSelectProps>(
           aria-label={ariaLabel}
           onClick={() => setOpen((prev) => !prev)}
           className={cn(
-            "flex w-full items-center justify-between gap-2 rounded-lg border border-card-border bg-card-bg px-3 py-2.5 text-sm text-text",
-            "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary",
-            "transition-colors duration-150",
+            "flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-input-bg px-3.5 py-2.5 text-sm text-text",
+            "focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary",
+            "transition-colors duration-200 ease-premium",
             "disabled:cursor-not-allowed disabled:opacity-50",
             open && "border-primary"
           )}
@@ -109,7 +109,7 @@ const MultiSelect = forwardRef<HTMLDivElement, MultiSelectProps>(
           <span className="truncate text-start">{triggerLabel}</span>
           <ChevronDown
             className={cn(
-              "h-4 w-4 shrink-0 text-text-muted transition-transform duration-150",
+              "h-4 w-4 shrink-0 text-text-muted transition-transform duration-300 ease-premium",
               open && "rotate-180"
             )}
           />
@@ -120,7 +120,7 @@ const MultiSelect = forwardRef<HTMLDivElement, MultiSelectProps>(
             id={listId}
             role="listbox"
             aria-label={ariaLabel}
-            className="absolute start-0 end-0 top-full z-20 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-card-border bg-card-bg p-1 shadow-xl"
+            className="absolute start-0 end-0 top-full z-20 mt-2 max-h-60 w-full overflow-y-auto rounded-xl border border-border bg-card-bg p-1 shadow-ambient"
           >
             {options.length === 0 ? (
               <p className="px-3 py-2.5 text-sm text-text-muted">
@@ -138,7 +138,7 @@ const MultiSelect = forwardRef<HTMLDivElement, MultiSelectProps>(
                     onClick={() => toggle(option.value)}
                     className={cn(
                       "flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2.5 text-sm text-text",
-                      "transition-colors duration-150 hover:bg-primary/10",
+                      "transition-colors duration-200 ease-premium hover:bg-primary/10",
                       "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
                       checked && "font-medium"
                     )}

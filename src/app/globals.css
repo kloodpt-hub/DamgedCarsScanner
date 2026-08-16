@@ -16,6 +16,20 @@
   --color-danger: #ef4444;
   --color-success: #22c55e;
   --color-warning: #f59e0b;
+
+  --ease-premium: cubic-bezier(0.32, 0.72, 0, 1);
+  --shadow-ambient: var(--shadow-ambient);
+}
+
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 [data-theme="light"] {
@@ -27,10 +41,12 @@
   --color-primary-hover: #1d4ed8;
   --color-accent: #f59e0b;
   --color-accent-hover: #d97706;
-  --color-border: #e5e7eb;
+  --color-border: #ebedf0;
   --color-input-bg: #f9fafb;
   --color-card-bg: #ffffff;
-  --color-card-border: #e5e7eb;
+  --color-card-border: #ebedf0;
+
+  --shadow-ambient: 0 20px 60px -15px rgba(15, 23, 42, 0.10), 0 4px 16px -4px rgba(15, 23, 42, 0.06);
 }
 
 [data-theme="dark"] {
@@ -42,10 +58,12 @@
   --color-primary-hover: #93c5fd;
   --color-accent: #fbbf24;
   --color-accent-hover: #fcd34d;
-  --color-border: #1f2937;
+  --color-border: #26303e;
   --color-input-bg: #1f2937;
   --color-card-bg: #111827;
-  --color-card-border: #1f2937;
+  --color-card-border: #26303e;
+
+  --shadow-ambient: 0 20px 60px -15px rgba(0, 0, 0, 0.40), 0 4px 16px -4px rgba(0, 0, 0, 0.25);
 }
 
 @layer base {
@@ -61,10 +79,6 @@
     background-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
     color: var(--color-text);
   }
-
-  * {
-    border-color: var(--color-border);
-  }
 }
 
 @layer components {
@@ -77,7 +91,7 @@
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 150ms;
+    transition: all 200ms var(--ease-premium);
     outline: none;
     cursor: pointer;
     user-select: none;
@@ -101,7 +115,7 @@
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 150ms;
+    transition: all 200ms var(--ease-premium);
     outline: none;
     cursor: pointer;
     user-select: none;
@@ -127,7 +141,7 @@
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 150ms;
+    transition: all 200ms var(--ease-premium);
     outline: none;
     cursor: pointer;
     user-select: none;
@@ -149,7 +163,7 @@
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 150ms;
+    transition: all 200ms var(--ease-premium);
     outline: none;
     cursor: pointer;
     user-select: none;
@@ -171,7 +185,7 @@
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 150ms;
+    transition: all 200ms var(--ease-premium);
     outline: none;
     cursor: pointer;
     user-select: none;
@@ -191,7 +205,7 @@
     padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
     color: var(--color-text);
-    transition: border-color 150ms;
+    transition: border-color 200ms var(--ease-premium);
     outline: none;
   }
 
@@ -217,7 +231,7 @@
     border: 1px solid var(--color-card-border);
     background-color: var(--color-card-bg);
     padding: 1.5rem;
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    box-shadow: var(--shadow-ambient);
   }
 
   .badge {
@@ -331,5 +345,5 @@ body,
 .btn-ghost,
 .btn-danger,
 .input {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.2s var(--ease-premium), color 0.2s var(--ease-premium), border-color 0.2s var(--ease-premium);
 }

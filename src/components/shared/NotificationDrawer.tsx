@@ -259,7 +259,7 @@ export function NotificationDrawerProvider({
         onClick={close}
         aria-hidden="true"
         className={cn(
-          "fixed inset-0 z-50 bg-black/50 transition-opacity duration-300",
+          "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-500 ease-premium",
           isOpen ? "opacity-100" : "pointer-events-none opacity-0"
         )}
       />
@@ -269,12 +269,12 @@ export function NotificationDrawerProvider({
         aria-label={t.title}
         aria-hidden={!isOpen}
         className={cn(
-          "fixed top-14 bottom-0 end-0 z-50 flex w-[92vw] max-w-md flex-col bg-bg shadow-xl",
+          "fixed top-14 bottom-0 end-0 z-50 flex w-[92vw] max-w-md flex-col border-s border-card-border bg-bg/95 backdrop-blur-xl shadow-ambient",
           isOpen
-            ? "visible translate-x-0 [transition:transform_300ms,visibility_0s]"
+            ? "visible translate-x-0 [transition:transform_500ms_cubic-bezier(0.32,0.72,0,1),visibility_0s]"
             : cn(
                 isRtl ? "-translate-x-full" : "translate-x-full",
-                "invisible pointer-events-none [transition:transform_300ms,visibility_0s_300ms]"
+                "invisible pointer-events-none [transition:transform_500ms_cubic-bezier(0.32,0.72,0,1),visibility_0s_500ms]"
               )
         )}
       >
@@ -283,7 +283,7 @@ export function NotificationDrawerProvider({
           <button
             onClick={close}
             aria-label={t.close}
-            className="-me-2.5 p-2.5 rounded-lg text-text-muted hover:text-text hover:bg-surface transition-colors"
+            className="-me-2.5 p-2.5 rounded-full text-text-muted transition-all duration-300 ease-premium hover:bg-surface hover:text-text active:scale-[0.96]"
           >
             <X className="h-5 w-5" />
           </button>
@@ -412,7 +412,7 @@ export function NotificationDrawerProvider({
           <Link
             href={`/${locale}/dashboard/alerts`}
             onClick={close}
-            className="flex h-10 items-center justify-center gap-1.5 rounded-lg text-sm font-medium text-primary hover:text-primary-hover hover:bg-surface transition-colors"
+            className="flex h-10 items-center justify-center gap-1.5 rounded-full text-sm font-medium text-primary transition-all duration-300 ease-premium hover:bg-surface hover:text-primary-hover active:scale-[0.98]"
           >
             <Bell className="h-4 w-4" />
             {t.viewAll}

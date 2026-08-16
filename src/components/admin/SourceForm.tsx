@@ -486,13 +486,13 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
         type="button"
         onClick={() => setIsSelectorsOpen((v) => !v)}
         aria-expanded={isSelectorsOpen}
-        className="flex items-center justify-between w-full rounded-lg border border-border bg-surface/50 px-3 py-2.5"
+        className="flex items-center justify-between w-full rounded-xl border border-border bg-input-bg/50 px-3.5 py-3 transition-all duration-300 ease-premium hover:bg-surface"
       >
         <span className="text-sm font-medium text-text">
           {isRtl ? "المحددات المتقدمة (اختياري)" : "Advanced Selectors (Optional)"}
         </span>
         <ChevronDown
-          className={`h-4 w-4 text-text-muted transition-transform duration-200 ${isSelectorsOpen ? "rotate-180" : ""}`}
+          className={`h-4 w-4 text-text-muted transition-transform duration-300 ease-premium ${isSelectorsOpen ? "rotate-180" : ""}`}
         />
       </button>
       {isSelectorsOpen && (
@@ -540,7 +540,7 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
               spellCheck={false}
             />
           ) : (
-            <div className="space-y-3 rounded-lg border border-border bg-input-bg/30 p-3">
+            <div className="space-y-3 rounded-xl border border-border/70 bg-input-bg/30 p-3.5">
               {SELECTOR_FIELDS.map((field) => (
                 <div key={field.key} className="space-y-1">
                   <label className="text-xs font-medium text-text-muted">
@@ -565,8 +565,8 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
         </div>
       )}
 
-      <div className="rounded-lg border border-border bg-surface/50 p-3">
-        <div className="flex items-start gap-2">
+      <div className="rounded-xl border border-border/70 bg-surface/40 p-3.5">
+        <div className="flex items-start gap-2.5">
           <Info className="h-4 w-4 text-text-muted mt-0.5 shrink-0" />
           <p className="text-xs text-text-muted">
             {isRtl

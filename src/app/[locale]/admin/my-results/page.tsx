@@ -1,13 +1,24 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { getDictionary, type Locale } from "@/lib/i18n";
-import { formatCurrency, formatDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Car } from "lucide-react";
+import { ListingCard } from "@/components/dashboard/ListingCard";
 
 const PAGE_SIZE = 20;
+
+interface AdminListing {
+  id: string;
+  title: string;
+  price: number | null;
+  year: number | null;
+  mileage: number | null;
+  damageStatus: string | null;
+  imageUrl: string | null;
+  canonicalUrl: string;
+  isRead: boolean;
+  isNotified: boolean;
+  createdAt: Date | string;
+}
 
 export default async function AdminMyResultsPage({
   params,
@@ -18,7 +29,6 @@ export default async function AdminMyResultsPage({
 }) {
   const { locale } = await params;
   const sp = await searchParams;
-  const t = await getDictionary(locale as Locale);
 
   const session = await auth();
   if (!session?.user || session.user.role !== "ADMIN") {
@@ -52,11 +62,15 @@ export default async function AdminMyResultsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-text">
+      <div className="space-y-1.5">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          {isRtl ? "الإدارة" : "Admin"}
+        </span>
+        <h1 className="text-2xl font-bold tracking-tight text-text">
           {isRtl ? "نتائجي" : "My Results"}
         </h1>
-        <p className="text-text-muted text-sm mt-1">
+        <p className="text-text-muted text-sm">
           {isRtl
             ? "الإعلانات المطابقة لفلاترك الشخصية"
             : "Listings matching your personal filters"}
@@ -75,68 +89,20 @@ export default async function AdminMyResultsPage({
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {listings.map((listing) => (
-              <Card key={listing.id}>
-                <CardContent className="p-4">
-                  <div className="relative h-32 bg-surface overflow-hidden rounded-lg mb-3">
-                    {listing.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={listing.imageUrl}
-                        alt={listing.title}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-text-muted">
-                        <Car className="h-8 w-8 opacity-30" />
-                      </div>
-                    )}
-                    {!listing.isRead && (
-                      <Badge variant="default" className="absolute top-2 start-2">
-                        {isRtl ? "جديد" : "New"}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-semibold text-text truncate">
-                      <a
-                        href={listing.canonicalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-primary inline-flex items-center gap-1"
-                      >
-                        {listing.title}
-                        <ExternalLink className="h-3 w-3 shrink-0" />
-                      </a>
-                    </h3>
-                    <div className="flex items-center gap-3 text-xs text-text-muted">
-                      {listing.year && <span>{listing.year}</span>}
-                      {listing.mileage != null && (
-                        <span>{listing.mileage.toLocaleString()} km</span>
-                      )}
-                    </div>
-                    {listing.price != null && (
-                      <p className="text-sm font-bold text-primary">
-                        {formatCurrency(listing.price)}
-                      </p>
-                    )}
-                    <p className="text-xs text-text-muted">
-                      {listing.source.name} · {formatDate(listing.createdAt, locale)}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <ListingCard key={listing.id} listing={listing as AdminListing} locale={locale} />
             ))}
           </div>
 
           {totalPages > 1 && (
-            <div className="flex flex-wrap items-center justify-center gap-1">
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <a
                   key={p}
                   href={buildUrl(p)}
-                  className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  aria-current={p === page ? "page" : undefined}
+                  className={`flex h-9 min-w-9 items-center justify-center rounded-full px-3 text-sm transition-all duration-300 ease-premium active:scale-[0.96] ${
                     p === page
-                      ? "bg-primary text-white font-medium"
+                      ? "bg-primary font-semibold text-white shadow-ambient"
                       : "text-text-muted hover:bg-surface hover:text-text"
                   }`}
                 >

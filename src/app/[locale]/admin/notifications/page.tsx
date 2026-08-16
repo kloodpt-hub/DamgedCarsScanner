@@ -80,14 +80,16 @@ export default async function NotificationsPage({
 
   const lastNotified = notifiedListings.length > 0 ? notifiedListings[0].updatedAt : null;
 
-  const sectionHeading = "text-lg font-semibold text-text";
-
   return (
     <div className="space-y-6">
       <div className={`flex items-center justify-between ${isRtl ? "flex-row-reverse" : ""}`}>
-        <div>
-          <h1 className="text-2xl font-bold text-text">{t.alerts.title}</h1>
-          <p className="text-text-muted text-sm mt-1">
+        <div className="space-y-1.5">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {isRtl ? "الإدارة" : "Admin"}
+          </span>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{t.alerts.title}</h1>
+          <p className="text-text-muted text-sm">
             Manage email, Telegram, and push notification channels.
           </p>
         </div>
@@ -112,7 +114,7 @@ export default async function NotificationsPage({
           </div>
 
           {hasEmail ? (
-            <div className="rounded-lg border border-border p-4 bg-surface/50 space-y-2 text-sm">
+            <div className="rounded-xl border border-border/60 bg-surface/40 p-4 space-y-2.5 text-sm">
               <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
                 <span className="text-text-muted">Provider</span>
                 <span className="text-text font-medium">Resend</span>
@@ -129,7 +131,7 @@ export default async function NotificationsPage({
               </div>
             </div>
           ) : (
-            <div className="rounded-lg border border-border p-4 bg-surface/50 space-y-2 text-sm text-text-muted">
+            <div className="rounded-xl border border-border/60 bg-surface/40 p-4 space-y-2 text-sm text-text-muted">
               <p className="font-medium text-text">Setup Instructions:</p>
               <p>Add the following environment variables to your <code className="text-primary">.env</code> file:</p>
               <ul className="list-disc list-inside space-y-1 mt-2">
@@ -161,7 +163,7 @@ export default async function NotificationsPage({
 
           {hasTelegramBot ? (
             <>
-              <div className="rounded-lg border border-border p-4 bg-surface/50 space-y-2 text-sm">
+              <div className="rounded-xl border border-border/60 bg-surface/40 p-4 space-y-2.5 text-sm">
                 <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
                   <span className="text-text-muted">Bot Token</span>
                   <span className="text-text font-medium font-mono">
@@ -175,28 +177,56 @@ export default async function NotificationsPage({
               </div>
 
               {telegramUsers.length > 0 && (
-                <div className="rounded-lg border border-border overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-surface/50 text-text-muted">
-                        <th className="px-4 py-2 text-left">Name</th>
-                        <th className="px-4 py-2 text-left">Email</th>
-                        <th className="px-4 py-2 text-left">Chat ID</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {telegramUsers.map((user) => (
-                        <tr key={user.id} className="border-t border-border">
-                          <td className="px-4 py-2 text-text font-medium">{user.name ?? "-"}</td>
-                          <td className="px-4 py-2 text-text-muted">{user.email}</td>
-                          <td className="px-4 py-2 text-text-muted font-mono text-xs">
-                            {user.telegramChatId}
-                          </td>
+                <>
+                  <div className="hidden md:block rounded-xl border border-border/60 overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-surface/50 text-text-muted">
+                          <th className="px-4 py-3 text-start text-xs font-medium uppercase tracking-wide">Name</th>
+                          <th className="px-4 py-3 text-start text-xs font-medium uppercase tracking-wide">Email</th>
+                          <th className="px-4 py-3 text-start text-xs font-medium uppercase tracking-wide">Chat ID</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {telegramUsers.map((user) => (
+                          <tr key={user.id} className="border-t border-border/60">
+                            <td className="px-4 py-3 text-text font-medium">{user.name ?? "-"}</td>
+                            <td className="px-4 py-3 text-text-muted">{user.email}</td>
+                            <td className="px-4 py-3 text-text-muted font-mono text-xs">
+                              {user.telegramChatId}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="md:hidden space-y-3">
+                    {telegramUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        className="rounded-2xl border border-card-border bg-card-bg p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-text truncate">
+                              {user.name ?? "-"}
+                            </p>
+                            <p className="mt-0.5 text-xs text-text-muted truncate" dir="ltr">
+                              {user.email}
+                            </p>
+                          </div>
+                          <code
+                            className="shrink-0 rounded-lg border border-border bg-bg px-2.5 py-1.5 font-mono text-[11px] text-text-muted"
+                            dir="ltr"
+                          >
+                            {user.telegramChatId}
+                          </code>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
 
               {telegramUsers.length === 0 && (
@@ -204,7 +234,7 @@ export default async function NotificationsPage({
               )}
             </>
           ) : (
-            <div className="rounded-lg border border-border p-4 bg-surface/50 space-y-2 text-sm text-text-muted">
+            <div className="rounded-xl border border-border/60 bg-surface/40 p-4 space-y-2 text-sm text-text-muted">
               <p className="font-medium text-text">Setup Instructions:</p>
               <ol className="list-decimal list-inside space-y-2 mt-2">
                 <li>Create a bot via <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@BotFather</a> on Telegram</li>
@@ -234,7 +264,7 @@ export default async function NotificationsPage({
             )}
           </div>
 
-          <div className="rounded-lg border border-border p-4 bg-surface/50 space-y-2 text-sm">
+          <div className="rounded-xl border border-border/60 bg-surface/40 p-4 space-y-2 text-sm">
             <div className={`flex ${isRtl ? "flex-row-reverse" : ""} justify-between`}>
               <span className="text-text-muted">Active Push Subscriptions</span>
               <span className="text-text font-medium">{pushSubscriptionCount}</span>
@@ -242,7 +272,7 @@ export default async function NotificationsPage({
           </div>
 
           {!hasVapid && (
-            <div className="rounded-lg border border-border p-4 bg-surface/50 text-sm text-text-muted">
+            <div className="rounded-xl border border-border/60 bg-surface/40 p-4 text-sm text-text-muted">
               <p className="font-medium text-text mb-2">Setup Instructions:</p>
               <p>Add the following environment variables to enable web push:</p>
               <ul className="list-disc list-inside space-y-1 mt-2">
@@ -269,22 +299,28 @@ export default async function NotificationsPage({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-lg border border-border p-4 bg-surface/50 text-center">
-              <Hash className="h-6 w-6 text-primary mx-auto mb-2" />
+            <div className="rounded-2xl border border-card-border bg-card-bg p-5 text-center shadow-ambient transition-all duration-300 ease-premium hover:-translate-y-1">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <Hash className="h-5 w-5 text-primary" />
+              </div>
               <p className="text-2xl font-bold text-text">{totalNotifiedListings}</p>
-              <p className="text-sm text-text-muted">Total Listings Notified</p>
+              <p className="text-sm text-text-muted mt-1">Total Listings Notified</p>
             </div>
-            <div className="rounded-lg border border-border p-4 bg-surface/50 text-center">
-              <Users className="h-6 w-6 text-accent mx-auto mb-2" />
+            <div className="rounded-2xl border border-card-border bg-card-bg p-5 text-center shadow-ambient transition-all duration-300 ease-premium hover:-translate-y-1">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
+                <Users className="h-5 w-5 text-accent" />
+              </div>
               <p className="text-2xl font-bold text-text">{totalUsersWithNotifications}</p>
-              <p className="text-sm text-text-muted">Users with Notifications Enabled</p>
+              <p className="text-sm text-text-muted mt-1">Users with Notifications Enabled</p>
             </div>
-            <div className="rounded-lg border border-border p-4 bg-surface/50 text-center">
-              <Bell className="h-6 w-6 text-success mx-auto mb-2" />
+            <div className="rounded-2xl border border-card-border bg-card-bg p-5 text-center shadow-ambient transition-all duration-300 ease-premium hover:-translate-y-1">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-success/10">
+                <Bell className="h-5 w-5 text-success" />
+              </div>
               <p className="text-2xl font-bold text-text">
                 {lastNotified ? formatDate(lastNotified, locale) : "-"}
               </p>
-              <p className="text-sm text-text-muted">Last Notification Sent</p>
+              <p className="text-sm text-text-muted mt-1">Last Notification Sent</p>
             </div>
           </div>
         </CardContent>
@@ -296,7 +332,7 @@ export default async function NotificationsPage({
           <CardTitle className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
             <Mail className="h-5 w-5 text-primary" />
             <span>{t.alerts.notificationHistory}</span>
-            <Badge variant="default" className="ml-2">{notifiedListings.length}</Badge>
+            <Badge variant="default" className="ms-2">{notifiedListings.length}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -310,10 +346,11 @@ export default async function NotificationsPage({
               {notifiedListings.map((listing) => (
                 <div
                   key={listing.id}
-                  className={`flex items-center gap-3 rounded-lg border border-border p-3 ${isRtl ? "flex-row-reverse" : ""}`}
+                  className={`flex items-center gap-3 rounded-2xl border border-card-border bg-card-bg p-3 transition-all duration-300 ease-premium hover:border-border hover:bg-surface/40 ${isRtl ? "flex-row-reverse" : ""}`}
                 >
-                  <div className="h-10 w-10 shrink-0 rounded-lg bg-surface flex items-center justify-center overflow-hidden">
+                  <div className="h-10 w-10 shrink-0 rounded-xl bg-surface flex items-center justify-center overflow-hidden ring-1 ring-border/40">
                     {listing.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={listing.imageUrl}
                         alt=""

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Play, RefreshCw } from "lucide-react";
@@ -77,50 +77,61 @@ export function JobsClientBar({
   }, [autoRefresh, hasRunning, router]);
 
   return (
-    <div className={`flex flex-wrap items-center gap-3 ${isRtl ? "flex-row-reverse" : ""}`}>
-      <h1 className="text-2xl font-bold text-text mr-auto">
-        {isRtl ? "سجل المهام" : "Job History"}
-      </h1>
+    <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+      <div className="space-y-1.5">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          {isRtl ? "الإدارة" : "Admin"}
+        </span>
+        <h1 className="text-2xl font-bold tracking-tight text-text">
+          {isRtl ? "سجل المهام" : "Job History"}
+        </h1>
+        <p className="text-sm text-text-muted">
+          {isRtl ? "تتبع تنفيذ أدوات السحب" : "Track scraper runs"}
+        </p>
+      </div>
 
-      <Select
-        value={currentSourceId ?? ""}
-        onChange={(e) => updateParam("sourceId", e.target.value)}
-        className="w-48"
-      >
-        <option value="">{isRtl ? "جميع المصادر" : "All Sources"}</option>
-        {sources.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.name}
-          </option>
-        ))}
-      </Select>
+      <div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center">
+        <Select
+          value={currentSourceId ?? ""}
+          onChange={(e) => updateParam("sourceId", e.target.value)}
+          className="w-full sm:w-48"
+        >
+          <option value="">{isRtl ? "جميع المصادر" : "All Sources"}</option>
+          {sources.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </Select>
 
-      <Select
-        value={currentStatus ?? ""}
-        onChange={(e) => updateParam("status", e.target.value)}
-        className="w-40"
-      >
-        <option value="">{isRtl ? "جميع الحالات" : "All Statuses"}</option>
-        <option value="pending">{isRtl ? "قيد الانتظار" : "Pending"}</option>
-        <option value="running">{isRtl ? "قيد التنفيذ" : "Running"}</option>
-        <option value="completed">{isRtl ? "مكتمل" : "Completed"}</option>
-        <option value="failed">{isRtl ? "فشل" : "Failed"}</option>
-      </Select>
+        <Select
+          value={currentStatus ?? ""}
+          onChange={(e) => updateParam("status", e.target.value)}
+          className="w-full sm:w-40"
+        >
+          <option value="">{isRtl ? "جميع الحالات" : "All Statuses"}</option>
+          <option value="pending">{isRtl ? "قيد الانتظار" : "Pending"}</option>
+          <option value="running">{isRtl ? "قيد التنفيذ" : "Running"}</option>
+          <option value="completed">{isRtl ? "مكتمل" : "Completed"}</option>
+          <option value="failed">{isRtl ? "فشل" : "Failed"}</option>
+        </Select>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setAutoRefresh(!autoRefresh)}
-        className={autoRefresh ? "border-primary text-primary" : ""}
-      >
-        <RefreshCw className={`h-4 w-4 ${autoRefresh ? "animate-spin" : ""}`} />
-        {isRtl ? "تحديث تلقائي" : "Auto Refresh"}
-      </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setAutoRefresh(!autoRefresh)}
+          className={`shrink-0 ${autoRefresh ? "border-primary text-primary hover:bg-primary/5" : ""}`}
+        >
+          <RefreshCw className={`h-4 w-4 ${autoRefresh ? "animate-spin" : ""}`} />
+          {isRtl ? "تحديث تلقائي" : "Auto Refresh"}
+        </Button>
 
-      <Button onClick={handleRunAll} loading={loading} size="sm">
-        <Play className="h-4 w-4" />
-        {isRtl ? "تشغيل الكل" : "Run All"}
-      </Button>
+        <Button onClick={handleRunAll} loading={loading} size="sm" className="shrink-0">
+          <Play className="h-4 w-4" />
+          {isRtl ? "تشغيل الكل" : "Run All"}
+        </Button>
+      </div>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Loader2, Eye, EyeOff, AlertCircle, Scan } from "lucide-react";
 
 const labels = {
   en: {
@@ -96,105 +96,116 @@ function LoginForm() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="card">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-text">{t.title}</h1>
-          <p className="text-text-muted mt-2">{t.subtitle}</p>
-        </div>
-
-        {error && (
-          <div className="mb-4 flex items-center gap-2 rounded-lg bg-danger/10 border border-danger/20 p-3 text-sm text-danger">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="label">
-              {t.email}
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setFieldErrors((prev) => ({ ...prev, email: undefined }));
-              }}
-              className={`input ${fieldErrors.email ? "border-danger focus:ring-danger/50" : ""}`}
-              placeholder="you@example.com"
-              autoComplete="email"
-              disabled={loading}
-            />
-            {fieldErrors.email && (
-              <p className="mt-1 text-xs text-danger">{fieldErrors.email}</p>
-            )}
+      <div className="rounded-[2rem] p-1.5 bg-surface/50 ring-1 ring-card-border">
+        <div className="rounded-[calc(2rem-0.375rem)] bg-bg p-6 sm:p-8 shadow-ambient">
+          <div className="text-center mb-8">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Scan className="h-5 w-5" />
+            </div>
+            <h1 className="text-2xl font-bold text-text">{t.title}</h1>
+            <p className="text-text-muted mt-2">{t.subtitle}</p>
           </div>
 
-          <div>
-            <label htmlFor="password" className="label">
-              {t.password}
-            </label>
-            <div className="relative">
+          {error && (
+            <div className="mb-5 flex items-center gap-2 rounded-xl bg-danger/10 border border-danger/20 p-3.5 text-sm text-danger">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="label">
+                {t.email}
+              </label>
               <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
+                id="email"
+                type="email"
+                value={email}
                 onChange={(e) => {
-                  setPassword(e.target.value);
-                  setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                  setEmail(e.target.value);
+                  setFieldErrors((prev) => ({
+                    ...prev,
+                    email: undefined,
+                  }));
                 }}
-                className={`input pr-12 ${fieldErrors.password ? "border-danger focus:ring-danger/50" : ""}`}
-                placeholder="••••••••"
-                autoComplete="current-password"
+                className={`input ${fieldErrors.email ? "border-danger focus:ring-danger/50" : ""}`}
+                placeholder="you@example.com"
+                autoComplete="email"
                 disabled={loading}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 text-text-muted hover:text-text transition-colors"
-                tabIndex={-1}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
-              </button>
+              {fieldErrors.email && (
+                <p className="mt-1 text-xs text-danger">{fieldErrors.email}</p>
+              )}
             </div>
-            {fieldErrors.password && (
-              <p className="mt-1 text-xs text-danger">
-                {fieldErrors.password}
-              </p>
-            )}
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t.signingIn}
-              </>
-            ) : (
-              t.signIn
-            )}
-          </button>
-        </form>
+            <div>
+              <label htmlFor="password" className="label">
+                {t.password}
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      password: undefined,
+                    }));
+                  }}
+                  className={`input pe-12 ${fieldErrors.password ? "border-danger focus:ring-danger/50" : ""}`}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute end-2 top-1/2 -translate-y-1/2 p-2.5 text-text-muted transition-colors duration-300 ease-premium hover:text-text"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              {fieldErrors.password && (
+                <p className="mt-1 text-xs text-danger">
+                  {fieldErrors.password}
+                </p>
+              )}
+            </div>
 
-        <p className="mt-6 text-center text-sm text-text-muted">
-          {t.noAccount}{" "}
-          <Link
-            href={`/${locale}/register`}
-            className="font-medium text-primary hover:text-primary-hover transition-colors"
-          >
-            {t.register}
-          </Link>
-        </p>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full rounded-full py-3"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t.signingIn}
+                </>
+              ) : (
+                t.signIn
+              )}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-text-muted">
+            {t.noAccount}{" "}
+            <Link
+              href={`/${locale}/register`}
+              className="font-medium text-primary transition-colors duration-300 ease-premium hover:text-primary-hover"
+            >
+              {t.register}
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -205,8 +216,10 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="w-full max-w-md">
-          <div className="card flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <div className="rounded-[2rem] p-1.5 bg-surface/50 ring-1 ring-card-border">
+            <div className="flex items-center justify-center rounded-[calc(2rem-0.375rem)] bg-bg py-12 shadow-ambient">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
           </div>
         </div>
       }

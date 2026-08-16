@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -19,6 +18,7 @@ import {
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "@/components/shared/SidebarProvider";
 
 const navLabels = {
   en: {
@@ -73,22 +73,12 @@ interface SidebarProps {
 }
 
 export function Sidebar({ locale, role }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      localStorage.getItem("sidebar-collapsed") === "true"
-  );
+  const { collapsed, toggle: toggleCollapsed } = useSidebar();
   const rawPathname = usePathname() || "";
   const pathname = rawPathname.replace(/^\/(en|ar)(?=\/|$)/, "") || "/";
   const t = navLabels[locale as keyof typeof navLabels] ?? navLabels.en;
   const isAdmin = role === "ADMIN";
   const isRtl = locale === "ar";
-
-  const toggleCollapsed = () => {
-    const next = !collapsed;
-    setCollapsed(next);
-    localStorage.setItem("sidebar-collapsed", String(next));
-  };
 
   const userNavItems: NavItem[] = [
     { label: t.dashboard, href: "/dashboard", icon: LayoutDashboard },
@@ -118,11 +108,16 @@ export function Sidebar({ locale, role }: SidebarProps) {
     return pathname.startsWith(href);
   };
 
+  const navItemClasses = cn(
+    "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 ease-premium active:scale-[0.98]",
+    collapsed && "justify-center px-0"
+  );
+
   const sidebarInner = (
     <>
       <div
         className={cn(
-          "flex h-16 items-center gap-2 border-b border-gray-800 px-4 shrink-0",
+          "flex h-16 items-center gap-2 border-b border-card-border px-4 shrink-0",
           collapsed && "justify-center px-0"
         )}
       >
@@ -132,7 +127,7 @@ export function Sidebar({ locale, role }: SidebarProps) {
           className="h-8 w-8 shrink-0 rounded-lg object-cover"
         />
         {!collapsed && (
-          <span className="text-lg font-bold text-white whitespace-nowrap">
+          <span className="text-lg font-bold text-text whitespace-nowrap">
             {t.brand}
           </span>
         )}
@@ -140,7 +135,7 @@ export function Sidebar({ locale, role }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {!collapsed && isAdmin && (
-          <p className="px-3 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+          <p className="px-3 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
             {isOnAdmin ? t.adminSection : t.userSection}
           </p>
         )}
@@ -153,14 +148,19 @@ export function Sidebar({ locale, role }: SidebarProps) {
               key={item.href}
               href={`/${locale}${item.href}`}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                navItemClasses,
                 active
-                  ? "bg-gray-800 text-white"
-                  : "text-gray-400 hover:bg-gray-800/50 hover:text-white",
-                collapsed && "justify-center px-0"
+                  ? "bg-primary/10 text-primary"
+                  : "text-text-muted hover:bg-surface hover:text-text"
               )}
               title={collapsed ? item.label : undefined}
             >
+              {active && (
+                <span
+                  className="absolute start-0 inset-y-2 w-1 rounded-full bg-primary"
+                  aria-hidden="true"
+                />
+              )}
               <Icon className="h-5 w-5 shrink-0" />
               {!collapsed && <span>{item.label}</span>}
             </Link>
@@ -169,13 +169,12 @@ export function Sidebar({ locale, role }: SidebarProps) {
 
         {isAdmin && (
           <>
-            {!collapsed && <div className="my-3 border-t border-gray-800" />}
+            {!collapsed && <div className="my-3 border-t border-card-border" />}
             <Link
               href={`/${locale}${isOnAdmin ? "/dashboard" : "/admin"}`}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                "text-primary hover:bg-primary/10",
-                collapsed && "justify-center px-0"
+                navItemClasses,
+                "text-primary hover:bg-primary/10"
               )}
               title={
                 collapsed
@@ -196,12 +195,12 @@ export function Sidebar({ locale, role }: SidebarProps) {
         )}
       </nav>
 
-      <div className="border-t border-gray-800 p-3 space-y-1 shrink-0">
+      <div className="border-t border-card-border p-3 space-y-1 shrink-0">
         <button
           onClick={() => signOut({ callbackUrl: `/${locale}` })}
           className={cn(
-            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors",
-            collapsed && "justify-center px-0"
+            navItemClasses,
+            "w-full text-text-muted hover:bg-surface hover:text-text"
           )}
           title={collapsed ? t.logout : undefined}
         >
@@ -211,10 +210,12 @@ export function Sidebar({ locale, role }: SidebarProps) {
 
         <button
           onClick={toggleCollapsed}
+          aria-label={t.collapse}
           className={cn(
-            "hidden lg:flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors",
-            collapsed && "justify-center px-0"
+            navItemClasses,
+            "hidden lg:flex w-full text-text-muted hover:bg-surface hover:text-text"
           )}
+          title={collapsed ? t.collapse : undefined}
         >
           {isRtl ? (
             collapsed ? (
@@ -238,10 +239,10 @@ export function Sidebar({ locale, role }: SidebarProps) {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex fixed inset-y-0 z-30 flex-col bg-gray-900 text-gray-300 transition-all duration-300",
+          "hidden lg:flex fixed inset-y-0 z-30 flex-col rounded-e-2xl bg-card-bg text-text shadow-ambient transition-all duration-500 ease-premium",
           isRtl
-            ? "right-0 border-s border-gray-800"
-            : "left-0 border-e border-gray-800",
+            ? "right-0 border-s border-card-border"
+            : "left-0 border-e border-card-border",
           collapsed ? "w-[68px]" : "w-64"
         )}
       >

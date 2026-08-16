@@ -180,7 +180,7 @@ export default function ResultsPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-text">{t.title}</h1>
         <p className="text-text-muted text-sm mt-1">
@@ -188,59 +188,74 @@ export default function ResultsPage({
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <div className="relative flex-1 w-full sm:max-w-xs">
-          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
-          <Input
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder={t.search}
-            className="ps-9"
-          />
+      <div className="rounded-2xl bg-surface/70 p-1.5 ring-1 ring-border/80">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-[calc(1rem-0.375rem)] border border-card-border bg-card-bg p-3 sm:p-4">
+          <div className="relative flex-1 w-full sm:max-w-xs">
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+            <Input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t.search}
+              className="ps-9"
+            />
+          </div>
+
+          <Select
+            value={sourceId}
+            onChange={(e) => {
+              setSourceId(e.target.value);
+              setPage(1);
+            }}
+            className="sm:w-44"
+          >
+            <option value="">{t.allSources}</option>
+            {sources.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            value={isRead}
+            onChange={(e) => {
+              setIsRead(e.target.value);
+              setPage(1);
+            }}
+            className="sm:w-40"
+          >
+            <option value="">{t.all}</option>
+            <option value="false">{t.unread}</option>
+            <option value="true">{t.read}</option>
+          </Select>
         </div>
-
-        <Select
-          value={sourceId}
-          onChange={(e) => {
-            setSourceId(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">{t.allSources}</option>
-          {sources.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </Select>
-
-        <Select
-          value={isRead}
-          onChange={(e) => {
-            setIsRead(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">{t.all}</option>
-          <option value="false">{t.unread}</option>
-          <option value="true">{t.read}</option>
-        </Select>
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-text-muted">
+        <div className="py-16 text-center text-sm text-text-muted">
           {t.loading}
         </div>
       ) : listings.length === 0 ? (
-        <div className="py-12 text-center text-text-muted">{t.noResults}</div>
+        <div className="rounded-2xl bg-surface/70 p-1.5 ring-1 ring-border/80">
+          <div className="rounded-[calc(1rem-0.375rem)] border border-dashed border-border bg-card-bg py-16 text-center">
+            <p className="text-sm text-text-muted">{t.noResults}</p>
+          </div>
+        </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {groups.map((group) => (
             <div key={group.label} className="space-y-4">
-              <h2 className="text-lg font-semibold text-text border-b border-border pb-2">
-                {group.label}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
+                  <h2 className="text-sm font-semibold text-text">{group.label}</h2>
+                </div>
+                <div className="h-px flex-1 bg-border/70" />
+                <span className="text-xs text-text-muted tabular-nums">
+                  {group.listings.length}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {group.listings.map((listing) => (
                   <ListingCard key={listing.id} listing={listing} locale={locale} />
                 ))}
@@ -251,7 +266,7 @@ export default function ResultsPage({
       )}
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <p className="text-sm text-text-muted">
             {t.page} {page} {t.of} {totalPages}
           </p>
@@ -261,6 +276,7 @@ export default function ResultsPage({
               size="sm"
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
+              className="rounded-full px-4"
             >
               <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
               {t.previous}
@@ -270,6 +286,7 @@ export default function ResultsPage({
               size="sm"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
+              className="rounded-full px-4"
             >
               {t.next}
               <ChevronRight className="h-4 w-4 rtl:rotate-180" />

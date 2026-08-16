@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -17,6 +17,12 @@ interface UsersClientActionsProps {
   currentRole?: string;
   inline?: boolean;
 }
+
+const dialogShell =
+  "relative w-full rounded-2xl border border-card-border bg-card-bg shadow-ambient z-10 max-h-[calc(100dvh-2rem)] overflow-y-auto p-6 animate-[slide-up-fade_300ms_cubic-bezier(0.32,0.72,0,1)]";
+
+const overlay =
+  "absolute inset-0 bg-black/50 backdrop-blur-sm";
 
 export function UsersClientActions({
   locale,
@@ -128,6 +134,7 @@ export function UsersClientActions({
             setShowEdit(true);
           }}
           title={isRtl ? "تعديل الدور" : "Edit Role"}
+          aria-label={isRtl ? "تعديل الدور" : "Edit Role"}
         >
           <Pencil className="h-4 w-4" />
         </Button>
@@ -136,25 +143,44 @@ export function UsersClientActions({
           size="sm"
           onClick={() => setShowDelete(true)}
           title={isRtl ? "حذف" : "Delete"}
+          aria-label={isRtl ? "حذف" : "Delete"}
         >
           <Trash2 className="h-4 w-4 text-danger" />
         </Button>
 
         {showEdit && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+          <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto p-4 sm:p-6">
             <div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className={overlay}
               onClick={() => setShowEdit(false)}
             />
-            <div className="relative bg-card-bg border border-card-border rounded-xl shadow-xl p-6 max-w-sm w-full z-10 max-h-[calc(100dvh-2rem)] overflow-y-auto">
-              <h2 className="text-lg font-semibold text-text mb-4">
-                {isRtl ? "تعديل الدور" : "Edit Role"}
-              </h2>
-              <p className="text-sm text-text-muted mb-4">{userName}</p>
-              <Select value={role} onChange={(e) => setRole(e.target.value)}>
-                <option value="USER">User</option>
-                <option value="ADMIN">Admin</option>
-              </Select>
+            <div className={dialogShell} role="dialog" aria-modal="true">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-text">
+                    {isRtl ? "تعديل الدور" : "Edit Role"}
+                  </h2>
+                  <p className="text-sm text-text-muted mt-1">{userName}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 w-9 p-0 -me-2"
+                  onClick={() => setShowEdit(false)}
+                  aria-label={isRtl ? "إغلاق" : "Close"}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="mt-5 space-y-1.5">
+                <label className="block text-sm font-medium text-text">
+                  {isRtl ? "الدور" : "Role"}
+                </label>
+                <Select value={role} onChange={(e) => setRole(e.target.value)}>
+                  <option value="USER">User</option>
+                  <option value="ADMIN">Admin</option>
+                </Select>
+              </div>
               <div className="flex justify-end gap-3 mt-6">
                 <Button variant="outline" onClick={() => setShowEdit(false)}>
                   {isRtl ? "إلغاء" : "Cancel"}
@@ -192,16 +218,27 @@ export function UsersClientActions({
       </Button>
 
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto p-4 sm:p-6">
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className={overlay}
             onClick={() => setShowAdd(false)}
           />
-          <div className="relative bg-card-bg border border-card-border rounded-xl shadow-xl p-6 max-w-md w-full z-10 max-h-[calc(100dvh-2rem)] overflow-y-auto">
-            <h2 className="text-lg font-semibold text-text mb-4">
-              {isRtl ? "إضافة مستخدم جديد" : "Add New User"}
-            </h2>
-            <form onSubmit={handleAddUser} className="space-y-4">
+          <div className={dialogShell} role="dialog" aria-modal="true">
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-lg font-semibold text-text">
+                {isRtl ? "إضافة مستخدم جديد" : "Add New User"}
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0 -me-2"
+                onClick={() => setShowAdd(false)}
+                aria-label={isRtl ? "إغلاق" : "Close"}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <form onSubmit={handleAddUser} className="space-y-4 mt-5">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-text">
                   {isRtl ? "الاسم" : "Name"}

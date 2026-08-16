@@ -84,90 +84,98 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
   };
 
   return (
-    <Card className={cn("group overflow-hidden transition-all hover:shadow-lg", !read && "ring-1 ring-primary/30")}>
-      <div className="relative h-40 bg-surface overflow-hidden">
-        {listing.imageUrl && !imgError ? (
-          <img
-            src={listing.imageUrl}
-            alt={listing.title}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-text-muted">
-            <Car className="h-12 w-12 opacity-30" />
-          </div>
-        )}
-        <div className="absolute top-2 start-2 flex gap-1.5">
-          {!read && (
-            <Badge variant="default">{t.new}</Badge>
+    <div
+      className={cn(
+        "group rounded-2xl bg-surface/70 p-1.5 ring-1 ring-border/80",
+        "transition-all duration-500 ease-premium hover:-translate-y-1 hover:shadow-ambient hover:ring-border",
+        !read && "ring-primary/30"
+      )}
+    >
+      <Card className="overflow-hidden rounded-[calc(1rem-0.375rem)] border-card-border p-0 shadow-none">
+        <div className="relative aspect-[16/9] overflow-hidden bg-surface">
+          {listing.imageUrl && !imgError ? (
+            <img
+              src={listing.imageUrl}
+              alt={listing.title}
+              className="h-full w-full object-cover transition-transform duration-700 ease-premium group-hover:scale-105"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-text-muted">
+              <Car className="h-10 w-10 opacity-30" />
+            </div>
           )}
-          {listing.damageStatus && (
-            <Badge variant="warning">{listing.damageStatus}</Badge>
-          )}
-        </div>
-      </div>
-
-      <CardContent className="p-4 space-y-3">
-        <div>
-          <h3 className="text-sm font-semibold text-text line-clamp-2 min-h-[2.5rem]">
-            {truncate(listing.title, 60)}
-          </h3>
-          <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
-            {listing.year && <span>{listing.year}</span>}
-            {listing.mileage != null && (
-              <span>{listing.mileage.toLocaleString()} km</span>
-            )}
-          </div>
-        </div>
-
-        {listing.price != null && (
-          <p className="text-lg font-bold text-primary">
-            {formatCurrency(listing.price)}
-          </p>
-        )}
-
-        <p className="text-xs text-text-muted">
-          {formatDate(listing.createdAt, locale)}
-        </p>
-
-        <div className="flex items-center gap-2 pt-2 border-t border-border">
-          <a
-            href={listing.canonicalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-hover transition-colors"
-          >
-            <ExternalLink className="h-3 w-3" />
-            {t.view}
-          </a>
-
-          <div className="ms-auto flex items-center gap-1">
+          <div className="absolute top-2.5 start-2.5 z-10 flex flex-wrap gap-1.5">
             {!read && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleMarkRead}
-                className="h-10 px-2.5 text-xs"
-              >
-                <Check className="h-3 w-3" />
-                {t.markRead}
-              </Button>
+              <Badge variant="default">{t.new}</Badge>
             )}
-            {!notified && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleNotify}
-                className="h-10 px-2.5 text-xs"
-              >
-                <Send className="h-3 w-3" />
-                {t.notify}
-              </Button>
+            {listing.damageStatus && (
+              <Badge variant="warning">{listing.damageStatus}</Badge>
             )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        <CardContent className="space-y-3 p-4">
+          <div>
+            <h3 className="text-sm font-semibold leading-snug text-text line-clamp-2 min-h-[2.5rem]">
+              {truncate(listing.title, 60)}
+            </h3>
+            <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
+              {listing.year && <span>{listing.year}</span>}
+              {listing.mileage != null && (
+                <span>{listing.mileage.toLocaleString()} km</span>
+              )}
+            </div>
+          </div>
+
+          {listing.price != null && (
+            <p className="text-lg font-bold tabular-nums text-primary">
+              {formatCurrency(listing.price)}
+            </p>
+          )}
+
+          <p className="text-xs text-text-muted">
+            {formatDate(listing.createdAt, locale)}
+          </p>
+
+          <div className="flex items-center gap-2 pt-3 border-t border-card-border/70">
+            <a
+              href={listing.canonicalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-xs font-medium text-primary ring-1 ring-border/70 transition-all duration-300 ease-premium hover:bg-primary/10 hover:ring-primary/30"
+            >
+              <ExternalLink className="h-3 w-3" />
+              {t.view}
+            </a>
+
+            <div className="ms-auto flex items-center gap-1">
+              {!read && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMarkRead}
+                  className="h-9 px-2.5 text-xs"
+                >
+                  <Check className="h-3 w-3" />
+                  {t.markRead}
+                </Button>
+              )}
+              {!notified && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleNotify}
+                  className="h-9 px-2.5 text-xs"
+                >
+                  <Send className="h-3 w-3" />
+                  {t.notify}
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

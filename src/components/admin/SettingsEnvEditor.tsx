@@ -108,7 +108,7 @@ export function SettingsEnvEditor({ locale, entries }: SettingsEnvEditorProps) {
       {entries.map((entry) => (
         <div
           key={entry.envVar}
-          className="rounded-lg border border-border p-3 bg-surface/50 space-y-2"
+          className="rounded-xl border border-border/60 bg-surface/40 p-4 space-y-2.5 transition-colors duration-200 ease-premium hover:border-border"
         >
           <div
             className={`flex items-center justify-between gap-2 ${
@@ -169,7 +169,7 @@ export function SettingsEnvEditor({ locale, entries }: SettingsEnvEditorProps) {
             </div>
           ) : (
             <div className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
-              <div className="flex-1 min-w-0 rounded-md border border-border bg-bg px-3 py-2 font-mono text-sm text-text truncate">
+              <div className="flex h-10 flex-1 min-w-0 items-center rounded-xl border border-border bg-bg px-3 font-mono text-sm text-text truncate">
                 {entry.configured ? (
                   entry.value
                 ) : (

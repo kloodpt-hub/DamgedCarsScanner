@@ -108,8 +108,8 @@ export function PushPrompt({ locale = "en" }: PushPromptProps) {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-in slide-in-from-bottom-4">
-      <div className="card shadow-xl border-primary/20">
+    <div className="fixed bottom-20 lg:bottom-4 end-4 z-50 max-w-sm animate-[slide-up-fade_0.5s_cubic-bezier(0.32,0.72,0,1)]">
+      <div className="card shadow-ambient border-card-border">
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-lg bg-primary/10 shrink-0">
             <Bell className="h-5 w-5 text-primary" />
