@@ -44,7 +44,7 @@ export async function GET() {
       damageStatus: listing.damageStatus,
       canonicalUrl: listing.canonicalUrl,
       imageUrl: listing.imageUrl,
-      sourceName: listing.source.name,
+      sourceName: listing.source?.name ?? "(Deleted)",
       createdAt: listing.createdAt,
       isRead: listing.readBy.length > 0,
     })),

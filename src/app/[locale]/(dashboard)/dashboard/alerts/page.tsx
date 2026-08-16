@@ -142,7 +142,7 @@ interface NotificationListing {
   title: string;
   imageUrl: string | null;
   createdAt: string;
-  source: { name: string };
+  source: { name: string } | null;
 }
 
 export default function AlertsPage({

@@ -25,7 +25,7 @@ interface Listing {
   isRead: boolean;
   isNotified: boolean;
   createdAt: string;
-  source: { id: string; name: string };
+  source: { id: string; name: string } | null;
 }
 
 interface Source {
@@ -239,6 +239,11 @@ export default function ResultsPage({
         <div className="rounded-2xl bg-surface/70 p-1.5 ring-1 ring-border/80">
           <div className="rounded-[calc(1rem-0.375rem)] border border-dashed border-border bg-card-bg py-16 text-center">
             <p className="text-sm text-text-muted">{t.noResults}</p>
+            <p className="mt-2 text-xs text-text-muted">
+              {locale === "ar"
+                ? "حاول تعديل فلاترك أو انتظر حتى يتم فحص سيارات جديدة."
+                : "Try adjusting your filters or wait for new cars to be scraped."}
+            </p>
           </div>
         </div>
       ) : (

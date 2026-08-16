@@ -3,21 +3,32 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { evaluateListing } from "@/lib/filters/evaluator";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const BATCH_SIZE = 50;
 
-async function matchExistingListings(filterId: string) {
+// Sync flow: createFilter/updateFilter write to DB via Prisma, then call
+// matchExistingListings to retroactively link listings. The client-side
+// filters page re-fetches from /api/filters (which reads from DB). The
+// Telegram /filters command also reads directly from DB via Prisma.
+// revalidatePath is added defensively to ensure Next.js cache is busted.
+async function matchExistingListings(filterId: string, userId: string) {
   const filter = await prisma.filter.findUnique({ where: { id: filterId } });
   if (!filter) return;
 
-  const totalListings = await prisma.listing.count({ where: { isSold: false } });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) return;
+
+  const whereClause = { isSold: false, createdAt: { gte: user.createdAt } };
+
+  const totalListings = await prisma.listing.count({ where: whereClause });
   for (let skip = 0; skip < totalListings; skip += BATCH_SIZE) {
     const listings = await prisma.listing.findMany({
       skip,
       take: BATCH_SIZE,
       orderBy: { createdAt: "desc" },
-      where: { isSold: false },
+      where: whereClause,
     });
 
     const matchingIds = listings
@@ -91,7 +102,8 @@ export async function createFilter(data: {
     },
   });
 
-  await matchExistingListings(filter.id);
+  await matchExistingListings(filter.id, session.user.id);
+  revalidatePath("/dashboard");
 
   return { success: true, filter };
 }
@@ -124,7 +136,8 @@ export async function updateFilter(
     data: { listings: { set: [] } },
   });
 
-  await matchExistingListings(id);
+  await matchExistingListings(id, session.user.id);
+  revalidatePath("/dashboard");
 
   return { success: true, filter };
 }

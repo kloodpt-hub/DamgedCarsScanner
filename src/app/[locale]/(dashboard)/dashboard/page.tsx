@@ -178,7 +178,7 @@ export default async function DashboardPage({
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-surface text-text-muted">
                 <Car className="h-5 w-5" />
               </div>
-              <p className="text-sm text-text-muted">{t.common.noData}</p>
+              <p className="text-sm text-text-muted">{t.common.noResultsYet}</p>
             </div>
           </div>
         ) : (
@@ -193,7 +193,7 @@ export default async function DashboardPage({
               canonicalUrl: string;
               isRead: boolean;
               createdAt: Date | string;
-              source: { name: string };
+              source: { name: string } | null;
             }) => (
               <div
                 key={listing.id}
@@ -245,7 +245,7 @@ export default async function DashboardPage({
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-primary hover:text-primary-hover transition-colors"
                       >
-                        {listing.source.name}
+                        {listing.source?.name ?? "(Deleted)"}
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     </p>

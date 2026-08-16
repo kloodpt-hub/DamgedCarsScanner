@@ -173,7 +173,7 @@ export default async function AdminListingsPage({
                               </span>
                             </TableCell>
                             <TableCell className="text-sm text-text-muted">
-                              {listing.source.name}
+                              {listing.source?.name ?? "(Deleted)"}
                             </TableCell>
                             <TableCell className="text-sm text-text">
                               {listing.price != null ? formatCurrency(listing.price) : "-"}
@@ -226,7 +226,7 @@ export default async function AdminListingsPage({
                               {listing.title}
                             </p>
                             <p className="mt-1 text-xs text-text-muted">
-                              {listing.source.name}
+                              {listing.source?.name ?? "(Deleted)"}
                             </p>
                           </div>
                           <Badge variant={status.variant} className="shrink-0">

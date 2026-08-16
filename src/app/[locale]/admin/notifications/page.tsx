@@ -365,7 +365,7 @@ export default async function NotificationsPage({
                       {listing.title}
                     </p>
                     <p className="text-xs text-text-muted">
-                      {listing.source.name} &middot; {formatDate(listing.updatedAt, locale)}
+                      {listing.source?.name ?? "(Deleted)"} &middot; {formatDate(listing.updatedAt, locale)}
                     </p>
                   </div>
                   <Badge variant="success" className="shrink-0">

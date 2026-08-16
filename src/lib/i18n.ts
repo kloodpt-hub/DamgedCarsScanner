@@ -15,6 +15,8 @@ export interface Dictionary {
     search: string;
     loading: string;
     noData: string;
+    noResultsYet: string;
+    noResultsHint: string;
     confirm: string;
     back: string;
     next: string;
@@ -171,6 +173,8 @@ const en: Dictionary = {
     search: "Search",
     loading: "Loading...",
     noData: "No data available",
+    noResultsYet: "No results yet. New cars matching your filters will appear here as they are scraped.",
+    noResultsHint: "Try adjusting your filters or wait for new cars to be scraped.",
     confirm: "Confirm",
     back: "Back",
     next: "Next",
@@ -327,6 +331,8 @@ const ar: Dictionary = {
     search: "بحث",
     loading: "جاري التحميل...",
     noData: "لا توجد بيانات",
+    noResultsYet: "لا توجد نتائج بعد.ظهرت السيارات الجديدة التي تطابق فلاترك هنا عند فحصها.",
+    noResultsHint: "حاول تعديل فلاترك أو انتظر حتى يتم فحص سيارات جديدة.",
     confirm: "تأكيد",
     back: "رجوع",
     next: "التالي",

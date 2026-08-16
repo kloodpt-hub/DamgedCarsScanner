@@ -97,13 +97,13 @@ model Listing {
   imageUrl      String?
   images        String[]
   canonicalUrl  String
-  sourceId      String
+  sourceId      String?
   isRead        Boolean   @default(false)
   isNotified    Boolean   @default(false)
   isSold        Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  source        ScraperSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  source        ScraperSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   matchedFilters Filter[] @relation("FilteredListings")
   readBy        UserListingRead[]
 
@@ -114,7 +114,7 @@ model Listing {
 
 model ScraperJob {
   id           String         @id @default(cuid())
-  sourceId     String
+  sourceId     String?
   userId       String?
   status       String         @default("pending")
   listingsFound Int           @default(0)
@@ -123,7 +123,7 @@ model ScraperJob {
   startedAt    DateTime?
   completedAt  DateTime?
   createdAt    DateTime       @default(now())
-  source       ScraperSource  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  source       ScraperSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   user         User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([sourceId, createdAt])

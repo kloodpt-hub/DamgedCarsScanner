@@ -50,7 +50,7 @@ export async function sendListingAlert(
     damageStatus: string | null;
     canonicalUrl: string;
     imageUrl: string | null;
-    source: { name: string };
+    source: { name: string } | null;
   },
   filter: { name: string }
 ): Promise<boolean> {
@@ -69,7 +69,7 @@ export async function sendListingAlert(
             <tr><td><strong>Year</strong></td><td>${listing.year ?? "N/A"}</td></tr>
             <tr><td><strong>Mileage</strong></td><td>${listing.mileage != null ? `${listing.mileage.toLocaleString()} km` : "N/A"}</td></tr>
             <tr><td><strong>Damage</strong></td><td>${listing.damageStatus ?? "N/A"}</td></tr>
-            <tr><td><strong>Source</strong></td><td>${listing.source.name}</td></tr>
+            <tr><td><strong>Source</strong></td><td>${listing.source?.name ?? "(Deleted)"}</td></tr>
           </table>
           <a href="${listing.canonicalUrl}" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#6c5ce7;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;">View Listing →</a>
         </div>
@@ -85,7 +85,7 @@ export async function sendDigestEmail(
     title: string;
     price: number | null;
     canonicalUrl: string;
-    source: { name: string };
+    source: { name: string } | null;
   }[]
 ): Promise<boolean> {
   const subject = `Car Deals Hunter: ${listings.length} new listing(s) today`;
@@ -97,7 +97,7 @@ export async function sendDigestEmail(
           <a href="${l.canonicalUrl}" style="color:#1a1a2e;text-decoration:none;">${l.title}</a>
         </td>
         <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right;">${l.price != null ? `${l.price.toLocaleString()} €` : "N/A"}</td>
-        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${l.source.name}</td>
+        <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${l.source?.name ?? "(Deleted)"}</td>
       </tr>`
     )
     .join("");

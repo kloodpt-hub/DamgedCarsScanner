@@ -52,7 +52,7 @@ export default async function JobsPage({
       startedAt: Date | null;
       completedAt: Date | null;
       createdAt: Date;
-      source: { name: string };
+      source: { name: string } | null;
     }>,
     Array<{ id: string; name: string }>,
   ];
@@ -115,7 +115,7 @@ export default async function JobsPage({
                         return (
                           <TableRow key={job.id}>
                             <TableCell className="font-medium text-text">
-                              {job.source.name}
+                              {job.source?.name ?? "(Deleted)"}
                             </TableCell>
                             <TableCell>
                               <Badge variant={badge.variant}>{badge.label}</Badge>
@@ -148,7 +148,7 @@ export default async function JobsPage({
                       >
                         <div className="flex items-start justify-between gap-3">
                           <p className="text-sm font-semibold text-text truncate">
-                            {job.source.name}
+                            {job.source?.name ?? "(Deleted)"}
                           </p>
                           <Badge variant={badge.variant} className="shrink-0">
                             {badge.label}

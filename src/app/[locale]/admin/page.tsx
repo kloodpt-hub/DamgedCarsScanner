@@ -57,7 +57,7 @@ export default async function AdminDashboardPage({
     listingsFound: number;
     newListings: number;
     createdAt: Date;
-    source: { name: string };
+    source: { name: string } | null;
   }>];
 
   const successRate = totalJobs > 0 ? Math.round((completedJobs / totalJobs) * 100) : 0;
@@ -179,7 +179,7 @@ export default async function AdminDashboardPage({
                       {recentJobs.map((job) => (
                         <TableRow key={job.id}>
                           <TableCell className="font-medium text-text">
-                            {job.source.name}
+                            {job.source?.name ?? "(Deleted)"}
                           </TableCell>
                           <TableCell>
                             <Badge variant={statusBadge(job.status).variant}>
@@ -205,7 +205,7 @@ export default async function AdminDashboardPage({
                     >
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-sm font-semibold text-text truncate">
-                          {job.source.name}
+                          {job.source?.name ?? "(Deleted)"}
                         </p>
                         <Badge variant={statusBadge(job.status).variant} className="shrink-0">
                           {job.status}

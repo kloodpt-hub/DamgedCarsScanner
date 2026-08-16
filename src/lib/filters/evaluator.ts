@@ -5,7 +5,8 @@ export function evaluateListing(listing: Listing, filters: Filter[]): Filter[] {
     if (!hasActiveConstraints(filter)) return false;
 
     if (filter.sourceIds && filter.sourceIds.length > 0) {
-      if (!filter.sourceIds.includes(listing.sourceId)) return false;
+      if (listing.sourceId == null || !filter.sourceIds.includes(listing.sourceId))
+        return false;
     }
 
     if (!matchYear(listing.year, filter.minYear, filter.maxYear)) return false;
