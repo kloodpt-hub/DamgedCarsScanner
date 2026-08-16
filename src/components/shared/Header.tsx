@@ -54,7 +54,7 @@ export function Header({ locale }: HeaderProps) {
       )}
     >
       <div className="flex h-full items-center justify-between gap-2 px-3 sm:px-4">
-        <div className={cn("flex items-center gap-2.5", !collapsed && "lg:hidden")}>
+        <div className="flex items-center gap-2.5">
           <img
             src="/logo.png"
             alt=""

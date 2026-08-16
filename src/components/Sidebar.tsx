@@ -32,7 +32,6 @@ const navLabels = {
     jobs: "Jobs",
     users: "Users",
     logout: "Logout",
-    brand: "Car Deals Hunter",
     adminSection: "Admin",
     userSection: "User",
     switchToUser: "User View",
@@ -51,7 +50,6 @@ const navLabels = {
     jobs: "المهام",
     users: "المستخدمون",
     logout: "تسجيل الخروج",
-    brand: "صائد عروض السيارات",
     adminSection: "الإدارة",
     userSection: "المستخدم",
     switchToUser: "عرض المستخدم",
@@ -115,24 +113,6 @@ export function Sidebar({ locale, role }: SidebarProps) {
 
   const sidebarInner = (
     <>
-      <div
-        className={cn(
-          "flex h-16 items-center gap-2 border-b border-card-border px-4 shrink-0",
-          collapsed && "justify-center px-0"
-        )}
-      >
-        <img
-          src="/logo.png"
-          alt=""
-          className="h-8 w-8 shrink-0 rounded-lg object-cover"
-        />
-        {!collapsed && (
-          <span className="text-lg font-bold text-text whitespace-nowrap">
-            {t.brand}
-          </span>
-        )}
-      </div>
-
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {!collapsed && isAdmin && (
           <p className="px-3 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
