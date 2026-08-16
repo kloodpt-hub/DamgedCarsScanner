@@ -13,6 +13,7 @@ import type { BaseAdapterOptions } from "./base-adapter";
 import type { ScraperAdapter, ScraperJobResult, ScraperSelectors } from "./types";
 import { evaluateListing } from "../filters/evaluator";
 import { notifyNewListing } from "../notifications";
+import { findDuplicates } from "../dedup/duplicate-detector";
 import { getDueSources, markSourceScraped, releaseStaleLocks } from "../cron/scheduler";
 
 const JOB_DEADLINE_MS = 5 * 60 * 1000;
@@ -101,8 +102,16 @@ export class ScraperEngine {
 
       const rawListings = await adapter.scrape(source.baseUrl, selectors);
       const availableListings = rawListings.filter((l) => !l.isSold);
-      console.log(`[engine] Skipped ${rawListings.length - availableListings.length} sold listings`);
+      console.log(
+        `[engine] ${source.name}: ${rawListings.length} raw, ${availableListings.length} available (${rawListings.length - availableListings.length} sold)`
+      );
       listingsFound = availableListings.length;
+
+      if (rawListings.length === 0) {
+        console.warn(
+          `[engine] ${source.name}: 0 listings from ${source.baseUrl} — check selectors or anti-bot`
+        );
+      }
 
       const activeFilters = await this.prisma.filter.findMany({
         where: { isActive: true },
@@ -164,6 +173,20 @@ export class ScraperEngine {
           if (existing) continue;
 
           newListings++;
+
+          try {
+            const duplicates = await findDuplicates(this.prisma, listing);
+            if (duplicates.length > 0) {
+              console.log(
+                `[engine] Found ${duplicates.length} duplicate(s) for new listing ${raw.externalId}`
+              );
+            }
+          } catch (err) {
+            console.warn(
+              `[engine] Duplicate detection failed for ${raw.externalId}:`,
+              err instanceof Error ? err.message : String(err)
+            );
+          }
 
           const matchedFilters = evaluateListing(listing, relevantFilters);
           if (matchedFilters.length > 0) {

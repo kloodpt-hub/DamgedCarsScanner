@@ -257,14 +257,22 @@ export abstract class BaseAdapter implements ScraperAdapter {
     while (currentUrl && pageNum < maxPages) {
       if (this.isDeadlineExceeded()) break;
 
-      const { listings, nextPageUrl } = await this.fetchAndParse(
-        currentUrl,
-        selectors,
-        baseUrl
-      );
-      allListings.push(...listings);
+      try {
+        const { listings, nextPageUrl } = await this.fetchAndParse(
+          currentUrl,
+          selectors,
+          baseUrl
+        );
+        allListings.push(...listings);
+        currentUrl = nextPageUrl;
+      } catch (err) {
+        console.warn(
+          `[${this.name}] Failed to fetch page ${pageNum + 1} (${currentUrl}):`,
+          err instanceof Error ? err.message : String(err)
+        );
+        break;
+      }
 
-      currentUrl = nextPageUrl;
       pageNum++;
       if (currentUrl) await this.throttle();
     }

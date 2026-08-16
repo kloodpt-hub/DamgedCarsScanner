@@ -7,6 +7,7 @@ import {
   Check,
   Send,
   Car,
+  Copy,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,9 @@ const labels = {
     mileage: "Mileage",
     price: "Price",
     date: "Date",
+    duplicates: "Duplicates",
+    noDuplicates: "No duplicates found",
+    checkDuplicates: "Check Duplicates",
   },
   ar: {
     view: "عرض",
@@ -43,6 +47,9 @@ const labels = {
     mileage: "عدد الكيلومترات",
     price: "السعر",
     date: "التاريخ",
+    duplicates: "تكرارات",
+    noDuplicates: "لم يتم العثور على تكرارات",
+    checkDuplicates: "التحقق من التكرارات",
   },
 } as const;
 
@@ -55,6 +62,9 @@ interface Listing {
   damageStatus: string | null;
   imageUrl: string | null;
   canonicalUrl: string;
+  sourceId: string | null;
+  make: string | null;
+  model: string | null;
   isRead: boolean;
   isNotified: boolean;
   createdAt: Date | string;
@@ -65,10 +75,25 @@ interface ListingCardProps {
   locale: string;
 }
 
+interface DuplicateItem {
+  id: string;
+  title: string;
+  price: number | null;
+  year: number | null;
+  mileage: number | null;
+  make: string | null;
+  model: string | null;
+  sourceId: string | null;
+  canonicalUrl: string;
+}
+
 export function ListingCard({ listing, locale }: ListingCardProps) {
   const [read, setRead] = useState(listing.isRead);
   const [notified, setNotified] = useState(listing.isNotified);
   const [imgError, setImgError] = useState(false);
+  const [duplicates, setDuplicates] = useState<DuplicateItem[] | null>(null);
+  const [loadingDupes, setLoadingDupes] = useState(false);
+  const [showDupes, setShowDupes] = useState(false);
   const t = labels[locale as keyof typeof labels] ?? labels.en;
   const isRtl = locale === "ar";
 
@@ -89,6 +114,29 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
       toast.success(t.notified);
     } catch {
       toast.error(t.failed);
+    }
+  };
+
+  const handleCheckDuplicates = async () => {
+    if (showDupes) {
+      setShowDupes(false);
+      return;
+    }
+    if (duplicates !== null) {
+      setShowDupes(true);
+      return;
+    }
+    setLoadingDupes(true);
+    try {
+      const res = await fetch(`/api/listings/${listing.id}/duplicates`);
+      if (!res.ok) throw new Error("Failed");
+      const data = await res.json();
+      setDuplicates(data.duplicates);
+      setShowDupes(true);
+    } catch {
+      toast.error(t.failed);
+    } finally {
+      setLoadingDupes(false);
     }
   };
 
@@ -179,6 +227,21 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
             />
 
             <div className="ms-auto flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCheckDuplicates}
+                disabled={loadingDupes}
+                className="h-9 px-2.5 text-xs"
+              >
+                <Copy className="h-3 w-3" />
+                {t.checkDuplicates}
+                {duplicates && duplicates.length > 0 && (
+                  <Badge variant="default" className="ml-1 h-5 min-w-5 px-1 text-[10px]">
+                    {duplicates.length}
+                  </Badge>
+                )}
+              </Button>
               {!read && (
                 <Button
                   variant="ghost"
@@ -203,6 +266,35 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
               )}
             </div>
           </div>
+
+          {showDupes && (
+            <div className="mt-2 rounded-xl border border-card-border/70 bg-surface/80 p-3 space-y-2">
+              <p className="text-xs font-semibold text-text-muted">{t.duplicates}</p>
+              {duplicates && duplicates.length === 0 && (
+                <p className="text-xs text-text-muted">{t.noDuplicates}</p>
+              )}
+              {duplicates && duplicates.length > 0 && (
+                <div className="space-y-2">
+                  {duplicates.map((d) => (
+                    <a
+                      key={d.id}
+                      href={d.canonicalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded-lg bg-card p-2.5 ring-1 ring-card-border/60 transition-all hover:ring-primary/30"
+                    >
+                      <p className="text-xs font-medium text-text line-clamp-1">{d.title}</p>
+                      <div className="mt-1 flex items-center gap-3 text-[11px] text-text-muted">
+                        {d.price != null && <span>{formatCurrency(d.price)}</span>}
+                        {d.year != null && <span>{d.year}</span>}
+                        {d.mileage != null && <span>{d.mileage.toLocaleString()} km</span>}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -15,9 +15,12 @@ interface AdminListing {
   damageStatus: string | null;
   imageUrl: string | null;
   canonicalUrl: string;
+  sourceId: string | null;
   isRead: boolean;
   isNotified: boolean;
   createdAt: Date | string;
+  make: string | null;
+  model: string | null;
 }
 
 export default async function AdminMyResultsPage({

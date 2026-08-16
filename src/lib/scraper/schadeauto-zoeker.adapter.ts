@@ -34,8 +34,16 @@ export class SchadeautoZoekerAdapter extends BaseAdapter {
     while (currentUrl && pageNum < MAX_PAGES) {
       if (this.isDeadlineExceeded()) break;
 
-      const html = await this.fetchHtml(currentUrl);
-      allListings.push(...this.parseListings(html, applied, url));
+      try {
+        const html = await this.fetchHtml(currentUrl);
+        allListings.push(...this.parseListings(html, applied, url));
+      } catch (err) {
+        console.warn(
+          `[${this.name}] Failed to fetch page ${pageNum + 1} (${currentUrl}):`,
+          err instanceof Error ? err.message : String(err)
+        );
+        break;
+      }
 
       currentUrl = this.buildNextPageUrl(currentUrl);
       pageNum++;

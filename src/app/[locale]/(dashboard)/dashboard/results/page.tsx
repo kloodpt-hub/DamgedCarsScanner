@@ -22,11 +22,13 @@ interface Listing {
   damageStatus: string | null;
   imageUrl: string | null;
   canonicalUrl: string;
+  sourceId: string | null;
   isRead: boolean;
   isNotified: boolean;
   createdAt: string;
   source: { id: string; name: string } | null;
   make: string | null;
+  model: string | null;
 }
 
 interface Source {
