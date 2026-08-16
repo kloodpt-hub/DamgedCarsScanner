@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SourceForm } from "@/components/admin/SourceForm";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -84,32 +84,47 @@ export function SourcesClientActions({
           locale={locale}
         />
         {showForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
-            <div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={() => setShowForm(false)}
-            />
-            <div className="relative bg-card-bg border border-card-border rounded-xl shadow-xl p-6 max-w-lg w-full z-10 max-h-[calc(100dvh-2rem)] overflow-y-auto">
-              <h2 className="text-lg font-semibold text-text mb-4">
-                {isRtl ? "تعديل المصدر" : "Edit Source"}
-              </h2>
-              <SourceForm
-                source={source ?? {
-                  id: sourceId,
-                  name: sourceName ?? "",
-                  baseUrl: "",
-                  adapterType: "generic",
-                  selectors: {},
-                  isActive: false,
-                  scrapeIntervalMinutes: 6,
-                }}
-                locale={locale}
-                onSuccess={() => {
-                  setShowForm(false);
-                  router.refresh();
-                }}
-                onCancel={() => setShowForm(false)}
+          <div className="fixed inset-0 z-[70] overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+              <div
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onClick={() => setShowForm(false)}
               />
+              <div className="relative w-full max-w-lg mx-auto flex flex-col max-h-[90vh] rounded-xl border border-card-border bg-card-bg shadow-xl">
+                <div className="flex items-center justify-between gap-3 border-b border-card-border px-5 sm:px-6 py-4 shrink-0">
+                  <h2 className="text-base sm:text-lg font-semibold text-text">
+                    {isRtl ? "تعديل المصدر" : "Edit Source"}
+                  </h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ms-auto"
+                    onClick={() => setShowForm(false)}
+                    aria-label={isRtl ? "إغلاق" : "Close"}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="min-h-0 overflow-y-auto px-5 sm:px-6 py-4 sm:py-5">
+                  <SourceForm
+                    source={source ?? {
+                      id: sourceId,
+                      name: sourceName ?? "",
+                      baseUrl: "",
+                      adapterType: "generic",
+                      selectors: {},
+                      isActive: false,
+                      scrapeIntervalMinutes: 6,
+                    }}
+                    locale={locale}
+                    onSuccess={() => {
+                      setShowForm(false);
+                      router.refresh();
+                    }}
+                    onCancel={() => setShowForm(false)}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -125,23 +140,38 @@ export function SourcesClientActions({
       </Button>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowForm(false)}
-          />
-          <div className="relative bg-card-bg border border-card-border rounded-xl shadow-xl p-6 max-w-xl w-full z-10 max-h-[calc(100dvh-2rem)] overflow-y-auto">
-            <h2 className="text-lg font-semibold text-text mb-4">
-              {isRtl ? "إضافة مصدر جديد" : "Add New Source"}
-            </h2>
-            <SourceForm
-              locale={locale}
-              onSuccess={() => {
-                setShowForm(false);
-                router.refresh();
-              }}
-              onCancel={() => setShowForm(false)}
+        <div className="fixed inset-0 z-[70] overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowForm(false)}
             />
+            <div className="relative w-full max-w-lg mx-auto flex flex-col max-h-[90vh] rounded-xl border border-card-border bg-card-bg shadow-xl">
+              <div className="flex items-center justify-between gap-3 border-b border-card-border px-5 sm:px-6 py-4 shrink-0">
+                <h2 className="text-base sm:text-lg font-semibold text-text">
+                  {isRtl ? "إضافة مصدر جديد" : "Add New Source"}
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ms-auto"
+                  onClick={() => setShowForm(false)}
+                  aria-label={isRtl ? "إغلاق" : "Close"}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="min-h-0 overflow-y-auto px-5 sm:px-6 py-4 sm:py-5">
+                <SourceForm
+                  locale={locale}
+                  onSuccess={() => {
+                    setShowForm(false);
+                    router.refresh();
+                  }}
+                  onCancel={() => setShowForm(false)}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}

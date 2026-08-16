@@ -142,6 +142,7 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
   const [useCustomJson, setUseCustomJson] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [catalogId, setCatalogId] = useState("");
 
   const initSelectorValues = (): Record<SelectorField, string> => {
     const defaults = getDefaultsForAdapter(source?.adapterType ?? "generic");
@@ -382,25 +383,25 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
               ? "اختر من الكتالوج (اختياري)"
               : "Pick from catalog (optional)"}
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <Select
+            value={catalogId}
+            onChange={(e) => {
+              const site = SITE_CATALOG.find((s) => s.id === e.target.value);
+              if (site) handleCatalogSelect(site);
+              setCatalogId(e.target.value);
+            }}
+          >
+            <option value="" disabled>
+              {isRtl
+                ? "اختر موقعًا من الكتالوج"
+                : "Select a site from the catalog..."}
+            </option>
             {SITE_CATALOG.map((site) => (
-              <button
-                key={site.id}
-                type="button"
-                onClick={() => handleCatalogSelect(site)}
-                className="text-start rounded-lg border border-border bg-surface/50 hover:border-primary hover:bg-surface px-3 py-2 transition-colors cursor-pointer"
-              >
-                <span className="block text-sm font-medium text-text">
-                  {isRtl && site.nameAr ? site.nameAr : site.name}
-                </span>
-                <span className="block text-xs text-text-muted mt-0.5">
-                  {isRtl && site.descriptionAr
-                    ? site.descriptionAr
-                    : site.description}
-                </span>
-              </button>
+              <option key={site.id} value={site.id}>
+                {isRtl && site.nameAr ? site.nameAr : site.name} ({site.adapterType})
+              </option>
             ))}
-          </div>
+          </Select>
           <p className="text-xs text-text-muted">
             {isRtl
               ? "يتم تعبئة الاسم والرابط والمحول والفترة تلقائيًا عند الاختيار. يمكنك تعديلها قبل الحفظ."
