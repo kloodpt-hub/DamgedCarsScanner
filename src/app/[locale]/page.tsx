@@ -10,7 +10,6 @@ import {
   EyeOff,
   AlertCircle,
   Scan,
-  Search,
   Bell,
   Filter,
   Globe,
@@ -21,12 +20,20 @@ import {
   CopyCheck,
   Languages,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { LandingHeader } from "@/components/shared/LandingHeader";
 
 const labels = {
   en: {
     // Branding
     appName: "Car Deals Hunter",
     tagline: "Discover damaged car deals across multiple sites automatically",
+    getStarted: "Get Started",
+    viewFeatures: "See what you get",
+    heroNote: "Free forever. No credit card required.",
+    bottomCtaTitle: "Ready to find your next deal?",
+    bottomCtaDesc:
+      "Join free, add your sources, set filters, and get alerts the moment a matching car is listed.",
     // How it works
     howTitle: "How it works",
     stepSignInTitle: "Sign up or sign in",
@@ -91,6 +98,13 @@ const labels = {
   ar: {
     appName: "صائد عروض السيارات",
     tagline: "اكتشف عروض السيارات المتضررة عبر مواقع متعددة تلقائياً",
+    getStarted: "ابدأ الآن",
+    viewFeatures: "شاهد ما ستحصل عليه",
+    heroNote: "مجاني للأبد. لا حاجة لبطاقة ائتمان.",
+    bottomCtaTitle: "جاهز للعثور على صفقتك القادمة؟",
+    bottomCtaDesc:
+      "انضم مجانًا، أضف مصادرك، اضبط الفلاتر، واحصل على تنبيهات فور إدراج سيارة مطابقة.",
+    // How it works
     howTitle: "كيف يعمل",
     stepSignInTitle: "سجّل أو ادخل إلى حسابك",
     stepSignInDesc: "أنشئ حساباً مجانياً في ثوانٍ لتبدأ بتتبع عروض السيارات.",
@@ -153,6 +167,14 @@ const labels = {
 } as const;
 
 type Locale = keyof typeof labels;
+
+type Step = {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  cta?: string;
+  scrollTo?: string;
+};
 
 function LandingContent() {
   const router = useRouter();
@@ -222,12 +244,13 @@ function LandingContent() {
     }
   }
 
-  const steps = [
+  const steps: Step[] = [
     {
       icon: UserRound,
       title: t.stepSignInTitle,
       desc: t.stepSignInDesc,
-      form: true,
+      cta: t.getStarted,
+      scrollTo: "auth-form",
     },
     { icon: Globe, title: t.step1Title, desc: t.step1Desc },
     { icon: Filter, title: t.step2Title, desc: t.step2Desc },
@@ -237,210 +260,265 @@ function LandingContent() {
 
   return (
     <div className="min-h-screen flex flex-col justify-center bg-bg relative overflow-hidden">
+      <LandingHeader locale={locale} />
+
       {/* Decorative gradient */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-      <div className="relative z-10 mx-auto w-full max-w-lg px-6 py-12 lg:px-8 lg:py-20">
-        {/* Logo */}
-        <div className="flex items-center gap-3 mb-8">
-          <img src="/logo.png" alt="" className="h-12 w-12 rounded-xl object-cover" />
-          <span className="text-2xl font-bold text-text">{t.appName}</span>
-        </div>
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
+        {/* Hero */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          {/* Left: value proposition */}
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <img src="/logo.png" alt="" className="h-12 w-12 rounded-xl object-cover" />
+              <span className="text-2xl sm:text-3xl font-extrabold text-text">
+                {t.appName}
+              </span>
+            </div>
 
-        {/* Tagline */}
-        <p className="text-lg text-text-muted mb-10 leading-relaxed">
-          {t.tagline}
-        </p>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text leading-tight tracking-tight">
+              {t.tagline}
+            </h1>
 
-        {/* How it works */}
-        <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-6">
-          {t.howTitle}
-        </h2>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  document.getElementById("auth-form")?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="btn-primary"
+              >
+                {t.getStarted}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="btn-secondary"
+              >
+                {t.viewFeatures}
+              </button>
+            </div>
+          </div>
 
-        <div className="space-y-6">
-          {steps.map((step, i) => {
-            const Icon = step.icon;
-            const isFormStep = "form" in step && step.form;
-            return (
-              <div key={i}>
-                <div className="flex items-start gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-text">
-                      {step.title}
-                    </h3>
-                    <p className="text-sm text-text-muted mt-1 leading-relaxed">
-                      {step.desc}
-                    </p>
-                  </div>
-                </div>
+          {/* Right: auth card */}
+          <div id="auth-form" className="rounded-2xl border border-card-border bg-card-bg p-6 sm:p-8 shadow-xl">
+            <h2 className="text-xl font-bold text-text mb-1">{t.signInSubtitle}</h2>
 
-                {isFormStep && (
-                  <div className="mt-5 rounded-lg border border-card-border bg-surface p-5">
-                    {error && (
-                      <div className="mb-4 flex items-center gap-2 rounded-lg bg-danger/10 border border-danger/20 p-3 text-sm text-danger">
-                        <AlertCircle className="h-4 w-4 shrink-0" />
-                        {error}
-                      </div>
-                    )}
+            {error && (
+              <div className="mt-4 mb-4 flex items-center gap-2 rounded-lg bg-danger/10 border border-danger/20 p-3 text-sm text-danger">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {error}
+              </div>
+            )}
 
-                    {/* Google Sign In */}
-                    <button
-                      onClick={handleGoogleSignIn}
-                      disabled={googleLoading || loading}
-                      className="w-full flex items-center justify-center gap-3 rounded-lg border border-border bg-bg px-4 py-2.5 text-sm font-medium text-text hover:bg-bg/80 transition-colors disabled:opacity-50"
-                    >
-                      {googleLoading ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                      ) : (
-                        <svg className="h-5 w-5" viewBox="0 0 24 24">
-                          <path
-                            fill="#4285F4"
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                          />
-                          <path
-                            fill="#34A853"
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                          />
-                          <path
-                            fill="#FBBC05"
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                          />
-                          <path
-                            fill="#EA4335"
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                          />
-                        </svg>
-                      )}
-                      {t.googleSignIn}
-                    </button>
+            {/* Google Sign In */}
+            <button
+              onClick={handleGoogleSignIn}
+              disabled={googleLoading || loading}
+              className="w-full flex items-center justify-center gap-3 rounded-lg border border-border bg-bg px-4 py-2.5 text-sm font-medium text-text hover:bg-bg/80 transition-colors disabled:opacity-50"
+            >
+              {googleLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <svg className="h-5 w-5" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
+                </svg>
+              )}
+              {t.googleSignIn}
+            </button>
 
-                    {/* Divider */}
-                    <div className="my-5 flex items-center gap-3">
-                      <div className="flex-1 h-px bg-border" />
-                      <span className="text-xs text-text-muted uppercase">{t.or}</span>
-                      <div className="flex-1 h-px bg-border" />
-                    </div>
+            {/* Divider */}
+            <div className="my-5 flex items-center gap-3">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-text-muted uppercase">{t.or}</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
 
-                    {/* Email/Password Form */}
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div>
-                        <label htmlFor="email" className="label">
-                          {t.email}
-                        </label>
-                        <input
-                          id="email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => {
-                            setEmail(e.target.value);
-                            setFieldErrors((prev) => ({ ...prev, email: undefined }));
-                          }}
-                          className={`input ${fieldErrors.email ? "border-danger" : ""}`}
-                          placeholder="you@example.com"
-                          autoComplete="email"
-                          disabled={loading || googleLoading}
-                        />
-                        {fieldErrors.email && (
-                          <p className="mt-1 text-xs text-danger">{fieldErrors.email}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label htmlFor="password" className="label">
-                          {t.password}
-                        </label>
-                        <div className="relative">
-                          <input
-                            id="password"
-                            type={showPassword ? "text" : "password"}
-                            value={password}
-                            onChange={(e) => {
-                              setPassword(e.target.value);
-                              setFieldErrors((prev) => ({ ...prev, password: undefined }));
-                            }}
-                            className={`input pr-10 ${fieldErrors.password ? "border-danger" : ""}`}
-                            placeholder="••••••••"
-                            autoComplete="current-password"
-                            disabled={loading || googleLoading}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
-                            tabIndex={-1}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                        </div>
-                        {fieldErrors.password && (
-                          <p className="mt-1 text-xs text-danger">{fieldErrors.password}</p>
-                        )}
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={loading || googleLoading}
-                        className="btn-primary w-full"
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            {t.signingIn}
-                          </>
-                        ) : (
-                          t.signIn
-                        )}
-                      </button>
-                    </form>
-
-                    <p className="mt-6 text-center text-sm text-text-muted">
-                      {t.noAccount}{" "}
-                      <Link
-                        href={`/${locale}/register`}
-                        className="font-medium text-primary hover:text-primary-hover transition-colors"
-                      >
-                        {t.register}
-                      </Link>
-                    </p>
-                  </div>
+            {/* Email/Password Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="label">
+                  {t.email}
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                  }}
+                  className={`input ${fieldErrors.email ? "border-danger" : ""}`}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  disabled={loading || googleLoading}
+                />
+                {fieldErrors.email && (
+                  <p className="mt-1 text-xs text-danger">{fieldErrors.email}</p>
                 )}
               </div>
-            );
-          })}
-        </div>
+
+              <div>
+                <label htmlFor="password" className="label">
+                  {t.password}
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
+                    className={`input pr-10 ${fieldErrors.password ? "border-danger" : ""}`}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    disabled={loading || googleLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {fieldErrors.password && (
+                  <p className="mt-1 text-xs text-danger">{fieldErrors.password}</p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || googleLoading}
+                className="btn-primary w-full"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t.signingIn}
+                  </>
+                ) : (
+                  t.signIn
+                )}
+              </button>
+            </form>
+
+            <p className="mt-6 text-center text-sm text-text-muted">
+              {t.noAccount}{" "}
+              <Link
+                href={`/${locale}/register`}
+                className="font-medium text-primary hover:text-primary-hover transition-colors"
+              >
+                {t.register}
+              </Link>
+            </p>
+
+            <p className="mt-5 text-center text-xs text-text-muted">{t.heroNote}</p>
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section className="mt-16">
+          <h2 className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider mb-6">
+            {t.howTitle}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {steps.map((step, i) => {
+              const Icon = step.icon;
+              return (
+                <div key={i} className="rounded-xl border border-card-border bg-surface p-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-text">{step.title}</h3>
+                  </div>
+                  <p className="text-sm text-text-muted leading-relaxed">{step.desc}</p>
+                  {step.cta && step.scrollTo && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        document.getElementById(step.scrollTo!)?.scrollIntoView({ behavior: "smooth" })
+                      }
+                      className="btn-primary mt-4 w-full"
+                    >
+                      {step.cta}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
         {/* What you get */}
-        <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-6 mt-10">
-          {t.featuresTitle}
-        </h2>
+        <section id="features" className="mt-16">
+          <h2 className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider mb-6">
+            {t.featuresTitle}
+          </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {t.features.map((feature, i) => {
-            const Icon = feature.icon;
-            return (
-              <div
-                key={i}
-                className="rounded-lg bg-surface border border-card-border p-3"
-              >
-                <Icon className="h-4 w-4 text-primary mb-2" />
-                <h3 className="text-xs font-semibold text-text">
-                  {feature.title}
-                </h3>
-                <p className="text-xs text-text-muted mt-1 leading-relaxed">
-                  {feature.desc}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {t.features.map((feature, i) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={i}
+                  className="rounded-xl border border-card-border bg-surface p-5 transition-colors hover:border-primary/40"
+                >
+                  <Icon className="h-6 w-6 text-primary mb-3" />
+                  <h3 className="text-base font-bold text-text">{feature.title}</h3>
+                  <p className="text-sm text-text-muted mt-1.5 leading-relaxed">
+                    {feature.desc}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Bottom CTA */}
+        <section className="mt-16 rounded-2xl border border-card-border bg-surface p-8 sm:p-12 text-center">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-text">
+            {t.bottomCtaTitle}
+          </h2>
+          <p className="text-text-muted mt-3 text-sm sm:text-base">{t.bottomCtaDesc}</p>
+          <button
+            type="button"
+            onClick={() =>
+              document.getElementById("auth-form")?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="btn-primary mt-6 px-8 py-3 text-base"
+          >
+            {t.getStarted}
+          </button>
+        </section>
       </div>
     </div>
   );
