@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { markAsRead, markAsNotified } from "@/server/actions/listings";
 import { cn, formatCurrency, formatDate, truncate } from "@/lib/utils";
+import { ImageGallery } from "./ImageGallery";
 
 const labels = {
   en: {
@@ -169,6 +170,13 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
               <ExternalLink className="h-3 w-3" />
               {t.view}
             </a>
+
+            <ImageGallery
+              listingId={listing.id}
+              canonicalUrl={listing.canonicalUrl}
+              mainImageUrl={listing.imageUrl}
+              locale={locale}
+            />
 
             <div className="ms-auto flex items-center gap-1">
               {!read && (

@@ -26,6 +26,7 @@ interface Listing {
   isNotified: boolean;
   createdAt: string;
   source: { id: string; name: string } | null;
+  make: string | null;
 }
 
 interface Source {
@@ -55,6 +56,11 @@ const labels = {
     failedToLoad: "Failed to load results",
     today: "Today",
     yesterday: "Yesterday",
+    groupBy: "Group by",
+    groupByDate: "Date",
+    groupBySource: "Source",
+    groupByBrand: "Brand",
+    groupByYear: "Year",
   },
   ar: {
     title: "النتائج",
@@ -77,6 +83,11 @@ const labels = {
     failedToLoad: "فشل تحميل النتائج",
     today: "اليوم",
     yesterday: "أمس",
+    groupBy: "تجميع حسب",
+    groupByDate: "التاريخ",
+    groupBySource: "المصدر",
+    groupByBrand: "العلامة التجارية",
+    groupByYear: "السنة",
   },
 } as const;
 
@@ -96,6 +107,7 @@ export default function ResultsPage({
   const [sourceId, setSourceId] = useState("");
   const [isRead, setIsRead] = useState("");
   const [loading, setLoading] = useState(true);
+  const [groupBy, setGroupBy] = useState<"date" | "source" | "brand" | "year">("date");
 
   const t = labels[locale as keyof typeof labels] ?? labels.en;
 
@@ -155,28 +167,62 @@ export default function ResultsPage({
 
   const groups: { label: string; listings: Listing[] }[] = [];
   if (!loading && listings.length > 0) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    if (groupBy === "date") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
 
-    const todayListings = listings.filter((l) => new Date(l.createdAt) >= today);
-    const yesterdayListings = listings.filter((l) => {
-      const d = new Date(l.createdAt);
-      return d >= yesterday && d < today;
-    });
-    const olderListings = listings.filter((l) => new Date(l.createdAt) < yesterday);
+      const todayListings = listings.filter((l) => new Date(l.createdAt) >= today);
+      const yesterdayListings = listings.filter((l) => {
+        const d = new Date(l.createdAt);
+        return d >= yesterday && d < today;
+      });
+      const olderListings = listings.filter((l) => new Date(l.createdAt) < yesterday);
 
-    if (todayListings.length > 0) groups.push({ label: t.today, listings: todayListings });
-    if (yesterdayListings.length > 0) groups.push({ label: t.yesterday, listings: yesterdayListings });
+      if (todayListings.length > 0) groups.push({ label: t.today, listings: todayListings });
+      if (yesterdayListings.length > 0) groups.push({ label: t.yesterday, listings: yesterdayListings });
 
-    const olderByDate = new Map<string, Listing[]>();
-    olderListings.forEach((l) => {
-      const dateKey = formatDate(l.createdAt, locale);
-      if (!olderByDate.has(dateKey)) olderByDate.set(dateKey, []);
-      olderByDate.get(dateKey)!.push(l);
-    });
-    olderByDate.forEach((groupListings, label) => groups.push({ label, listings: groupListings }));
+      const olderByDate = new Map<string, Listing[]>();
+      olderListings.forEach((l) => {
+        const dateKey = formatDate(l.createdAt, locale);
+        if (!olderByDate.has(dateKey)) olderByDate.set(dateKey, []);
+        olderByDate.get(dateKey)!.push(l);
+      });
+      olderByDate.forEach((groupListings, label) => groups.push({ label, listings: groupListings }));
+    } else if (groupBy === "source") {
+      const bySource = new Map<string, Listing[]>();
+      listings.forEach((l) => {
+        const key = l.source?.name ?? "(Unknown)";
+        if (!bySource.has(key)) bySource.set(key, []);
+        bySource.get(key)!.push(l);
+      });
+      bySource.forEach((items, label) => groups.push({ label, listings: items }));
+    } else if (groupBy === "brand") {
+      const byBrand = new Map<string, Listing[]>();
+      listings.forEach((l) => {
+        const key = l.make ?? "Unknown Brand";
+        if (!byBrand.has(key)) byBrand.set(key, []);
+        byBrand.get(key)!.push(l);
+      });
+      byBrand.forEach((items, label) => groups.push({ label, listings: items }));
+    } else if (groupBy === "year") {
+      const byYear = new Map<string, Listing[]>();
+      listings.forEach((l) => {
+        const key = l.year?.toString() ?? "Unknown Year";
+        if (!byYear.has(key)) byYear.set(key, []);
+        byYear.get(key)!.push(l);
+      });
+      const sortedEntries = [...byYear.entries()].sort(([a], [b]) => {
+        const numA = parseInt(a, 10);
+        const numB = parseInt(b, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numB - numA;
+        if (!isNaN(numA)) return -1;
+        if (!isNaN(numB)) return 1;
+        return a.localeCompare(b);
+      });
+      sortedEntries.forEach(([label, items]) => groups.push({ label, listings: items }));
+    }
   }
 
   return (
@@ -227,6 +273,19 @@ export default function ResultsPage({
             <option value="">{t.all}</option>
             <option value="false">{t.unread}</option>
             <option value="true">{t.read}</option>
+          </Select>
+
+          <Select
+            value={groupBy}
+            onChange={(e) =>
+              setGroupBy(e.target.value as "date" | "source" | "brand" | "year")
+            }
+            className="sm:w-40"
+          >
+            <option value="date">{t.groupBy}: {t.groupByDate}</option>
+            <option value="source">{t.groupBy}: {t.groupBySource}</option>
+            <option value="brand">{t.groupBy}: {t.groupByBrand}</option>
+            <option value="year">{t.groupBy}: {t.groupByYear}</option>
           </Select>
         </div>
       </div>

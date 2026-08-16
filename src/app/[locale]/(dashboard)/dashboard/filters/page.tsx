@@ -249,7 +249,7 @@ export default function FiltersPage({
                       {getFilterSummary(filter)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0">
                     <button
                       onClick={() => handleEdit(filter)}
                       className="p-2.5 -m-2.5 rounded-lg text-text-muted transition-all duration-300 ease-premium hover:text-primary hover:bg-surface active:scale-95"
