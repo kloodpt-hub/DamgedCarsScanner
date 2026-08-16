@@ -147,6 +147,10 @@ export function NotificationDrawerProvider({
 
   const markRead = useCallback(
     async (listingId: string) => {
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+      setRecent((prev) =>
+        prev.map((item) => (item.id === listingId ? { ...item, isRead: true } : item))
+      );
       try {
         const csrfToken = await getCsrfToken();
         await fetch("/api/notifications/read", {
@@ -157,11 +161,6 @@ export function NotificationDrawerProvider({
           },
           body: JSON.stringify({ listingId }),
         });
-        setRecent((prev) =>
-          prev.map((item) =>
-            item.id === listingId ? { ...item, isRead: true } : item
-          )
-        );
       } catch {
         // Ignore errors; the count refresh below reconciles state.
       } finally {
@@ -259,7 +258,7 @@ export function NotificationDrawerProvider({
         onClick={close}
         aria-hidden="true"
         className={cn(
-          "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-500 ease-premium",
+          "fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm transition-opacity duration-500 ease-premium",
           isOpen ? "opacity-100" : "pointer-events-none opacity-0"
         )}
       />
@@ -269,7 +268,7 @@ export function NotificationDrawerProvider({
         aria-label={t.title}
         aria-hidden={!isOpen}
         className={cn(
-          "fixed top-14 bottom-0 end-0 z-50 flex w-[92vw] max-w-md flex-col border-s border-card-border bg-bg/95 backdrop-blur-xl shadow-ambient",
+          "fixed top-0 bottom-0 end-0 z-[70] flex w-[92vw] max-w-md flex-col border-s border-card-border bg-bg/95 backdrop-blur-xl shadow-ambient",
           isOpen
             ? "visible translate-x-0 [transition:transform_500ms_cubic-bezier(0.32,0.72,0,1),visibility_0s]"
             : cn(

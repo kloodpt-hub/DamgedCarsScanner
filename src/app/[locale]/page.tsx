@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 const labels = {
   en: {
     // Branding
-    tagline: "Discover damaged car deals across multiple sites automatically",
+    tagline: "Find the best and newest car deals across multiple platforms in one place before anyone else, tailored to your exact rules and filters.",
     getStarted: "Get Started",
     viewFeatures: "See what you get",
     heroNote: "Free forever. No credit card required.",
@@ -98,7 +98,7 @@ const labels = {
     googleError: "Google sign-in failed. Make sure Google OAuth is configured.",
   },
   ar: {
-    tagline: "اكتشف عروض السيارات المتضررة عبر مواقع متعددة تلقائياً",
+    tagline: "اعثر على أفضل وأحدث عروض السيارات عبر منصات متعددة في مكان واحد قبل أي شخص آخر، مصممة وفق قواعدك وفلاترك بدقة.",
     getStarted: "ابدأ الآن",
     viewFeatures: "شاهد ما ستحصل عليه",
     heroNote: "مجاني للأبد. لا حاجة لبطاقة ائتمان.",
@@ -326,9 +326,6 @@ function LandingContent() {
               >
                 <div className="rounded-[calc(2rem-0.375rem)] bg-bg p-6 sm:p-8 shadow-ambient">
                   <div className="mb-7 text-center">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <Scan className="h-5 w-5" />
-                    </div>
                     <h2 className="text-xl font-bold text-text">
                       {t.signInSubtitle}
                     </h2>

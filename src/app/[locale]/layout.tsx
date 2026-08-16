@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Cairo } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
+import { InstallPrompt } from "@/components/shared/InstallPrompt";
 import { Toaster } from "sonner";
 import { notFound } from "next/navigation";
 import { isLocale, getLocaleDir, type Locale } from "@/lib/i18n/routing";
@@ -84,6 +85,7 @@ export default async function LocaleLayout({
           <ThemeProvider>{children}</ThemeProvider>
         </SessionProvider>
         <Toaster richColors position="top-right" />
+        <InstallPrompt locale={safeLocale} />
       </body>
     </html>
   );
