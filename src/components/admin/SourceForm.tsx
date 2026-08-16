@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { RotateCcw, Code, Info } from "lucide-react";
+import { RotateCcw, Code, Info, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -142,6 +142,7 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
   const [useCustomJson, setUseCustomJson] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [isSelectorsOpen, setIsSelectorsOpen] = useState(false);
   const [catalogId, setCatalogId] = useState("");
 
   const initSelectorValues = (): Record<SelectorField, string> => {
@@ -481,73 +482,88 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
         </div>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label className="block text-sm font-medium text-text">
-            {isRtl ? "المحددات" : "Selectors"}
-          </label>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleFillDefaults}
-              className="h-7 px-2 text-xs gap-1"
-            >
-              <RotateCcw className="h-3 w-3" />
-              {isRtl ? "القيم الافتراضية" : "Default Selectors"}
-            </Button>
-            <Button
-              type="button"
-              variant={useCustomJson ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setUseCustomJson(!useCustomJson)}
-              className="h-7 px-2 text-xs gap-1"
-            >
-              <Code className="h-3 w-3" />
-              {isRtl ? "JSON مخصص" : "Custom JSON"}
-            </Button>
+      <button
+        type="button"
+        onClick={() => setIsSelectorsOpen((v) => !v)}
+        aria-expanded={isSelectorsOpen}
+        className="flex items-center justify-between w-full rounded-lg border border-border bg-surface/50 px-3 py-2.5"
+      >
+        <span className="text-sm font-medium text-text">
+          {isRtl ? "المحددات المتقدمة (اختياري)" : "Advanced Selectors (Optional)"}
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 text-text-muted transition-transform duration-200 ${isSelectorsOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+      {isSelectorsOpen && (
+        <div className="space-y-2 pt-3">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-text">
+              {isRtl ? "المحددات" : "Selectors"}
+            </label>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleFillDefaults}
+                className="h-7 px-2 text-xs gap-1"
+              >
+                <RotateCcw className="h-3 w-3" />
+                {isRtl ? "القيم الافتراضية" : "Default Selectors"}
+              </Button>
+              <Button
+                type="button"
+                variant={useCustomJson ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setUseCustomJson(!useCustomJson)}
+                className="h-7 px-2 text-xs gap-1"
+              >
+                <Code className="h-3 w-3" />
+                {isRtl ? "JSON مخصص" : "Custom JSON"}
+              </Button>
+            </div>
           </div>
-        </div>
-        <p className="text-xs text-text-muted">
-          {isRtl
-            ? "المحولات المدمجة (leboncoin، autoscout24، schadeautos، schadeauto-zoeker، schadeautos-nl، debels) تتبع تلقائيًا باستخدام منطق مدمج ولا تتطلب هذه المحددات. المحددات اختيارية وتُستخدم كمُتجاوزات. المحولات الأخرى (generic، autos-motos، didier، dsm) تستخدم هذه المحددات — تُعبَّأ القيم الافتراضية تلقائيًا ويمكنك تحسينها."
-            : "Built-in adapters (leboncoin, autoscout24, schadeautos, schadeauto-zoeker, schadeautos-nl, debels) scrape automatically using built-in logic and do not require these selectors; they are optional overrides. Other adapters (generic, autos-motos, didier, dsm) use these selectors — sensible defaults are pre-filled and can be tuned."}
-        </p>
+          <p className="text-xs text-text-muted">
+            {isRtl
+              ? "المحولات المدمجة (leboncoin، autoscout24، schadeautos، schadeauto-zoeker، schadeautos-nl، debels) تتبع تلقائيًا باستخدام منطق مدمج ولا تتطلب هذه المحددات. المحددات اختيارية وتُستخدم كمُتجاوزات. المحولات الأخرى (generic، autos-motos، didier، dsm) تستخدم هذه المحددات — تُعبَّأ القيم الافتراضية تلقائيًا ويمكنك تحسينها."
+              : "Built-in adapters (leboncoin, autoscout24, schadeautos, schadeauto-zoeker, schadeautos-nl, debels) scrape automatically using built-in logic and do not require these selectors; they are optional overrides. Other adapters (generic, autos-motos, didier, dsm) use these selectors — sensible defaults are pre-filled and can be tuned."}
+          </p>
 
-        {useCustomJson ? (
-          <Textarea
-            value={customJson}
-            onChange={(e) => handleCustomJsonChange(e.target.value)}
-            error={!!errors.selectors}
-            className="font-mono text-xs min-h-[160px]"
-            placeholder='{"listingContainer": "...", "title": "...", ...}'
-            spellCheck={false}
-          />
-        ) : (
-          <div className="space-y-3 rounded-lg border border-border bg-input-bg/30 p-3">
-            {SELECTOR_FIELDS.map((field) => (
-              <div key={field.key} className="space-y-1">
-                <label className="text-xs font-medium text-text-muted">
-                  {field.label}
-                </label>
-                <Input
-                  value={selectorValues[field.key] ?? ""}
-                  onChange={(e) => handleSelectorFieldChange(field.key, e.target.value)}
-                  placeholder={
-                    getDefaults()[field.key] || field.placeholder
-                  }
-                  dir="ltr"
-                  className="font-mono text-xs"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-        {errors.selectors && (
-          <p className="text-xs text-danger">{errors.selectors}</p>
-        )}
-      </div>
+          {useCustomJson ? (
+            <Textarea
+              value={customJson}
+              onChange={(e) => handleCustomJsonChange(e.target.value)}
+              error={!!errors.selectors}
+              className="font-mono text-xs min-h-[160px]"
+              placeholder='{"listingContainer": "...", "title": "...", ...}'
+              spellCheck={false}
+            />
+          ) : (
+            <div className="space-y-3 rounded-lg border border-border bg-input-bg/30 p-3">
+              {SELECTOR_FIELDS.map((field) => (
+                <div key={field.key} className="space-y-1">
+                  <label className="text-xs font-medium text-text-muted">
+                    {field.label}
+                  </label>
+                  <Input
+                    value={selectorValues[field.key] ?? ""}
+                    onChange={(e) => handleSelectorFieldChange(field.key, e.target.value)}
+                    placeholder={
+                      getDefaults()[field.key] || field.placeholder
+                    }
+                    dir="ltr"
+                    className="font-mono text-xs"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          {errors.selectors && (
+            <p className="text-xs text-danger">{errors.selectors}</p>
+          )}
+        </div>
+      )}
 
       <div className="rounded-lg border border-border bg-surface/50 p-3">
         <div className="flex items-start gap-2">
