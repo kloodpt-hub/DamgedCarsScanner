@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { SourceForm } from "@/components/admin/SourceForm";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { RunSourceButton } from "@/components/admin/RunSourceButton";
+import { TestSourceButton } from "@/components/admin/TestSourceButton";
 import { deleteSource } from "@/server/actions/sources";
 
 interface SourcesClientActionsProps {
@@ -54,6 +55,7 @@ export function SourcesClientActions({
     return (
       <>
         <RunSourceButton sourceId={sourceId} locale={locale} />
+        <TestSourceButton sourceId={sourceId} locale={locale} />
         <Button
           variant="ghost"
           size="sm"

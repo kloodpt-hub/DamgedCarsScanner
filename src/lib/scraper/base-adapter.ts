@@ -122,7 +122,26 @@ export abstract class BaseAdapter implements ScraperAdapter {
           );
         }
 
-        return await response.text();
+        const html = await response.text();
+
+        if (html.length < 5000) {
+          console.warn(
+            `[${this.name}] Short HTML response (${html.length} chars) from ${url}`
+          );
+        }
+        if (
+          html.includes("captcha") ||
+          html.includes("challenge") ||
+          html.includes("datadome") ||
+          html.includes("cf-browser-verification") ||
+          html.includes("Checking your browser")
+        ) {
+          console.warn(
+            `[${this.name}] Possible anti-bot challenge page from ${url}: ${html.slice(0, 300)}`
+          );
+        }
+
+        return html;
       } catch (error) {
         // Non-retryable: real HTTP 4xx we threw above
         if (error instanceof NonRetryableError) {
@@ -145,6 +164,15 @@ export abstract class BaseAdapter implements ScraperAdapter {
     throw new Error(
       `Failed to fetch ${url} after ${MAX_RETRIES} attempts: ${lastError?.message}`
     );
+  }
+
+  protected async fetchHtmlPreview(url: string): Promise<string> {
+    try {
+      const html = await this.fetchHtml(url);
+      return html.slice(0, 2000);
+    } catch (err) {
+      return `ERROR: ${err instanceof Error ? err.message : String(err)}`;
+    }
   }
 
   protected throttle(): Promise<void> {

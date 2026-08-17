@@ -238,7 +238,7 @@ async function handleFilters(
 ): Promise<void> {
   const m = getMessages(locale);
   const filters = await prisma.filter.findMany({
-    where: { userId: user.id },
+    where: { userId: user.id, isActive: true },
     orderBy: { createdAt: "desc" },
   });
 
