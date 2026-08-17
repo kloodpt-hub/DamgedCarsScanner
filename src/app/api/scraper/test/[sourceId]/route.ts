@@ -28,20 +28,17 @@ export async function GET(
       sourceId: source.id,
     });
 
-    // Fetch FULL HTML for diagnostics (cast to access protected fetchHtml)
-    let fullHtml = "";
-    let fetchError = "";
-    try {
-      const fetchFn = (adapter as unknown as { fetchHtml(url: string): Promise<string> }).fetchHtml.bind(adapter);
-      fullHtml = await fetchFn(source.baseUrl);
-    } catch (err) {
-      fetchError = err instanceof Error ? err.message : String(err);
-    }
+    // ONLY call scrape() — single HTTP request, no double-fetch
+    const listings = await adapter.scrape(source.baseUrl, source.selectors as never);
 
-    // Run cheerio diagnostics on FULL HTML
+    // Read debug state captured during scrape()
+    const debugHtml = (adapter as unknown as { lastScrapeHtml: string }).lastScrapeHtml || "";
+    const debugError = (adapter as unknown as { lastScrapeError: string }).lastScrapeError || "";
+
+    // Run cheerio diagnostics on the ACTUAL HTML that scrape() fetched
     let cheerioDiagnostics: Record<string, unknown> = {};
-    if (fullHtml.length > 500) {
-      const $ = cheerio.load(fullHtml);
+    if (debugHtml.length > 500) {
+      const $ = cheerio.load(debugHtml);
       const containerSelectors: Record<string, string> = {
         "schadeauto-zoeker": "div.object3",
         "schadeautos-nl": "div[data-href].flexitem.car",
@@ -66,20 +63,16 @@ export async function GET(
         containerSelector: containerSel,
         containerCount,
         firstContainerInnerSelectors: inners,
-        htmlLength: fullHtml.length,
         firstContainerHtml: firstEl.length > 0 ? firstEl.toString().slice(0, 500) : "none",
       };
     }
 
-    // Also run scrape to compare
-    const listings = await adapter.scrape(source.baseUrl, source.selectors as never);
-
     return NextResponse.json({
-      fetchError: fetchError || null,
+      debugError: debugError || null,
       listingsCount: listings.length,
       firstListing: listings[0] ?? null,
-      htmlLength: fullHtml.length,
-      htmlPreview: fullHtml.slice(0, 300),
+      htmlLength: debugHtml.length,
+      htmlPreview: debugHtml.slice(0, 300),
       cheerioDiagnostics,
     });
   } catch (error) {

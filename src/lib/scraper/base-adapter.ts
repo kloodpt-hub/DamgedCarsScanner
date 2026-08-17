@@ -68,6 +68,10 @@ export abstract class BaseAdapter implements ScraperAdapter {
     return Date.now() > this.deadline.getTime() - DEADLINE_MARGIN_MS;
   }
 
+  // Debug: last HTML fetched by scrape()
+  public lastScrapeHtml = "";
+  public lastScrapeError = "";
+
   protected async fetchHtml(url: string): Promise<string> {
     let lastError: Error | null = null;
 
@@ -145,8 +149,10 @@ export abstract class BaseAdapter implements ScraperAdapter {
           );
         }
 
+        this.lastScrapeHtml = html;
         return html;
       } catch (error) {
+        this.lastScrapeError = error instanceof Error ? error.message : String(error);
         // Non-retryable: real HTTP 4xx we threw above
         if (error instanceof NonRetryableError) {
           throw error;
