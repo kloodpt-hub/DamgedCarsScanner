@@ -20,22 +20,20 @@ export function TestSourceButton({ sourceId, locale }: TestSourceButtonProps) {
       const res = await fetch(`/api/scraper/test/${sourceId}`);
       const data = await res.json();
       if (res.ok) {
-        const diag = data.cheerioDiagnostics;
-        const previewSnippet = data.htmlPreview
-          ? data.htmlPreview.slice(0, 200).replace(/\s+/g, " ")
-          : "N/A";
+        if (data.error) {
+          toast.error(data.error, { duration: 10000 });
+          return;
+        }
+        const samples = (data.perContainer || [])
+          .map((c: { index: number; title: string | null; link: string | null; skipped: string | null; titleSelector: string; linkSelector: string }) =>
+            `  [${c.index}] title=${c.title ?? "NULL"} link=${c.link ? "OK" : "NULL"} skip=${c.skipped ?? "none"} | ${c.titleSelector}`
+          )
+          .join("\n");
         const message = [
-          data.fetchError ? `FETCH ERROR: ${data.fetchError}` : "",
-          `HTML: ${data.htmlLength} chars`,
-          `Listings: ${data.listingsCount}`,
-          data.firstListing ? `First: ${data.firstListing.title} (${data.firstListing.price})` : "",
-          diag ? `Containers (${diag.containerSelector}): ${diag.containerCount}` : "",
-          diag?.firstContainerInnerSelectors
-            ? diag.firstContainerInnerSelectors
-                .map((s: { selector: string; count: number; text: string }) => `  ${s.selector}: ${s.count}${s.text ? ' → "' + s.text.slice(0, 50) + '"' : ""}`)
-                .join("\n")
-            : "",
-          `Starts: ${previewSnippet}`,
+          `HTML: ${data.htmlLength} chars | Selector: ${data.containerSel}`,
+          `Containers found: ${data.containerCount}`,
+          `scrape() result: ${data.scrapeResultCount} listings`,
+          samples ? `Sample containers:\n${samples}` : "",
         ]
           .filter(Boolean)
           .join("\n");

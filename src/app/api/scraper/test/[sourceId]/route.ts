@@ -28,52 +28,68 @@ export async function GET(
       sourceId: source.id,
     });
 
-    // ONLY call scrape() — single HTTP request, no double-fetch
-    const listings = await adapter.scrape(source.baseUrl, source.selectors as never);
-
-    // Read debug state captured during scrape()
-    const debugHtml = (adapter as unknown as { lastScrapeHtml: string }).lastScrapeHtml || "";
-    const debugError = (adapter as unknown as { lastScrapeError: string }).lastScrapeError || "";
-
-    // Run cheerio diagnostics on the ACTUAL HTML that scrape() fetched
-    let cheerioDiagnostics: Record<string, unknown> = {};
-    if (debugHtml.length > 500) {
-      const $ = cheerio.load(debugHtml);
-      const containerSelectors: Record<string, string> = {
-        "schadeauto-zoeker": "div.object3",
-        "schadeautos-nl": "div[data-href].flexitem.car",
-        "autoscout24": "[data-testid='list-item']",
-        debels: ".list-item",
-      };
-      const containerSel = containerSelectors[source.adapterType] || "div.object3";
-      const containerCount = $(containerSel).length;
-
-      const firstEl = $(containerSel).first();
-      const innerSelectors: Record<string, string[]> = {
-        "schadeauto-zoeker": ["p.merk", "p.type", "div.foto > a > img", "div.foto > a[href]", "span.fltlt"],
-        "schadeautos-nl": ["h2 a", "p.model-type", ".car-image img", '[title="ERD"]', '[title="mileage"]'],
-      };
-      const inners = (innerSelectors[source.adapterType] || []).map((sel) => ({
-        selector: sel,
-        count: firstEl.find(sel).length,
-        text: firstEl.find(sel).first().text().trim().slice(0, 80),
-      }));
-
-      cheerioDiagnostics = {
-        containerSelector: containerSel,
-        containerCount,
-        firstContainerInnerSelectors: inners,
-        firstContainerHtml: firstEl.length > 0 ? firstEl.toString().slice(0, 500) : "none",
-      };
+    // Step 1: Fetch HTML via adapter's protected fetchHtml
+    let html = "";
+    try {
+      html = await (adapter as unknown as { fetchHtml(url: string): Promise<string> }).fetchHtml.bind(adapter)(source.baseUrl);
+    } catch (err) {
+      return NextResponse.json({
+        error: `fetchHtml failed: ${err instanceof Error ? err.message : String(err)}`,
+      });
     }
 
+    // Step 2: Determine what selectors scrape() would use
+    const dbSelectors = source.selectors as Record<string, string>;
+    const defaultSelectors: Record<string, string> = {
+      "schadeauto-zoeker": "div.object3",
+      "schadeautos-nl": "div[data-href].flexitem.car",
+    };
+    const containerSel = (dbSelectors?.listingContainer) || defaultSelectors[source.adapterType] || "div.object3";
+
+    // Step 3: Parse with cheerio — replicate what parseListings does
+    const $ = cheerio.load(html);
+    const containers = $(containerSel);
+    const containerCount = containers.length;
+    const perContainer: Array<{ index: number; title: string | null; link: string | null; titleSelector: string; linkSelector: string; skipped: string | null }> = [];
+
+    containers.each((i, element) => {
+      const $el = $(element);
+
+      // extractTitle logic
+      let title: string | null = null;
+      const merk = $el.find("p.merk").first().text().trim();
+      const type = $el.find("p.type").first().text().trim();
+      const joined = [merk, type].filter(Boolean).join(" ").trim();
+      if (joined) title = joined;
+
+      // extractLink logic
+      let link: string | null = null;
+      const linkSelector = "div.foto > a[href]";
+      const href = $el.find(linkSelector).first().attr("href");
+      if (href) {
+        try { link = new URL(href, source.baseUrl).href; } catch { /* skip */ }
+      }
+
+      let skipped: string | null = null;
+      if (!title) skipped = "no title";
+      else if (!link) skipped = "no link";
+
+      if (perContainer.length < 3) {
+        perContainer.push({ index: i, title, link, titleSelector: `merk="${merk}" type="${type}"`, linkSelector: `href="${href ?? "none"}"`, skipped });
+      }
+    });
+
+    // Step 4: Also run scrape() for comparison
+    const listings = await adapter.scrape(source.baseUrl, source.selectors as never);
+
     return NextResponse.json({
-      debugError: debugError || null,
-      listingsCount: listings.length,
-      firstListing: listings[0] ?? null,
-      htmlLength: debugHtml.length,
-      htmlPreview: debugHtml.slice(0, 300),
-      cheerioDiagnostics,
+      htmlLength: html.length,
+      adapterType: source.adapterType,
+      containerSel,
+      containerCount,
+      scrapeResultCount: listings.length,
+      perContainer,
+      htmlPreview: html.slice(0, 200),
     });
   } catch (error) {
     return NextResponse.json(
