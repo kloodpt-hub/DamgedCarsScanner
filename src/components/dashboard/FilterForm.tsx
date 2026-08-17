@@ -120,7 +120,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
   const [maxYear, setMaxYear] = useState(filter?.maxYear?.toString() ?? "");
   const [minPrice, setMinPrice] = useState(filter?.minPrice?.toString() ?? "");
   const [maxPrice, setMaxPrice] = useState(filter?.maxPrice?.toString() ?? "");
-  const [priceType, setPriceType] = useState(filter?.priceType ?? "any");
+  const [priceType, setPriceType] = useState(filter?.priceType ?? "net");
   const [excludedKeywords, setExcludedKeywords] = useState(
     filter?.excludedKeywords?.join(", ") ?? ""
   );

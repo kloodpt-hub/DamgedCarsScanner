@@ -38,13 +38,13 @@ function matchPriceByType(listing: Listing, filter: Filter): boolean {
   const hasFilter = filter.minPrice != null || filter.maxPrice != null;
   if (!hasFilter) return true;
 
-  const priceType = filter.priceType ?? "any";
+  const priceType = filter.priceType ?? "net";
   let effectivePrice: number | null;
 
   if (priceType === "gross") {
-    effectivePrice = listing.grossPrice ?? listing.price;
+    effectivePrice = listing.grossPrice ?? listing.netPrice ?? listing.price;
   } else if (priceType === "net") {
-    effectivePrice = listing.netPrice ?? listing.price;
+    effectivePrice = listing.netPrice ?? listing.grossPrice ?? listing.price;
   } else {
     effectivePrice = listing.price;
   }

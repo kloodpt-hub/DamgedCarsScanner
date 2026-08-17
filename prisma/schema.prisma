@@ -70,7 +70,7 @@ model Filter {
   maxYear             Int?
   minPrice            Float?
   maxPrice            Float?
-  priceType           String    @default("any")
+  priceType           String    @default("net")
   damageStatus        String?
   excludedKeywords    String[]
   sourceIds           String[]  @default([])
