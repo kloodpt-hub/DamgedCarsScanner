@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/CopyButton";
 import { SettingsEnvEditor } from "@/components/admin/SettingsEnvEditor";
 import { TelegramSettingsEditor } from "@/components/admin/TelegramSettingsEditor";
+import { AiSettingsEditor } from "@/components/admin/AiSettingsEditor";
 import {
   KeyRound,
   Mail,
@@ -125,13 +126,7 @@ export default async function SettingsPage({
   const vapidPublic = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
 
-  const renderConfigured =
-    !!process.env.RENDER_API_KEY && !!process.env.RENDER_SERVICE_ID;
-
-  const aiEnabled = process.env.AI_ASSESSMENT_ENABLED === "true";
-  const aiApiUrl = process.env.AI_API_URL;
-  const aiApiKey = process.env.AI_API_KEY;
-  const aiModel = process.env.AI_MODEL;
+  const renderConfigured = !!process.env.RENDER_API_KEY && !!process.env.RENDER_SERVICE_ID;
 
   const envEntries = [
     {
@@ -476,37 +471,11 @@ export default async function SettingsPage({
           <CardDescription>
             Optional AI-powered damage assessment. When enabled, borderline listings are
             analyzed by an OpenAI-compatible API for more accurate damage classification.
+            Settings are stored in the database and read directly at runtime.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <SettingRow
-            label="Enabled"
-            envVar="AI_ASSESSMENT_ENABLED"
-            value={process.env.AI_ASSESSMENT_ENABLED ?? ""}
-            configured={aiEnabled}
-            isRtl={isRtl}
-          />
-          <SettingRow
-            label="API URL"
-            envVar="AI_API_URL"
-            value={aiApiUrl ?? ""}
-            configured={!!aiApiUrl}
-            isRtl={isRtl}
-          />
-          <SettingRow
-            label="API Key"
-            envVar="AI_API_KEY"
-            value={aiApiKey ?? ""}
-            configured={!!aiApiKey}
-            isRtl={isRtl}
-          />
-          <SettingRow
-            label="Model"
-            envVar="AI_MODEL"
-            value={aiModel ?? ""}
-            configured={!!aiModel}
-            isRtl={isRtl}
-          />
+          <AiSettingsEditor locale={locale === "ar" ? "ar" : "en"} />
 
           <div className={setupShell}>
             <p className="font-medium text-text mb-1">AI Assessment setup steps</p>
@@ -517,23 +486,21 @@ export default async function SettingsPage({
                   DeepSeek, or run a local model with Ollama/LM Studio.
                 </>,
                 <>
-                  Set <code className="text-primary">AI_API_URL</code> to the provider&apos;s base URL
+                  Enter the provider&apos;s base URL as the API URL
                   (e.g. <code className="text-primary">https://api.openai.com</code>,{" "}
                   <code className="text-primary">https://api.groq.com</code>, or{" "}
                   <code className="text-primary">http://localhost:11434</code> for Ollama).
                 </>,
                 <>
-                  Set <code className="text-primary">AI_API_KEY</code> to your API key. For Ollama
-                  local, any non-empty string works.
+                  Enter your API key. For Ollama local, any non-empty string works.
                 </>,
                 <>
-                  Set <code className="text-primary">AI_MODEL</code> to the model name
+                  Enter the model name
                   (e.g. <code className="text-primary">gpt-4o-mini</code>,{" "}
                   <code className="text-primary">llama-3.1-8b-instant</code>).
                 </>,
                 <>
-                  Set <code className="text-primary">AI_ASSESSMENT_ENABLED</code> to{" "}
-                  <code className="text-primary">true</code> to activate.
+                  Toggle the <code className="text-primary">Enabled</code> switch and save to activate.
                 </>,
                 <>
                   Without AI, the system uses rule-based keyword matching (free, instant).

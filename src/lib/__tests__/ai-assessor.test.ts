@@ -1,15 +1,30 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { assessWithAi } from "@/lib/ai/assessor";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { assessWithAi, resetAiConfigCache } from "@/lib/ai/assessor";
+
+vi.mock("@/lib/settings", () => ({
+  getSetting: vi.fn().mockResolvedValue(null),
+}));
+
+import { getSetting } from "@/lib/settings";
+
+const mockedGetSetting = vi.mocked(getSetting);
 
 describe("assessWithAi", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
+    resetAiConfigCache();
     process.env = { ...originalEnv };
     delete process.env.AI_ASSESSMENT_ENABLED;
     delete process.env.AI_API_URL;
     delete process.env.AI_API_KEY;
     delete process.env.AI_MODEL;
+    mockedGetSetting.mockReset();
+    mockedGetSetting.mockResolvedValue(null);
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
   });
 
   it("returns null when AI is disabled (default)", async () => {
@@ -22,9 +37,12 @@ describe("assessWithAi", () => {
   });
 
   it("returns null when AI_ASSESSMENT_ENABLED is false", async () => {
-    process.env.AI_ASSESSMENT_ENABLED = "false";
-    process.env.AI_API_URL = "https://api.example.com";
-    process.env.AI_API_KEY = "test-key";
+    mockedGetSetting.mockImplementation(async (key: string) => {
+      if (key === "AI_ASSESSMENT_ENABLED") return "false";
+      if (key === "AI_API_URL") return "https://api.example.com";
+      if (key === "AI_API_KEY") return "test-key";
+      return null;
+    });
 
     const result = await assessWithAi({
       title: "BMW 320d",
@@ -35,8 +53,11 @@ describe("assessWithAi", () => {
   });
 
   it("returns null when AI_API_URL is not set", async () => {
-    process.env.AI_ASSESSMENT_ENABLED = "true";
-    process.env.AI_API_KEY = "test-key";
+    mockedGetSetting.mockImplementation(async (key: string) => {
+      if (key === "AI_ASSESSMENT_ENABLED") return "true";
+      if (key === "AI_API_KEY") return "test-key";
+      return null;
+    });
 
     const result = await assessWithAi({
       title: "BMW 320d",
@@ -47,10 +68,13 @@ describe("assessWithAi", () => {
   });
 
   it("returns null on API error", async () => {
-    process.env.AI_ASSESSMENT_ENABLED = "true";
-    process.env.AI_API_URL = "https://api.example.com";
-    process.env.AI_API_KEY = "test-key";
-    process.env.AI_MODEL = "test-model";
+    mockedGetSetting.mockImplementation(async (key: string) => {
+      if (key === "AI_ASSESSMENT_ENABLED") return "true";
+      if (key === "AI_API_URL") return "https://api.example.com";
+      if (key === "AI_API_KEY") return "test-key";
+      if (key === "AI_MODEL") return "test-model";
+      return null;
+    });
 
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(null, { status: 500, statusText: "Internal Server Error" })
@@ -65,9 +89,12 @@ describe("assessWithAi", () => {
   });
 
   it("returns null on invalid JSON response", async () => {
-    process.env.AI_ASSESSMENT_ENABLED = "true";
-    process.env.AI_API_URL = "https://api.example.com";
-    process.env.AI_API_KEY = "test-key";
+    mockedGetSetting.mockImplementation(async (key: string) => {
+      if (key === "AI_ASSESSMENT_ENABLED") return "true";
+      if (key === "AI_API_URL") return "https://api.example.com";
+      if (key === "AI_API_KEY") return "test-key";
+      return null;
+    });
 
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(JSON.stringify({ choices: [{ message: { content: "not json" } }] }), {
@@ -85,9 +112,12 @@ describe("assessWithAi", () => {
   });
 
   it("returns null on network failure", async () => {
-    process.env.AI_ASSESSMENT_ENABLED = "true";
-    process.env.AI_API_URL = "https://api.example.com";
-    process.env.AI_API_KEY = "test-key";
+    mockedGetSetting.mockImplementation(async (key: string) => {
+      if (key === "AI_ASSESSMENT_ENABLED") return "true";
+      if (key === "AI_API_URL") return "https://api.example.com";
+      if (key === "AI_API_KEY") return "test-key";
+      return null;
+    });
 
     vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new Error("Network error"));
 
@@ -100,10 +130,13 @@ describe("assessWithAi", () => {
   });
 
   it("returns parsed assessment on valid AI response", async () => {
-    process.env.AI_ASSESSMENT_ENABLED = "true";
-    process.env.AI_API_URL = "https://api.example.com";
-    process.env.AI_API_KEY = "test-key";
-    process.env.AI_MODEL = "gpt-4o-mini";
+    mockedGetSetting.mockImplementation(async (key: string) => {
+      if (key === "AI_ASSESSMENT_ENABLED") return "true";
+      if (key === "AI_API_URL") return "https://api.example.com";
+      if (key === "AI_API_KEY") return "test-key";
+      if (key === "AI_MODEL") return "gpt-4o-mini";
+      return null;
+    });
 
     const aiResponse = {
       damageLevel: "moderate",
@@ -133,9 +166,12 @@ describe("assessWithAi", () => {
   });
 
   it("returns null when AI response has invalid damageLevel", async () => {
-    process.env.AI_ASSESSMENT_ENABLED = "true";
-    process.env.AI_API_URL = "https://api.example.com";
-    process.env.AI_API_KEY = "test-key";
+    mockedGetSetting.mockImplementation(async (key: string) => {
+      if (key === "AI_ASSESSMENT_ENABLED") return "true";
+      if (key === "AI_API_URL") return "https://api.example.com";
+      if (key === "AI_API_KEY") return "test-key";
+      return null;
+    });
 
     const aiResponse = {
       damageLevel: "invalid_level",

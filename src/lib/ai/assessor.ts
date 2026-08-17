@@ -1,4 +1,5 @@
 import { buildAssessmentPrompt } from "./prompts";
+import { getSetting } from "@/lib/settings";
 
 export interface AiAssessment {
   damageLevel: "none" | "light" | "moderate" | "heavy" | "total_loss";
@@ -16,13 +17,42 @@ interface AiAssessorConfig {
   enabled: boolean;
 }
 
-function getAiConfig(): AiAssessorConfig {
-  return {
-    apiUrl: process.env.AI_API_URL || null,
-    apiKey: process.env.AI_API_KEY || null,
-    model: process.env.AI_MODEL || "gpt-4o-mini",
-    enabled: process.env.AI_ASSESSMENT_ENABLED === "true" && !!process.env.AI_API_URL,
+let configCache: AiAssessorConfig | null = null;
+let configCacheTime = 0;
+const CONFIG_CACHE_TTL = 60 * 1000;
+
+export function resetAiConfigCache() {
+  configCache = null;
+  configCacheTime = 0;
+}
+
+async function getAiConfig(): Promise<AiAssessorConfig> {
+  const now = Date.now();
+  if (configCache && now - configCacheTime < CONFIG_CACHE_TTL) {
+    return configCache;
+  }
+
+  const [dbEnabled, dbApiUrl, dbApiKey, dbModel] = await Promise.all([
+    getSetting("AI_ASSESSMENT_ENABLED"),
+    getSetting("AI_API_URL"),
+    getSetting("AI_API_KEY"),
+    getSetting("AI_MODEL"),
+  ]);
+
+  const enabled = dbEnabled !== null ? dbEnabled === "true" : process.env.AI_ASSESSMENT_ENABLED === "true";
+  const apiUrl = dbApiUrl || process.env.AI_API_URL || null;
+  const apiKey = dbApiKey || process.env.AI_API_KEY || null;
+  const model = dbModel || process.env.AI_MODEL || "gpt-4o-mini";
+
+  configCache = {
+    apiUrl,
+    apiKey,
+    model,
+    enabled: enabled && !!apiUrl,
   };
+  configCacheTime = now;
+
+  return configCache;
 }
 
 export async function assessWithAi(params: {
@@ -30,7 +60,7 @@ export async function assessWithAi(params: {
   description: string | null;
   damageStatus: string | null;
 }): Promise<AiAssessment | null> {
-  const config = getAiConfig();
+  const config = await getAiConfig();
   if (!config.enabled || !config.apiUrl || !config.apiKey) {
     return null;
   }

@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Select } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { createFilter, updateFilter } from "@/server/actions/filters";
 
 interface Source {
@@ -27,7 +26,6 @@ const labels = {
     priceTypeAny: "Any",
     priceTypeGross: "Gross (Export)",
     priceTypeNet: "Net",
-    damageStatus: "Damage Status",
     excludedKeywords: "Excluded Keywords (comma-separated)",
     minMileage: "Min Mileage",
     maxMileage: "Max Mileage",
@@ -42,17 +40,16 @@ const labels = {
     allSources: "All sources",
     noSources: "No sources available",
     sourcesSelected: (count: number) => `${count} selected`,
-    excludeHeavyDamage: "Exclude heavily damaged cars",
     brands: "Brands",
     allBrands: "All brands",
     noBrands: "No brands available",
     brandsSelected: (count: number) => `${count} selected`,
-    maxDamageLevel: "Maximum Damage Level",
-    maxDamageLevelNone: "Show all (no damage filter)",
-    maxDamageLevelLight: "Exclude moderate, heavy, and total loss",
-    maxDamageLevelModerate: "Exclude heavy and total loss only",
+    maxDamageLevel: "Damage Filter",
+    maxDamageLevelNone: "Show all cars",
+    maxDamageLevelLight: "Exclude moderate+ damage",
+    maxDamageLevelModerate: "Exclude heavy+ damage",
     maxDamageLevelHeavy: "Exclude total loss only",
-    maxDamageLevelTotalLoss: "Keyword matching only (default)",
+    maxDamageLevelTotalLoss: "No filter (show all)",
   },
   ar: {
     filterName: "اسم الفلتر",
@@ -64,7 +61,6 @@ const labels = {
     priceTypeAny: "أي",
     priceTypeGross: "السعر الإجمالي (تصدير)",
     priceTypeNet: "السعر الصافي",
-    damageStatus: "حالة الضرر",
     excludedKeywords: "الكلمات المستبعدة (مفصولة بفاصلة)",
     minMileage: "الحد الأدنى للمسافة",
     maxMileage: "الحد الأقصى للمسافة",
@@ -79,17 +75,16 @@ const labels = {
     allSources: "كل المصادر",
     noSources: "لا توجد مصادر متاحة",
     sourcesSelected: (count: number) => `تم اختيار ${count}`,
-    excludeHeavyDamage: "استبعاد السيارات المتضررة بشدة",
     brands: "العلامات التجارية",
     allBrands: "كل العلامات",
     noBrands: "لا توجد علامات متاحة",
     brandsSelected: (count: number) => `تم اختيار ${count}`,
-    maxDamageLevel: "الحد الأقصى لمستوى الضرر",
-    maxDamageLevelNone: "عرض الكل (بدون فلتر ضرر)",
-    maxDamageLevelLight: "استبعاد متوسط وشديد وخاسر",
-    maxDamageLevelModerate: "استبعاد شديد وخاسر فقط",
-    maxDamageLevelHeavy: "استبعاد خاسر فقط",
-    maxDamageLevelTotalLoss: "مطابقة الكلمات المفتاحية فقط (افتراضي)",
+    maxDamageLevel: "فلتر الضرر",
+    maxDamageLevelNone: "عرض كل السيارات",
+    maxDamageLevelLight: "استبعاد من الضرر المتوسط فما فوق",
+    maxDamageLevelModerate: "استبعاد من الضرر الشديد فما فوق",
+    maxDamageLevelHeavy: "استبعاد الخاسر الكلي فقط",
+    maxDamageLevelTotalLoss: "بدون فلتر (عرض الكل)",
   },
 } as const;
 
@@ -101,12 +96,10 @@ interface FilterData {
   minPrice?: number | null;
   maxPrice?: number | null;
   priceType?: string;
-  damageStatus?: string | null;
   excludedKeywords?: string[];
   minMileage?: number | null;
   maxMileage?: number | null;
   sourceIds?: string[];
-  excludeHeavyDamage?: boolean;
   brands?: string[];
   maxDamageLevel?: string;
 }
@@ -128,7 +121,6 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
   const [minPrice, setMinPrice] = useState(filter?.minPrice?.toString() ?? "");
   const [maxPrice, setMaxPrice] = useState(filter?.maxPrice?.toString() ?? "");
   const [priceType, setPriceType] = useState(filter?.priceType ?? "any");
-  const [damageStatus, setDamageStatus] = useState(filter?.damageStatus ?? "");
   const [excludedKeywords, setExcludedKeywords] = useState(
     filter?.excludedKeywords?.join(", ") ?? ""
   );
@@ -136,7 +128,6 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
   const [maxMileage, setMaxMileage] = useState(filter?.maxMileage?.toString() ?? "");
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>(filter?.sourceIds ?? []);
-  const [excludeHeavyDamage, setExcludeHeavyDamage] = useState(filter?.excludeHeavyDamage ?? false);
   const [maxDamageLevel, setMaxDamageLevel] = useState(filter?.maxDamageLevel ?? "total_loss");
   const [brandOptions, setBrandOptions] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>(filter?.brands ?? []);
@@ -170,14 +161,12 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         minPrice: minPrice ? parseFloat(minPrice) : undefined,
         maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
         priceType: priceType as "any" | "gross" | "net",
-        damageStatus: damageStatus || undefined,
         excludedKeywords: excludedKeywords
           ? excludedKeywords.split(",").map((k) => k.trim()).filter(Boolean)
           : [],
         minMileage: minMileage ? parseInt(minMileage) : undefined,
         maxMileage: maxMileage ? parseInt(maxMileage) : undefined,
         sourceIds: selectedSourceIds,
-        excludeHeavyDamage,
         maxDamageLevel: maxDamageLevel as "none" | "light" | "moderate" | "heavy" | "total_loss",
         brands: selectedBrands,
       };
@@ -282,27 +271,6 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
           <option value="gross">{t.priceTypeGross}</option>
           <option value="net">{t.priceTypeNet}</option>
         </Select>
-      </div>
-
-      <div>
-        <Label>{t.damageStatus}</Label>
-        <Select
-          value={damageStatus}
-          onChange={(e) => setDamageStatus(e.target.value)}
-        >
-          <option value="">Any</option>
-          <option value="Damage">Damage</option>
-          <option value="No Damage">No Damage</option>
-          <option value="Total Loss">Total Loss</option>
-        </Select>
-      </div>
-
-      <div className="flex items-center justify-between rounded-lg border border-card-border p-3">
-        <Label className="cursor-pointer">{t.excludeHeavyDamage}</Label>
-        <Switch
-          checked={excludeHeavyDamage}
-          onCheckedChange={setExcludeHeavyDamage}
-        />
       </div>
 
       <div>
