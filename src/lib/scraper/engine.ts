@@ -236,6 +236,17 @@ export class ScraperEngine {
         }
       }
 
+      if (newListings > 0) {
+        try {
+          const { enrichListingImages } = await import("./image-enricher");
+          enrichListingImages(this.prisma).catch((err) =>
+            console.warn("[engine] Image enrichment failed:", err)
+          );
+        } catch (err) {
+          console.warn("[engine] Failed to start image enrichment:", err);
+        }
+      }
+
       await this.prisma.scraperJob.update({
         where: { id: job.id },
         data: {

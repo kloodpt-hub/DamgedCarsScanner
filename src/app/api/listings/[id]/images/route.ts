@@ -25,11 +25,17 @@ export async function GET(
   try {
     const listing = await prisma.listing.findUnique({
       where: { id },
-      select: { canonicalUrl: true },
+      select: { canonicalUrl: true, images: true },
     });
 
     if (!listing) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const dbImages = listing.images ?? [];
+    if (dbImages.length > 1) {
+      cache.set(id, { images: dbImages, fetchedAt: Date.now() });
+      return NextResponse.json({ images: dbImages });
     }
 
     const images = await fetchAllImages(listing.canonicalUrl);
