@@ -20,17 +20,25 @@ export function TestSourceButton({ sourceId, locale }: TestSourceButtonProps) {
       const res = await fetch(`/api/scraper/test/${sourceId}`);
       const data = await res.json();
       if (res.ok) {
-        const previewSnippet = data.htmlPreview
-          ? data.htmlPreview.slice(0, 300).replace(/\s+/g, " ")
+        const previewSnippet = data.htmlPreviewStarts
+          ? data.htmlPreviewStarts.slice(0, 300).replace(/\s+/g, " ")
           : "N/A";
+        const diag = data.cheerioDiagnostics;
         const message = [
           `Listings: ${data.listingsCount}`,
           data.firstListing ? `First: ${data.firstListing.title}` : "",
-          `HTML preview: ${previewSnippet}`,
+          `HTML: ${data.htmlPreviewLength} chars`,
+          diag ? `Containers (${diag.containerSelector}): ${diag.containerCount}` : "",
+          diag?.firstContainerInnerSelectors
+            ? diag.firstContainerInnerSelectors
+                .map((s: { selector: string; count: number; text: string }) => `${s.selector}: ${s.count}${s.text ? ' → "' + s.text.slice(0, 50) + '"' : ""}`)
+                .join("\n  ")
+            : "",
+          `Preview: ${previewSnippet}`,
         ]
           .filter(Boolean)
           .join("\n");
-        toast.info(message, { duration: 10000 });
+        toast.info(message, { duration: 15000 });
       } else {
         toast.error(data.error || (isRtl ? "فشل" : "Failed"));
       }

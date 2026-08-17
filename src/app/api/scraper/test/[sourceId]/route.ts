@@ -29,14 +29,18 @@ export async function GET(
     });
 
     // Step 1: Fetch HTML first (sequential, no race condition)
-    const fetchHtml = (adapter as unknown as { fetchHtmlPreview(url: string): Promise<string> }).fetchHtmlPreview.bind(adapter);
-    const htmlPreview = await fetchHtml(source.baseUrl);
+    let htmlPreview = "N/A";
+    try {
+      const fetchFn = (adapter as unknown as { fetchHtmlPreview(url: string): Promise<string> }).fetchHtmlPreview.bind(adapter);
+      htmlPreview = await fetchFn(source.baseUrl);
+    } catch (err) {
+      htmlPreview = `ERROR: ${err instanceof Error ? err.message : String(err)}`;
+    }
 
     // Step 2: Parse with cheerio to diagnose selector matching
     let cheerioDiagnostics: Record<string, unknown> = {};
     if (!htmlPreview.startsWith("ERROR:") && htmlPreview.length > 500) {
       const $ = cheerio.load(htmlPreview);
-      // Find listing containers based on adapter type
       const containerSelectors: Record<string, string> = {
         "schadeauto-zoeker": "div.object3",
         "schadeautos-nl": "div[data-href].flexitem.car",
@@ -46,7 +50,6 @@ export async function GET(
       const containerSel = containerSelectors[source.adapterType] || "div.object3";
       const containerCount = $(containerSel).length;
 
-      // Check inner selectors for first container
       const firstEl = $(containerSel).first();
       const innerSelectors: Record<string, string[]> = {
         "schadeauto-zoeker": ["p.merk", "p.type", "div.foto > a > img", "div.foto > a[href]", "span.fltlt"],
@@ -73,6 +76,7 @@ export async function GET(
     return NextResponse.json({
       listingsCount: listings.length,
       firstListing: listings[0] ?? null,
+      htmlPreview,              // full preview (up to 2000 chars)
       htmlPreviewLength: htmlPreview.length,
       htmlPreviewStarts: htmlPreview.slice(0, 300),
       cheerioDiagnostics,
