@@ -20,25 +20,26 @@ export function TestSourceButton({ sourceId, locale }: TestSourceButtonProps) {
       const res = await fetch(`/api/scraper/test/${sourceId}`);
       const data = await res.json();
       if (res.ok) {
-        const previewSnippet = data.htmlPreviewStarts
-          ? data.htmlPreviewStarts.slice(0, 300).replace(/\s+/g, " ")
-          : "N/A";
         const diag = data.cheerioDiagnostics;
+        const previewSnippet = data.htmlPreview
+          ? data.htmlPreview.slice(0, 200).replace(/\s+/g, " ")
+          : "N/A";
         const message = [
+          data.fetchError ? `FETCH ERROR: ${data.fetchError}` : "",
+          `HTML: ${data.htmlLength} chars`,
           `Listings: ${data.listingsCount}`,
-          data.firstListing ? `First: ${data.firstListing.title}` : "",
-          `HTML: ${data.htmlPreviewLength} chars`,
+          data.firstListing ? `First: ${data.firstListing.title} (${data.firstListing.price})` : "",
           diag ? `Containers (${diag.containerSelector}): ${diag.containerCount}` : "",
           diag?.firstContainerInnerSelectors
             ? diag.firstContainerInnerSelectors
-                .map((s: { selector: string; count: number; text: string }) => `${s.selector}: ${s.count}${s.text ? ' → "' + s.text.slice(0, 50) + '"' : ""}`)
-                .join("\n  ")
+                .map((s: { selector: string; count: number; text: string }) => `  ${s.selector}: ${s.count}${s.text ? ' → "' + s.text.slice(0, 50) + '"' : ""}`)
+                .join("\n")
             : "",
-          `Preview: ${previewSnippet}`,
+          `Starts: ${previewSnippet}`,
         ]
           .filter(Boolean)
           .join("\n");
-        toast.info(message, { duration: 15000 });
+        toast.info(message, { duration: 20000 });
       } else {
         toast.error(data.error || (isRtl ? "فشل" : "Failed"));
       }
