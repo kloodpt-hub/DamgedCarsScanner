@@ -16,6 +16,25 @@ import { assessDamage } from "../damage-detector";
 import { notifyNewListing } from "../notifications";
 import { findDuplicates } from "../dedup/duplicate-detector";
 import { getDueSources, markSourceScraped, releaseStaleLocks } from "../cron/scheduler";
+import { enrichSingleListing } from "./image-enricher";
+
+interface PendingNotification {
+  listing: {
+    id: string;
+    title: string;
+    price: number | null;
+    grossPrice: number | null;
+    netPrice: number | null;
+    year: number | null;
+    mileage: number | null;
+    damageStatus: string | null;
+    canonicalUrl: string;
+    imageUrl: string | null;
+    sourceId: string;
+    images: string[];
+  };
+  matchedFilters: { id: string; name: string; userId: string }[];
+}
 
 const JOB_DEADLINE_MS = 5 * 60 * 1000;
 
@@ -123,6 +142,8 @@ export class ScraperEngine {
         return f.sourceIds.includes(source.id);
       });
 
+      const pendingNotifications: PendingNotification[] = [];
+
       for (const raw of rawListings) {
         try {
           if (raw.isSold) {
@@ -226,25 +247,60 @@ export class ScraperEngine {
               },
             });
 
-            await notifyNewListing(
-              { ...listing, sourceId: source.id, images: listing.images ?? [] },
-              matchedFilters
-            );
+            pendingNotifications.push({
+              listing: {
+                id: listing.id,
+                title: listing.title,
+                price: listing.price,
+                grossPrice: listing.grossPrice,
+                netPrice: listing.netPrice,
+                year: listing.year,
+                mileage: listing.mileage,
+                damageStatus: listing.damageStatus,
+                canonicalUrl: listing.canonicalUrl,
+                imageUrl: listing.imageUrl,
+                sourceId: source.id,
+                images: (listing.images as string[]) ?? [],
+              },
+              matchedFilters,
+            });
           }
         } catch (err) {
           errors.push(`Failed to process listing ${raw.externalId}: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
 
-      if (newListings > 0) {
-        try {
-          const { enrichListingImages } = await import("./image-enricher");
-          enrichListingImages(this.prisma).catch((err) =>
-            console.warn("[engine] Image enrichment failed:", err)
-          );
-        } catch (err) {
-          console.warn("[engine] Failed to start image enrichment:", err);
+      if (pendingNotifications.length > 0) {
+        console.log(
+          `[engine] ${source.name}: enriching images for ${pendingNotifications.length} new listing(s) before notification`
+        );
+
+        for (const pending of pendingNotifications) {
+          try {
+            const enrichedImages = await enrichSingleListing(this.prisma, pending.listing.id);
+            if (enrichedImages && enrichedImages.length > 0) {
+              pending.listing.images = enrichedImages;
+            }
+          } catch (err) {
+            console.warn(
+              `[engine] Image enrichment failed for ${pending.listing.id}, sending with original images:`,
+              err instanceof Error ? err.message : String(err)
+            );
+          }
+
+          try {
+            await notifyNewListing(pending.listing, pending.matchedFilters);
+          } catch (err) {
+            console.warn(
+              `[engine] Notification failed for ${pending.listing.id}:`,
+              err instanceof Error ? err.message : String(err)
+            );
+          }
         }
+
+        console.log(
+          `[engine] ${source.name}: sent ${pendingNotifications.length} notification(s) with enriched images`
+        );
       }
 
       await this.prisma.scraperJob.update({

@@ -5,6 +5,42 @@ const ENRICH_BATCH_SIZE = 10;
 const ENRICH_THROTTLE_MS = 2000;
 const MAX_IMAGES = 5;
 
+export async function enrichSingleListing(
+  prisma: PrismaClient,
+  listingId: string
+): Promise<string[] | null> {
+  const listing = await prisma.listing.findUnique({
+    where: { id: listingId },
+    select: { id: true, canonicalUrl: true, images: true },
+  });
+
+  if (!listing || !listing.canonicalUrl) return null;
+
+  const currentImages = (listing.images as string[]) ?? [];
+  if (currentImages.length > 1) return currentImages;
+
+  const images = await fetchAllImages(listing.canonicalUrl);
+
+  if (images.length > 1) {
+    const allImages = images.slice(0, MAX_IMAGES);
+    const originalImage = currentImages[0];
+
+    if (originalImage && !allImages.includes(originalImage)) {
+      allImages.unshift(originalImage);
+      allImages.splice(MAX_IMAGES);
+    }
+
+    await prisma.listing.update({
+      where: { id: listing.id },
+      data: { images: allImages },
+    });
+
+    return allImages;
+  }
+
+  return currentImages;
+}
+
 export async function enrichListingImages(prisma: PrismaClient): Promise<{
   enriched: number;
   failed: number;
