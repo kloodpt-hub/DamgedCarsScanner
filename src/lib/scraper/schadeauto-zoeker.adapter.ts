@@ -130,6 +130,7 @@ export class SchadeautoZoekerAdapter extends BaseAdapter {
           "div.foto > a > img",
           sourceUrl
         );
+        const images = this.extractAllImages($, $el, "div.foto img", sourceUrl);
 
         const make = $el.find("p.merk").first().text().trim() || undefined;
 
@@ -144,7 +145,7 @@ export class SchadeautoZoekerAdapter extends BaseAdapter {
           damageStatus: undefined,
           description: undefined,
           imageUrl: imageUrl ?? undefined,
-          images: imageUrl ? [imageUrl] : [],
+          images: images.length > 0 ? images : imageUrl ? [imageUrl] : [],
           canonicalUrl: link,
           sourceUrl,
           isSold: false,

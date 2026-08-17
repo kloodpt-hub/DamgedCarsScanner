@@ -54,8 +54,13 @@ export class SchadeautosNlAdapter extends BaseAdapter {
             this.sourceId ?? this.sourceIdForExternalId(sourceUrl)
           );
 
-          const price =
+          const grossPrice =
             parsePrice($el.find("div.price").first().text()) ?? undefined;
+
+          const netPrice =
+            parsePrice($el.find("span.label-price").first().text()) ?? undefined;
+
+          const price = netPrice ?? grossPrice ?? undefined;
 
           const year =
             parseYear(
@@ -73,17 +78,20 @@ export class SchadeautosNlAdapter extends BaseAdapter {
           const make = $el.attr("data-make-label") || undefined;
 
           const imageUrl = this.extractImage($, $el, ".car-image img", sourceUrl);
+          const images = this.extractAllImages($, $el, ".car-image img", sourceUrl);
 
           listings.push({
             externalId,
             title,
             price,
+            grossPrice,
+            netPrice,
             year,
             mileage,
             damageStatus: undefined,
             description,
             imageUrl: imageUrl ?? undefined,
-            images: imageUrl ? [imageUrl] : [],
+            images: images.length > 0 ? images : imageUrl ? [imageUrl] : [],
             canonicalUrl,
             sourceUrl,
             isSold: false,

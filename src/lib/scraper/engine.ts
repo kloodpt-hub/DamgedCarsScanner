@@ -227,7 +227,7 @@ export class ScraperEngine {
             });
 
             await notifyNewListing(
-              { ...listing, sourceId: source.id },
+              { ...listing, sourceId: source.id, images: listing.images ?? [] },
               matchedFilters
             );
           }

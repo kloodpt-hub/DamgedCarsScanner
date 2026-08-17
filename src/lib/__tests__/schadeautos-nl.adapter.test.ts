@@ -49,6 +49,8 @@ describe("SchadeautosNlAdapter", () => {
     const first = listings[0];
     expect(first.title).toBe("Audi SQ5");
     expect(first.price).toBe(56500);
+    expect(first.grossPrice).toBe(56500);
+    expect(first.netPrice).toBeUndefined();
     expect(first.year).toBe(2026);
     expect(first.mileage).toBe(12000);
     expect(first.canonicalUrl).toBe(
@@ -61,7 +63,9 @@ describe("SchadeautosNlAdapter", () => {
 
     const peugeot = listings[1];
     expect(peugeot.title).toBe("Peugeot 308");
-    expect(peugeot.price).toBe(20750);
+    expect(peugeot.price).toBe(13950);
+    expect(peugeot.grossPrice).toBe(20750);
+    expect(peugeot.netPrice).toBe(13950);
     expect(peugeot.mileage).toBe(632);
 
     expect(first.externalId).not.toBe(peugeot.externalId);

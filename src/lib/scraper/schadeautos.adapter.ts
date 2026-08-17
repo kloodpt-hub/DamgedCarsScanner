@@ -114,9 +114,7 @@ export class SchadeautosAdapter extends BaseAdapter {
         }
 
         const imageUrl = this.extractImage($, $el, selectors.imageUrl || ".schadeautos-card__image", sourceUrl);
-
-        const images: string[] = [];
-        if (imageUrl) images.push(imageUrl);
+        const images = this.extractAllImages($, $el, ".schadeautos-card__image, .schadeautos-card__image img", sourceUrl);
 
         const isSold =
           $el.hasClass("schadeautos-card--sold") ||
@@ -131,7 +129,7 @@ export class SchadeautosAdapter extends BaseAdapter {
           damageStatus: undefined,
           description: subtitle || undefined,
           imageUrl: imageUrl ?? undefined,
-          images,
+          images: images.length > 0 ? images : imageUrl ? [imageUrl] : [],
           canonicalUrl,
           sourceUrl,
           isSold,

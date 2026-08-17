@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { sendTelegramMessage, sendTelegramPhoto } from "@/lib/telegram";
+import { sendTelegramMessage, sendTelegramPhoto, sendTelegramMediaGroup } from "@/lib/telegram";
 import { evaluateListing } from "@/lib/filters/evaluator";
 import {
   getMessages,
@@ -329,8 +329,20 @@ async function handleLatest(
       listing.damageStatus ?? "N/A",
       listing.canonicalUrl
     );
-    if (listing.imageUrl) {
-      await sendTelegramPhoto(chatId, listing.imageUrl, caption);
+    const imageUrls = (listing as Listing & { images?: string[] }).images?.length
+      ? (listing as Listing & { images?: string[] }).images!
+      : listing.imageUrl
+        ? [listing.imageUrl]
+        : [];
+    if (imageUrls.length > 1) {
+      const photos = imageUrls.slice(0, 5).map((url, i) => ({
+        type: "photo" as const,
+        media: url,
+        ...(i === 0 ? { caption, parse_mode: "HTML" } : {}),
+      }));
+      await sendTelegramMediaGroup(chatId, photos);
+    } else if (imageUrls.length === 1) {
+      await sendTelegramPhoto(chatId, imageUrls[0], caption);
     } else {
       await sendTelegramMessage(chatId, caption);
     }

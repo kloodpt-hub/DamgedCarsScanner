@@ -60,6 +60,29 @@ export async function sendTelegramPhoto(
   return data;
 }
 
+export async function sendTelegramMediaGroup(
+  chatId: string,
+  media: Array<{ type: "photo"; media: string; caption?: string; parse_mode?: string }>
+): Promise<{ ok: boolean; description?: string }> {
+  const { token } = await getTelegramConfig();
+  if (!token) {
+    return { ok: false, description: "Telegram bot not configured" };
+  }
+  const response = await fetch(
+    `https://api.telegram.org/bot${token}/sendMediaGroup`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        media,
+      }),
+    }
+  );
+  const data = (await response.json()) as { ok: boolean; description?: string };
+  return data;
+}
+
 export async function registerTelegramWebhook(
   webhookUrl: string,
   secretToken?: string

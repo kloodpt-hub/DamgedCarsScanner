@@ -1,6 +1,6 @@
 import { prisma } from "./prisma";
 import { getTelegramConfig } from "./settings";
-import { sendTelegramMessage, sendTelegramPhoto } from "./telegram";
+import { sendTelegramMessage, sendTelegramPhoto, sendTelegramMediaGroup } from "./telegram";
 import { getMessages } from "./telegram/messages";
 import { sendListingAlert } from "./email";
 import {
@@ -20,6 +20,7 @@ export async function notifyNewListing(
     canonicalUrl: string;
     imageUrl: string | null;
     sourceId: string;
+    images: string[];
   },
   matchedFilters: { id: string; name: string; userId: string }[]
 ): Promise<void> {
@@ -78,8 +79,20 @@ export async function notifyNewListing(
           listing.damageStatus ?? "N/A",
           listing.canonicalUrl
         );
-        if (listing.imageUrl) {
-          await sendTelegramPhoto(user.telegramChatId, listing.imageUrl, caption);
+        const imageUrls = listing.images.length > 0
+          ? listing.images
+          : listing.imageUrl
+            ? [listing.imageUrl]
+            : [];
+        if (imageUrls.length > 1) {
+          const photos = imageUrls.slice(0, 5).map((url, i) => ({
+            type: "photo" as const,
+            media: url,
+            ...(i === 0 ? { caption, parse_mode: "HTML" } : {}),
+          }));
+          await sendTelegramMediaGroup(user.telegramChatId, photos);
+        } else if (imageUrls.length === 1) {
+          await sendTelegramPhoto(user.telegramChatId, imageUrls[0], caption);
         } else {
           await sendTelegramMessage(user.telegramChatId, caption);
         }

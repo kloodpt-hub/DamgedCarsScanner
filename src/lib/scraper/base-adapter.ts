@@ -366,28 +366,61 @@ export abstract class BaseAdapter implements ScraperAdapter {
 
   protected extractAllImages($: cheerio.CheerioAPI, $el: cheerio.Cheerio<AnyNode>, selector: string, baseUrl: string): string[] {
     if (!selector) return [];
+
+    const SKIP_KEYWORDS = [
+      "logo", "icon", "badge", "avatar", "pixel", "tracking",
+      "1x1", "spacer", "sprite", "favicon", "thumb", "ad-",
+      "adsense", "doubleclick", "googlesyndication",
+    ];
+
+    const MAX_IMAGES = 5;
     const images: string[] = [];
     const selectors = selector.split(",").map((s) => s.trim());
+
+    const isSkippable = (url: string): boolean => {
+      const lower = url.toLowerCase();
+      return SKIP_KEYWORDS.some((kw) => lower.includes(kw));
+    };
+
+    const addImage = (src: string): void => {
+      if (!src || src.startsWith("data:")) return;
+      if (isSkippable(src)) return;
+      try {
+        const resolved = new URL(src, baseUrl).href;
+        if (!images.includes(resolved)) {
+          images.push(resolved);
+        }
+      } catch {
+        // Skip invalid URLs
+      }
+    };
 
     for (const sel of selectors) {
       $el.find(sel).each((_, img) => {
         const $img = $(img);
-        const src =
-          $img.attr("src") || $img.attr("data-src") || $img.attr("data-lazy");
-        if (src) {
-          try {
-            const resolved = new URL(src, baseUrl).href;
-            if (!images.includes(resolved)) {
-              images.push(resolved);
-            }
-          } catch {
-            // Skip invalid URLs
+        addImage($img.attr("src") || "");
+        addImage($img.attr("data-src") || "");
+        addImage($img.attr("data-lazy") || "");
+
+        const srcset = $img.attr("srcset");
+        if (srcset) {
+          const variants = srcset
+            .split(",")
+            .map((v) => v.trim().split(/\s+/))
+            .filter((parts) => parts.length >= 1);
+          if (variants.length > 0) {
+            variants.sort((a, b) => {
+              const aVal = parseInt(a[1] || "1", 10);
+              const bVal = parseInt(b[1] || "1", 10);
+              return bVal - aVal;
+            });
+            addImage(variants[0][0]);
           }
         }
       });
     }
 
-    return images;
+    return images.slice(0, MAX_IMAGES);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
