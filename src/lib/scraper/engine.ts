@@ -9,6 +9,14 @@ import { SchadeautosNlAdapter } from "./schadeautos-nl.adapter";
 import { AutosMotosAdapter } from "./autos-motos.adapter";
 import { DidierAdapter } from "./didier.adapter";
 import { DsmAdapter } from "./dsm.adapter";
+import { KleinanzeigenAdapter } from "./kleinanzeigen.adapter";
+import { MarktplaatsAdapter } from "./marktplaats.adapter";
+import { OlxAdapter } from "./olx.adapter";
+import { SprzedazAdapter } from "./sprzedaz.adapter";
+import { CaritoAdapter } from "./carito.adapter";
+import { ParuvenduAdapter } from "./paruvendu.adapter";
+import { JmAutosAdapter } from "./jm-autos.adapter";
+import { VoitureAccidenteeAdapter } from "./voiture-accidentee.adapter";
 import type { BaseAdapterOptions } from "./base-adapter";
 import type { ScraperAdapter, ScraperJobResult, ScraperSelectors } from "./types";
 import { evaluateListing } from "../filters/evaluator";
@@ -49,6 +57,14 @@ const ADAPTERS: Record<string, (options?: BaseAdapterOptions) => ScraperAdapter>
   "autos-motos": (o) => new AutosMotosAdapter(o),
   didier: (o) => new DidierAdapter(o),
   dsm: (o) => new DsmAdapter(o),
+  kleinanzeigen: (o) => new KleinanzeigenAdapter(o),
+  marktplaats: (o) => new MarktplaatsAdapter(o),
+  olx: (o) => new OlxAdapter(o),
+  sprzedaz: (o) => new SprzedazAdapter(o),
+  carito: (o) => new CaritoAdapter(o),
+  paruvendu: (o) => new ParuvenduAdapter(o),
+  "jm-autos": (o) => new JmAutosAdapter(o),
+  "voiture-accidentee": (o) => new VoitureAccidenteeAdapter(o),
 };
 
 export interface ScrapeResult {

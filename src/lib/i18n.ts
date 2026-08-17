@@ -68,6 +68,15 @@ export interface Dictionary {
     interval: string;
     active: string;
     inactive: string;
+    availableSources: string;
+    addedSources: string;
+    searchSites: string;
+    filterByCountry: string;
+    addToCatalog: string;
+    alreadyAdded: string;
+    activeSources: string;
+    catalogOverview: string;
+    allCountries: string;
   };
   filters: {
     addFilter: string;
@@ -242,6 +251,15 @@ const en: Dictionary = {
     interval: "Interval",
     active: "Active",
     inactive: "Inactive",
+    availableSources: "Available Sources",
+    addedSources: "Added Sources",
+    searchSites: "Search sites...",
+    filterByCountry: "Filter by country",
+    addToCatalog: "Add to Catalog",
+    alreadyAdded: "Added",
+    activeSources: "Active Sources",
+    catalogOverview: "Catalog Overview",
+    allCountries: "All Countries",
   },
   filters: {
     addFilter: "Add Filter",
@@ -416,6 +434,15 @@ const ar: Dictionary = {
     interval: "الفترة",
     active: "نشط",
     inactive: "غير نشط",
+    availableSources: "المصادر المتاحة",
+    addedSources: "المصادر المضافة",
+    searchSites: "بحث في المواقع...",
+    filterByCountry: "تصفية حسب الدولة",
+    addToCatalog: "إضافة إلى الكتالوج",
+    alreadyAdded: "تمت الإضافة",
+    activeSources: "المصادر النشطة",
+    catalogOverview: "نظرة عامة على الكتالوج",
+    allCountries: "كل الدول",
   },
   filters: {
     addFilter: "إضافة فلتر",

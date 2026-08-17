@@ -3,82 +3,23 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { RotateCcw, Code, Info, ChevronDown } from "lucide-react";
+import { RotateCcw, Code, Info, ChevronDown, Search, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createSource, updateSource } from "@/server/actions/sources";
 import { getCsrfToken } from "@/lib/csrf-client";
-import { SITE_CATALOG, type SiteCatalogEntry } from "@/lib/scraper/catalog";
+import { getCatalogByCountry, type SiteCatalogEntry } from "@/lib/scraper/catalog";
+import { getDefaultsForAdapter } from "@/lib/scraper/adapter-defaults";
 
-const LEBONCOIN_DEFAULTS = {
-  listingContainer: '[data-qa-id="aditem_container"], [data-qa-id="listitem_ad"], .styles_adCard__',
-  title: '[data-qa-id="aditem_title"], [data-qa-id="subject"], h2, .textHeading',
-  price: '[data-qa-id="aditem_price"], [data-qa-id="price"], .adPrice, [class*="price"]',
-  year: '[data-qa-id="criteria_value"], [class*="year"], [data-qa-id="aditem_date"]',
-  mileage: '[data-qa-id="criteria_value"], [data-qa-id="item_params"] span, [class*="mileage"]',
-  damageStatus: '[data-qa-id="aditem_description"], [class*="damage"], [class*="state"]',
-  description: '[data-qa-id="aditem_description"], [data-qa-id="ad_description"], .textDescription',
-  imageUrl: "img",
-  link: 'a[data-qa-id="aditem_container"], a[data-qa-id="listitem_ad"], a[href*="/ad/"]',
-  nextPage: 'button[data-qa-id="pagination_next"], a[data-qa-id="pagination_next"], [aria-label="Page suivante"]',
-};
+const SELECTOR_FIELD_KEYS = [
+  "listingContainer", "title", "price", "year", "mileage",
+  "damageStatus", "description", "imageUrl", "link", "nextPage",
+] as const;
 
-const AUTOSCOUT24_DEFAULTS = {
-  listingContainer: '[data-testid="sr-listing-item"], [data-testid="list-item"], .cl-list-element',
-  title: '[data-testid="vehicle-title"], [data-testid="title"], .heading, h2, .vehicle-title',
-  price: '[data-testid="price"], [class*="price"], .price, [data-testid="listing-price"]',
-  year: '[data-testid="vehicle-registration"], [data-testid="first-registration"], .first-registration, [class*="registration"]',
-  mileage: '[data-testid="vehicle-mileage"], [data-testid="mileage"], .mileage, [class*="km"]',
-  damageStatus: '[data-testid="vehicle-condition"], [class*="condition"], [class*="damage"]',
-  description: '[data-testid="vehicle-details"], [data-testid="seller-details"], .seller-details, [class*="description"]',
-  imageUrl: "img",
-  link: 'a[data-testid="listing-link"], a[data-testid="listing-detail-link"], a[href*="/listing/"]',
-  nextPage: 'button[aria-label="Next page"], a[aria-label="Next page"], [data-testid="pagination-next"], [class*="next"]',
-};
-
-const GENERIC_DEFAULTS = {
-  listingContainer: "",
-  title: "",
-  price: "",
-  year: "",
-  mileage: "",
-  damageStatus: "",
-  description: "",
-  imageUrl: "",
-  link: "",
-  nextPage: "",
-};
-
-const SCHADEAUTOS_DEFAULTS = {
-  listingContainer: "a.schadeautos-card",
-  title: ".schadeautos-card__title",
-  price: ".schadeautos-card__price",
-  year: ".schadeautos-card__footer .schadeautos-card__stat:nth-child(1) span",
-  mileage: ".schadeautos-card__footer .schadeautos-card__stat:nth-child(3) span",
-  damageStatus: "",
-  description: ".schadeautos-card__subtitle",
-  imageUrl: ".schadeautos-card__image",
-  link: "a.schadeautos-card",
-  nextPage: ".schadeautos-pagination__nav--next",
-};
-
-const VEHICLE_GRID_DEFAULTS = {
-  listingContainer:
-    '[class*="listing"], [class*="card"], [class*="vehicle"], [class*="annonce"]',
-  title: 'h2, h3, [class*="title"], [class*="heading"]',
-  price: '[class*="price"], [class*="prix"], [itemprop="price"]',
-  year: '[class*="year"], [class*="registration"], [class*="annee"]',
-  mileage: '[class*="mileage"], [class*="km"], [class*="kilometr"]',
-  damageStatus: '[class*="damage"], [class*="state"], [class*="condition"]',
-  description: '[class*="description"], [class*="desc"], p',
-  imageUrl: "img",
-  link: "a[href]",
-  nextPage: '[rel="next"], a[class*="next"], [class*="pagination"] a',
-};
-
-type SelectorField = keyof typeof GENERIC_DEFAULTS;
+type SelectorField = (typeof SELECTOR_FIELD_KEYS)[number];
 
 const SELECTOR_FIELDS: { key: SelectorField; label: string; placeholder: string }[] = [
   { key: "listingContainer", label: "Listing Container", placeholder: "CSS selector for each listing card" },
@@ -93,25 +34,6 @@ const SELECTOR_FIELDS: { key: SelectorField; label: string; placeholder: string 
   { key: "nextPage", label: "Next Page", placeholder: "CSS selector for pagination next button" },
 ];
 
-function getDefaultsForAdapter(type: string): Record<SelectorField, string> {
-  switch (type) {
-    case "leboncoin":
-      return { ...LEBONCOIN_DEFAULTS };
-    case "autoscout24":
-      return { ...AUTOSCOUT24_DEFAULTS };
-    case "schadeautos":
-    case "schadeauto-zoeker":
-    case "schadeautos-nl":
-      return { ...SCHADEAUTOS_DEFAULTS };
-    case "autos-motos":
-    case "didier":
-    case "dsm":
-      return { ...VEHICLE_GRID_DEFAULTS };
-    default:
-      return { ...GENERIC_DEFAULTS };
-  }
-}
-
 interface SourceFormProps {
   source?: {
     id: string;
@@ -125,9 +47,10 @@ interface SourceFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
   locale?: string;
+  existingSourceIds?: string[];
 }
 
-export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: SourceFormProps) {
+export function SourceForm({ source, onSuccess, onCancel, locale = "en", existingSourceIds = [] }: SourceFormProps) {
   const router = useRouter();
   const isRtl = locale === "ar";
   const isEdit = !!source;
@@ -143,14 +66,13 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [isSelectorsOpen, setIsSelectorsOpen] = useState(false);
-  const [catalogId, setCatalogId] = useState("");
+  const [catalogSearch, setCatalogSearch] = useState("");
 
   const initSelectorValues = (): Record<SelectorField, string> => {
-    const defaults = getDefaultsForAdapter(source?.adapterType ?? "generic");
+    const defaults = getDefaultsForAdapter(source?.adapterType ?? "generic") as Record<SelectorField, string>;
     if (source?.selectors && typeof source.selectors === "object") {
       const sel = source.selectors as Record<string, string>;
-      const fields = Object.keys(GENERIC_DEFAULTS) as SelectorField[];
-      for (const f of fields) {
+      for (const f of SELECTOR_FIELD_KEYS) {
         if (sel[f] !== undefined && sel[f] !== "") {
           defaults[f] = sel[f];
         }
@@ -230,9 +152,8 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
     setCustomJson(value);
     try {
       const parsed = JSON.parse(value);
-      const fields = Object.keys(GENERIC_DEFAULTS) as SelectorField[];
       const synced: Record<SelectorField, string> = { ...selectorValues };
-      for (const f of fields) {
+      for (const f of SELECTOR_FIELD_KEYS) {
         synced[f] = parsed[f] ?? "";
       }
       setSelectorValues(synced);
@@ -373,6 +294,38 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
       en: "Optimized for DSM Belgium (Used & Damaged catalogs). Provide selectors or rely on common vehicle listing patterns.",
       ar: "محسّن لموقع دي إس إم بلجيكا (كتالوجات المستعمل والمتضرر). قدّم محددات أو اعتمد على الأنماط الشائعة.",
     },
+    kleinanzeigen: {
+      en: "Optimized for Kleinanzeigen.de (Germany's largest classifieds). Parses article.aditem elements with structured price/description.",
+      ar: "محسّン لموقع كلاينأنزايغن (أكبر موقع إعلانات ألمانيا). يقرأ عناصر article.aditem مع السعر والوصف.",
+    },
+    marktplaats: {
+      en: "Optimized for Marktplaats.nl and 2dehands.be (Adevinta platform). Parses hz-Listing elements with title, price, and images.",
+      ar: "محسّن لموقعي ماركتبلاتس وتوديهاندس (منصة أديفنتا). يقرأ عناصر hz-Listing مع العنوان والسعر والصور.",
+    },
+    olx: {
+      en: "Optimized for OLX.pl (Poland's classifieds giant). Parses data-cy='l-card' elements. May redirect to otomoto.pl for car listings.",
+      ar: "محسّن لموقع أولكس (عملاق الإعلانات في بولندا). يقرأ عناصر data-cy='l-card'. قد يعيد التوجيه إلى أوتوموتو.",
+    },
+    sprzedaz: {
+      en: "Optimized for Sprzedajemy.pl (Polish classifieds). Parses article.element with offer links and prices.",
+      ar: "محسّن لموقع سبريدجيمي (إعلانات بولندية). يقرأ article.element مع روابط الإعلانات والأسعار.",
+    },
+    carito: {
+      en: "Optimized for Carito.com (Belgian damaged car platform). SPA-based; uses common listing selectors for JS-rendered content.",
+      ar: "محسّن لموقع كارتو (منصة السيارات المتضررة البلجيكية). يعمل بـ SPA؛ يستخدم محددات إعلانات شائعة للمحتوى المعروض بـ JS.",
+    },
+    paruvendu: {
+      en: "Optimized for Paruvendu.fr (French classifieds). Parses 'véhicules accidentés' listings. Some content loaded via AJAX.",
+      ar: "محسّن لموقع باروفيندو (إعلانات فرنسية). يقرأ إعلانات المركبات المتضررة. بعض المحتوى يُحمّل عبر AJAX.",
+    },
+    "jm-autos": {
+      en: "Optimized for JM Autos (French damaged car dealer). Parses .shop-item cards with vehicle details and carousel images.",
+      ar: "محسّن لموقع جي إم أوتوس (تاجر سيارات متضررة فرنسي). يقرأ بطاقات .shop-item مع تفاصيل المركبة وصور الكاروسيل.",
+    },
+    "voiture-accidentee": {
+      en: "Optimized for VoitureAccidentee.com (cross-border FR/DE damaged car dealer). Parses listing cards with vehicle info.",
+      ar: "محسّن لموقع فوايتورأكسيدينتي (تاجر سيارات متضررة عابر للحدود). يقرأ بطاقات الإعلانات مع معلومات المركبة.",
+    },
   };
 
   return (
@@ -384,25 +337,113 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
               ? "اختر من الكتالوج (اختياري)"
               : "Pick from catalog (optional)"}
           </label>
-          <Select
-            value={catalogId}
-            onChange={(e) => {
-              const site = SITE_CATALOG.find((s) => s.id === e.target.value);
-              if (site) handleCatalogSelect(site);
-              setCatalogId(e.target.value);
-            }}
-          >
-            <option value="" disabled>
-              {isRtl
-                ? "اختر موقعًا من الكتالوج"
-                : "Select a site from the catalog..."}
-            </option>
-            {SITE_CATALOG.map((site) => (
-              <option key={site.id} value={site.id}>
-                {isRtl && site.nameAr ? site.nameAr : site.name} ({site.adapterType})
-              </option>
-            ))}
-          </Select>
+          <div className="relative">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+            <Input
+              value={catalogSearch}
+              onChange={(e) => setCatalogSearch(e.target.value)}
+              placeholder={isRtl ? "بحث في المواقع..." : "Search sites..."}
+              className="ps-9"
+            />
+          </div>
+          <div className="max-h-[320px] overflow-y-auto rounded-xl border border-border/70 bg-input-bg/30 p-2 space-y-3">
+            {getCatalogByCountry()
+              .filter((group) => {
+                if (!catalogSearch.trim()) return true;
+                const q = catalogSearch.toLowerCase();
+                return (
+                  group.country.toLowerCase().includes(q) ||
+                  group.entries.some(
+                    (e) =>
+                      e.name.toLowerCase().includes(q) ||
+                      (e.nameAr && e.nameAr.includes(catalogSearch)) ||
+                      e.adapterType.toLowerCase().includes(q)
+                  )
+                );
+              })
+              .map((group) => (
+                <div key={group.country}>
+                  <div
+                    className={`flex items-center gap-2 px-2 py-1.5 ${isRtl ? "flex-row-reverse" : ""}`}
+                  >
+                    <span className="text-lg">{group.countryFlag}</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                      {group.country}
+                    </span>
+                    <span className="text-[10px] text-text-muted/60">
+                      ({group.entries.length})
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    {group.entries
+                      .filter((e) => {
+                        if (!catalogSearch.trim()) return true;
+                        const q = catalogSearch.toLowerCase();
+                        return (
+                          e.name.toLowerCase().includes(q) ||
+                          (e.nameAr && e.nameAr.includes(catalogSearch)) ||
+                          e.adapterType.toLowerCase().includes(q)
+                        );
+                      })
+                      .map((site) => {
+                        const isAdded =
+                          existingSourceIds.includes(site.id);
+                        return (
+                          <button
+                            key={site.id}
+                            type="button"
+                            disabled={isAdded}
+                            onClick={() => handleCatalogSelect(site)}
+                            className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-start transition-all duration-200
+                              ${isAdded
+                                ? "opacity-50 cursor-not-allowed bg-surface/30"
+                                : "hover:bg-surface/60 active:scale-[0.98] cursor-pointer"
+                              }
+                            `}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div
+                                className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}
+                              >
+                                <span className="text-sm font-medium text-text truncate">
+                                  {isRtl && site.nameAr
+                                    ? site.nameAr
+                                    : site.name}
+                                </span>
+                                <Badge
+                                  variant="secondary"
+                                  className="shrink-0 text-[10px] px-1.5 py-0"
+                                >
+                                  {site.adapterType}
+                                </Badge>
+                              </div>
+                              <p
+                                className="text-xs text-text-muted truncate mt-0.5"
+                                dir="ltr"
+                              >
+                                {site.baseUrl}
+                              </p>
+                            </div>
+                            {isAdded ? (
+                              <Badge
+                                variant="success"
+                                className="shrink-0 text-[10px]"
+                              >
+                                <Check className="h-3 w-3 me-0.5" />
+                                {isRtl ? "مضيف" : "Added"}
+                              </Badge>
+                            ) : (
+                              <span className="shrink-0 text-xs text-primary font-medium">
+                                →
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+              ))}
+          </div>
           <p className="text-xs text-text-muted">
             {isRtl
               ? "يتم تعبئة الاسم والرابط والمحول والفترة تلقائيًا عند الاختيار. يمكنك تعديلها قبل الحفظ."
@@ -461,6 +502,14 @@ export function SourceForm({ source, onSuccess, onCancel, locale = "en" }: Sourc
             <option value="autos-motos">Autos &amp; Motos</option>
             <option value="didier">Didier (cars2repair)</option>
             <option value="dsm">DSM Belgium</option>
+            <option value="kleinanzeigen">Kleinanzeigen.de</option>
+            <option value="marktplaats">Marktplaats.nl / 2dehands.be</option>
+            <option value="olx">OLX.pl</option>
+            <option value="sprzedaz">Sprzedajemy.pl</option>
+            <option value="carito">Carito.com</option>
+            <option value="paruvendu">Paruvendu.fr</option>
+            <option value="jm-autos">JM Autos</option>
+            <option value="voiture-accidentee">VoitureAccidentee.com</option>
           </Select>
           {adapterHelperText[adapterType] && (
             <p className="text-xs text-text-muted mt-1">

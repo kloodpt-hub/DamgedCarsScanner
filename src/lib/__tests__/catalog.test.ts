@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { SITE_CATALOG } from "@/lib/scraper/catalog";
 
 describe("SITE_CATALOG", () => {
-  it("contains exactly the 7 known sites", () => {
-    expect(SITE_CATALOG).toHaveLength(7);
+  it("contains known sites", () => {
+    expect(SITE_CATALOG.length).toBeGreaterThanOrEqual(26);
   });
 
   it("has unique ids and names", () => {
@@ -26,15 +26,29 @@ describe("SITE_CATALOG", () => {
       "autos-motos",
       "didier",
       "dsm",
+      "leboncoin",
+      "autoscout24",
+      "schadeautos",
+      "debels",
+      "generic",
+      "kleinanzeigen",
+      "marktplaats",
+      "olx",
+      "sprzedaz",
+      "carito",
+      "paruvendu",
+      "jm-autos",
+      "voiture-accidentee",
     ]);
     for (const site of SITE_CATALOG) {
       expect(expected.has(site.adapterType)).toBe(true);
     }
   });
 
-  it("uses a 60-minute default interval everywhere", () => {
+  it("uses reasonable default intervals", () => {
     for (const site of SITE_CATALOG) {
-      expect(site.defaultInterval).toBe(60);
+      expect(site.defaultInterval).toBeGreaterThanOrEqual(30);
+      expect(site.defaultInterval).toBeLessThanOrEqual(120);
     }
   });
 
