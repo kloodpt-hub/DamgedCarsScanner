@@ -21,9 +21,7 @@ export class DidierAdapter extends BaseAdapter {
   name = "didier";
 
   async scrape(url: string, selectors?: ScraperSelectors): Promise<RawListing[]> {
-    const applied = selectors?.listingContainer
-      ? selectors
-      : DIDIER_SELECTORS;
+    const applied = { ...DIDIER_SELECTORS, ...selectors };
     return this.scrapeWithPagination(url, applied);
   }
 

@@ -20,9 +20,7 @@ export class SchadeautosNlAdapter extends BaseAdapter {
   name = "schadeautos-nl";
 
   async scrape(url: string, selectors?: ScraperSelectors): Promise<RawListing[]> {
-    const applied = selectors?.listingContainer
-      ? selectors
-      : SCHADEAUTOS_NL_SELECTORS;
+    const applied = { ...SCHADEAUTOS_NL_SELECTORS, ...selectors };
     return this.scrapeWithPagination(url, applied);
   }
 

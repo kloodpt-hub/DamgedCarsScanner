@@ -23,9 +23,7 @@ export class SchadeautoZoekerAdapter extends BaseAdapter {
   name = "schadeauto-zoeker";
 
   async scrape(url: string, selectors?: ScraperSelectors): Promise<RawListing[]> {
-    const applied = selectors?.listingContainer
-      ? selectors
-      : SCHADEAUTO_ZOEKER_SELECTORS;
+    const applied = { ...SCHADEAUTO_ZOEKER_SELECTORS, ...selectors };
 
     const allListings: RawListing[] = [];
     let currentUrl: string | null = url;

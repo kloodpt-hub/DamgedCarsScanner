@@ -31,9 +31,7 @@ export class SchadeautosAdapter extends BaseAdapter {
   name = "schadeautos";
 
   async scrape(url: string, selectors?: ScraperSelectors): Promise<RawListing[]> {
-    const appliedSelectors = selectors?.listingContainer
-      ? selectors
-      : SCHADEAUTOS_SELECTORS;
+    const appliedSelectors = { ...SCHADEAUTOS_SELECTORS, ...selectors };
     const html = await this.fetchHtml(url);
     const listings = this.parseFromDataAttributes(html, appliedSelectors, url);
     return listings.map((l) => this.enhanceListing(l));
