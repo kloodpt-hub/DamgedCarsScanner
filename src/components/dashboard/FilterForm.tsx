@@ -23,6 +23,10 @@ const labels = {
     maxYear: "Max Year",
     minPrice: "Min Price",
     maxPrice: "Max Price",
+    priceType: "Price Type",
+    priceTypeAny: "Any",
+    priceTypeGross: "Gross (Export)",
+    priceTypeNet: "Net",
     damageStatus: "Damage Status",
     excludedKeywords: "Excluded Keywords (comma-separated)",
     minMileage: "Min Mileage",
@@ -50,6 +54,10 @@ const labels = {
     maxYear: "الحد الأقصى للسنة",
     minPrice: "الحد الأدنى للسعر",
     maxPrice: "الحد الأقصى للسعر",
+    priceType: "نوع السعر",
+    priceTypeAny: "أي",
+    priceTypeGross: "السعر الإجمالي (تصدير)",
+    priceTypeNet: "السعر الصافي",
     damageStatus: "حالة الضرر",
     excludedKeywords: "الكلمات المستبعدة (مفصولة بفاصلة)",
     minMileage: "الحد الأدنى للمسافة",
@@ -80,6 +88,7 @@ interface FilterData {
   maxYear?: number | null;
   minPrice?: number | null;
   maxPrice?: number | null;
+  priceType?: string;
   damageStatus?: string | null;
   excludedKeywords?: string[];
   minMileage?: number | null;
@@ -105,6 +114,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
   const [maxYear, setMaxYear] = useState(filter?.maxYear?.toString() ?? "");
   const [minPrice, setMinPrice] = useState(filter?.minPrice?.toString() ?? "");
   const [maxPrice, setMaxPrice] = useState(filter?.maxPrice?.toString() ?? "");
+  const [priceType, setPriceType] = useState(filter?.priceType ?? "any");
   const [damageStatus, setDamageStatus] = useState(filter?.damageStatus ?? "");
   const [excludedKeywords, setExcludedKeywords] = useState(
     filter?.excludedKeywords?.join(", ") ?? ""
@@ -145,6 +155,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         maxYear: maxYear ? parseInt(maxYear) : undefined,
         minPrice: minPrice ? parseFloat(minPrice) : undefined,
         maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+        priceType: priceType as "any" | "gross" | "net",
         damageStatus: damageStatus || undefined,
         excludedKeywords: excludedKeywords
           ? excludedKeywords.split(",").map((k) => k.trim()).filter(Boolean)
@@ -244,6 +255,18 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
             min={0}
           />
         </div>
+      </div>
+
+      <div>
+        <Label>{t.priceType}</Label>
+        <Select
+          value={priceType}
+          onChange={(e) => setPriceType(e.target.value)}
+        >
+          <option value="any">{t.priceTypeAny}</option>
+          <option value="gross">{t.priceTypeGross}</option>
+          <option value="net">{t.priceTypeNet}</option>
+        </Select>
       </div>
 
       <div>

@@ -29,6 +29,8 @@ const labels = {
     year: "Year",
     mileage: "Mileage",
     price: "Price",
+    grossPrice: "Gross",
+    netPrice: "Net",
     date: "Date",
     duplicates: "Duplicates",
     noDuplicates: "No duplicates found",
@@ -46,6 +48,8 @@ const labels = {
     year: "السنة",
     mileage: "عدد الكيلومترات",
     price: "السعر",
+    grossPrice: "الإجمالي",
+    netPrice: "الصافي",
     date: "التاريخ",
     duplicates: "تكرارات",
     noDuplicates: "لم يتم العثور على تكرارات",
@@ -57,6 +61,8 @@ interface Listing {
   id: string;
   title: string;
   price: number | null;
+  grossPrice: number | null;
+  netPrice: number | null;
   year: number | null;
   mileage: number | null;
   damageStatus: string | null;
@@ -196,9 +202,20 @@ export function ListingCard({ listing, locale }: ListingCardProps) {
             </div>
             <div className="min-w-0">
               <p className="text-xs text-text-muted">{t.price}</p>
-              <p className="mt-0.5 text-lg font-bold tabular-nums text-primary break-words">
-                {listing.price != null ? formatCurrency(listing.price) : "—"}
-              </p>
+              {listing.grossPrice != null && listing.netPrice != null ? (
+                <div className="mt-0.5">
+                  <p className="text-sm font-bold tabular-nums text-primary break-words">
+                    {formatCurrency(listing.grossPrice)}
+                  </p>
+                  <p className="text-xs font-medium tabular-nums text-text-muted break-words">
+                    {t.netPrice}: {formatCurrency(listing.netPrice)}
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-0.5 text-lg font-bold tabular-nums text-primary break-words">
+                  {listing.price != null ? formatCurrency(listing.price) : "—"}
+                </p>
+              )}
             </div>
             <div className="min-w-0">
               <p className="text-xs text-text-muted">{t.date}</p>

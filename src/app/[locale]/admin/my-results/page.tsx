@@ -10,6 +10,8 @@ interface AdminListing {
   id: string;
   title: string;
   price: number | null;
+  grossPrice: number | null;
+  netPrice: number | null;
   year: number | null;
   mileage: number | null;
   damageStatus: string | null;

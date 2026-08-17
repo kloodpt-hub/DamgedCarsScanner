@@ -15,6 +15,7 @@ interface FilterDraft {
   name?: string;
   minPrice?: number | null;
   maxPrice?: number | null;
+  priceType?: string;
   minYear?: number | null;
   maxYear?: number | null;
   minMileage?: number | null;
@@ -373,7 +374,24 @@ async function handleConversationStep(
         await sendTelegramMessage(chatId, m.addInvalid);
         return;
       }
-      await saveDraft(user.id, { ...draft, maxPrice }, "minYear", chatId, m.addYearPrompt);
+      await saveDraft(
+        user.id,
+        { ...draft, maxPrice },
+        "priceType",
+        chatId,
+        m.addPriceTypePrompt
+      );
+      return;
+    }
+    case "priceType": {
+      const priceType = parsePriceType(text);
+      await saveDraft(
+        user.id,
+        { ...draft, priceType },
+        "minYear",
+        chatId,
+        m.addYearPrompt
+      );
       return;
     }
     case "minYear": {
@@ -520,6 +538,7 @@ async function handleConversationStep(
           name: draft.name ?? "Filter",
           minPrice: draft.minPrice ?? null,
           maxPrice: draft.maxPrice ?? null,
+          priceType: draft.priceType ?? "any",
           minYear: draft.minYear ?? null,
           maxYear: draft.maxYear ?? null,
           minMileage: draft.minMileage ?? null,
@@ -567,12 +586,18 @@ function buildFilterDetail(filter: Filter, locale: BotLocale): string {
   const parts: string[] = [];
 
   if (filter.minPrice != null || filter.maxPrice != null) {
+    const priceTypeLabel =
+      filter.priceType === "gross"
+        ? locale === "ar" ? " إجمالي" : " gross"
+        : filter.priceType === "net"
+          ? locale === "ar" ? " صافي" : " net"
+          : "";
     if (filter.minPrice != null && filter.maxPrice != null) {
-      parts.push(`€${compactNumber(filter.minPrice)}-${compactNumber(filter.maxPrice)}`);
+      parts.push(`€${compactNumber(filter.minPrice)}-${compactNumber(filter.maxPrice)}${priceTypeLabel}`);
     } else if (filter.minPrice != null) {
-      parts.push(`€≥${compactNumber(filter.minPrice)}`);
+      parts.push(`€≥${compactNumber(filter.minPrice)}${priceTypeLabel}`);
     } else if (filter.maxPrice != null) {
-      parts.push(`€≤${compactNumber(filter.maxPrice)}`);
+      parts.push(`€≤${compactNumber(filter.maxPrice)}${priceTypeLabel}`);
     }
   }
 
@@ -661,6 +686,22 @@ function parseDamageStatus(text: string): string | null | undefined {
   const mapped = damageMap[trimmed];
   if (!mapped) return undefined;
   return mapped;
+}
+
+function parsePriceType(text: string): string {
+  const trimmed = text.trim().toLowerCase();
+  if (ANY_ANSWER.has(trimmed) || trimmed === "") return "any";
+  const typeMap: Record<string, string> = {
+    gross: "gross",
+    export: "gross",
+    net: "net",
+    "gross (export)": "gross",
+    "الإجمالي": "gross",
+    "الصافي": "net",
+    "السعر الإجمالي": "gross",
+    "السعر الصافي": "net",
+  };
+  return typeMap[trimmed] ?? "any";
 }
 
 function parseKeywords(text: string): string[] {

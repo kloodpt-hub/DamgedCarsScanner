@@ -141,6 +141,8 @@ export class ScraperEngine {
               externalId: raw.externalId,
               title: raw.title,
               price: raw.price,
+              grossPrice: raw.grossPrice ?? null,
+              netPrice: raw.netPrice ?? null,
               year: raw.year,
               mileage: raw.mileage,
               damageStatus: raw.damageStatus,
@@ -155,6 +157,8 @@ export class ScraperEngine {
             },
             update: {
               price: raw.price,
+              grossPrice: raw.grossPrice ?? null,
+              netPrice: raw.netPrice ?? null,
               year: raw.year,
               mileage: raw.mileage,
               damageStatus: raw.damageStatus,

@@ -101,10 +101,17 @@ export class SchadeautoZoekerAdapter extends BaseAdapter {
           this.sourceId ?? this.sourceIdForExternalId(sourceUrl)
         );
 
-        const price =
+        const grossPrice =
           parsePrice(
             $el.find("div.foto > div.boxBottom > p").first().text()
           ) ?? undefined;
+
+        const netPrice =
+          parsePrice(
+            $el.find("div.foto > div.boxBottomExport > p").first().text()
+          ) ?? undefined;
+
+        const price = grossPrice ?? netPrice ?? undefined;
 
         let year: number | undefined;
         $el.find("span.fltlt").each((_, fltltEl) => {
@@ -130,6 +137,8 @@ export class SchadeautoZoekerAdapter extends BaseAdapter {
           externalId,
           title,
           price,
+          grossPrice,
+          netPrice,
           year,
           mileage: undefined,
           damageStatus: undefined,

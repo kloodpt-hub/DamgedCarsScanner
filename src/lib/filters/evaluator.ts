@@ -11,7 +11,7 @@ export function evaluateListing(listing: Listing, filters: Filter[]): Filter[] {
     }
 
     if (!matchYear(listing.year, filter.minYear, filter.maxYear)) return false;
-    if (!matchPrice(listing.price, filter.minPrice, filter.maxPrice)) return false;
+    if (!matchPriceByType(listing, filter)) return false;
     if (!matchMileage(listing.mileage, filter.minMileage, filter.maxMileage)) return false;
     if (!matchDamage(listing.damageStatus, filter.damageStatus)) return false;
     if (!matchKeywords(listing.title, listing.description, filter.excludedKeywords)) return false;
@@ -25,6 +25,27 @@ export function evaluateListing(listing: Listing, filters: Filter[]): Filter[] {
     }
     return true;
   });
+}
+
+function matchPriceByType(listing: Listing, filter: Filter): boolean {
+  const hasFilter = filter.minPrice != null || filter.maxPrice != null;
+  if (!hasFilter) return true;
+
+  const priceType = filter.priceType ?? "any";
+  let effectivePrice: number | null;
+
+  if (priceType === "gross") {
+    effectivePrice = listing.grossPrice ?? listing.price;
+  } else if (priceType === "net") {
+    effectivePrice = listing.netPrice ?? listing.price;
+  } else {
+    effectivePrice = listing.price;
+  }
+
+  if (effectivePrice == null) return false;
+  if (filter.minPrice != null && effectivePrice < filter.minPrice) return false;
+  if (filter.maxPrice != null && effectivePrice > filter.maxPrice) return false;
+  return true;
 }
 
 function hasActiveConstraints(filter: Filter): boolean {

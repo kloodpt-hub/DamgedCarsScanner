@@ -2,6 +2,8 @@ export interface RawListing {
   externalId: string;
   title: string;
   price?: number;
+  grossPrice?: number;
+  netPrice?: number;
   year?: number;
   mileage?: number;
   damageStatus?: string;

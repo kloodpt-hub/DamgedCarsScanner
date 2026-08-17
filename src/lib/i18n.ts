@@ -77,6 +77,10 @@ export interface Dictionary {
     maxYear: string;
     minPrice: string;
     maxPrice: string;
+    priceType: string;
+    priceTypeAny: string;
+    priceTypeGross: string;
+    priceTypeNet: string;
     damageStatus: string;
     excludedKeywords: string;
     minMileage: string;
@@ -93,6 +97,8 @@ export interface Dictionary {
   listings: {
     listingTitle: string;
     price: string;
+    grossPrice: string;
+    netPrice: string;
     year: string;
     mileage: string;
     damage: string;
@@ -239,6 +245,10 @@ const en: Dictionary = {
     maxYear: "Max Year",
     minPrice: "Min Price",
     maxPrice: "Max Price",
+    priceType: "Price Type",
+    priceTypeAny: "Any",
+    priceTypeGross: "Gross (Export)",
+    priceTypeNet: "Net",
     damageStatus: "Damage Status",
     excludedKeywords: "Excluded Keywords",
     minMileage: "Min Mileage",
@@ -255,6 +265,8 @@ const en: Dictionary = {
   listings: {
     listingTitle: "Listing Title",
     price: "Price",
+    grossPrice: "Gross Price",
+    netPrice: "Net Price",
     year: "Year",
     mileage: "Mileage",
     damage: "Damage",
@@ -401,6 +413,10 @@ const ar: Dictionary = {
     maxYear: "الحد الأقصى للسنة",
     minPrice: "الحد الأدنى للسعر",
     maxPrice: "الحد الأقصى للسعر",
+    priceType: "نوع السعر",
+    priceTypeAny: "أي",
+    priceTypeGross: "السعر الإجمالي (تصدير)",
+    priceTypeNet: "السعر الصافي",
     damageStatus: "حالة الضرر",
     excludedKeywords: "الكلمات المستبعدة",
     minMileage: "الحد الأدنى للمسافة",
@@ -417,6 +433,8 @@ const ar: Dictionary = {
   listings: {
     listingTitle: "عنوان الإعلان",
     price: "السعر",
+    grossPrice: "السعر الإجمالي",
+    netPrice: "السعر الصافي",
     year: "السنة",
     mileage: "المسافة المقطوعة",
     damage: "الضرر",

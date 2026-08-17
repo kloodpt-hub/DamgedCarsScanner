@@ -54,6 +54,7 @@ const createFilterSchema = z.object({
   maxYear: z.number().int().min(1900).max(2100).optional(),
   minPrice: z.number().min(0).optional(),
   maxPrice: z.number().min(0).optional(),
+  priceType: z.enum(["any", "gross", "net"]).optional(),
   damageStatus: z.string().optional(),
   excludedKeywords: z.array(z.string()).optional(),
   minMileage: z.number().min(0).optional(),
@@ -88,6 +89,7 @@ export async function createFilter(data: {
   maxYear?: number;
   minPrice?: number;
   maxPrice?: number;
+  priceType?: "any" | "gross" | "net";
   damageStatus?: string;
   excludedKeywords?: string[];
   minMileage?: number;
@@ -120,6 +122,7 @@ export async function updateFilter(
     maxYear?: number;
     minPrice?: number;
     maxPrice?: number;
+    priceType?: "any" | "gross" | "net";
     damageStatus?: string;
     excludedKeywords?: string[];
     minMileage?: number;

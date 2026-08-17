@@ -70,6 +70,7 @@ model Filter {
   maxYear             Int?
   minPrice            Float?
   maxPrice            Float?
+  priceType           String    @default("any")
   damageStatus        String?
   excludedKeywords    String[]
   sourceIds           String[]  @default([])
@@ -92,6 +93,8 @@ model Listing {
   externalId    String    @unique
   title         String
   price         Float?
+  grossPrice    Float?
+  netPrice      Float?
   year          Int?
   mileage       Int?
   damageStatus  String?

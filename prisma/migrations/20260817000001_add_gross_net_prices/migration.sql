@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Listing" ADD COLUMN "grossPrice" DOUBLE PRECISION;
+ALTER TABLE "Listing" ADD COLUMN "netPrice" DOUBLE PRECISION;
