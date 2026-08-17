@@ -33,7 +33,13 @@ export class SchadeautosNlAdapter extends BaseAdapter {
   ): RawListing[] {
     const listings: RawListing[] = [];
 
-    $(selectors.listingContainer || "div[data-href].flexitem.car").each(
+    const containerSel = selectors.listingContainer || "div[data-href].flexitem.car";
+    const containerCount = $(containerSel).length;
+    console.log(
+      `[${this.name}] extractListings: ${containerCount} containers for "${containerSel}"`
+    );
+
+    $(containerSel).each(
       (_, element) => {
         try {
           const $el = $(element);
@@ -94,6 +100,7 @@ export class SchadeautosNlAdapter extends BaseAdapter {
       }
     );
 
+    console.log(`[${this.name}] extractListings: ${listings.length} listings parsed from ${containerCount} containers`);
     return listings;
   }
 }

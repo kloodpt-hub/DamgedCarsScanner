@@ -76,15 +76,27 @@ export class SchadeautoZoekerAdapter extends BaseAdapter {
     const $ = cheerio.load(html);
     const listings: RawListing[] = [];
 
-    $(selectors.listingContainer || "div.object3").each((_, element) => {
+    const containerSel = selectors.listingContainer || "div.object3";
+    const containerCount = $(containerSel).length;
+    console.log(
+      `[${this.name}] parseListings: ${containerCount} containers for "${containerSel}" in ${html.length} chars`
+    );
+
+    $(containerSel).each((_, element) => {
       try {
         const $el = $(element);
 
         const title = this.extractTitle($el);
-        if (!title) return;
+        if (!title) {
+          console.warn(`[${this.name}] Skipping: no title. merk="${$el.find("p.merk").first().text().trim()}" type="${$el.find("p.type").first().text().trim()}"`);
+          return;
+        }
 
         const link = this.extractLink($, $el, selectors.link, sourceUrl);
-        if (!link) return;
+        if (!link) {
+          console.warn(`[${this.name}] Skipping: no link. href="${$el.find("div.foto > a[href]").first().attr("href") ?? "none"}"`);
+          return;
+        }
 
         const externalId = this.generateExternalId(
           link,
@@ -139,6 +151,7 @@ export class SchadeautoZoekerAdapter extends BaseAdapter {
       }
     });
 
+    console.log(`[${this.name}] parseListings: ${listings.length} listings parsed from ${containerCount} containers`);
     return listings;
   }
 

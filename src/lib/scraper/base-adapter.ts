@@ -124,6 +124,10 @@ export abstract class BaseAdapter implements ScraperAdapter {
 
         const html = await response.text();
 
+        console.log(
+          `[${this.name}] fetchHtml OK: ${html.length} chars from ${url}`
+        );
+
         if (html.length < 5000) {
           console.warn(
             `[${this.name}] Short HTML response (${html.length} chars) from ${url}`
