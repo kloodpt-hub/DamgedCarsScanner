@@ -47,6 +47,12 @@ const labels = {
     allBrands: "All brands",
     noBrands: "No brands available",
     brandsSelected: (count: number) => `${count} selected`,
+    maxDamageLevel: "Maximum Damage Level",
+    maxDamageLevelNone: "Show all (no damage filter)",
+    maxDamageLevelLight: "Exclude moderate, heavy, and total loss",
+    maxDamageLevelModerate: "Exclude heavy and total loss only",
+    maxDamageLevelHeavy: "Exclude total loss only",
+    maxDamageLevelTotalLoss: "Keyword matching only (default)",
   },
   ar: {
     filterName: "اسم الفلتر",
@@ -78,6 +84,12 @@ const labels = {
     allBrands: "كل العلامات",
     noBrands: "لا توجد علامات متاحة",
     brandsSelected: (count: number) => `تم اختيار ${count}`,
+    maxDamageLevel: "الحد الأقصى لمستوى الضرر",
+    maxDamageLevelNone: "عرض الكل (بدون فلتر ضرر)",
+    maxDamageLevelLight: "استبعاد متوسط وشديد وخاسر",
+    maxDamageLevelModerate: "استبعاد شديد وخاسر فقط",
+    maxDamageLevelHeavy: "استبعاد خاسر فقط",
+    maxDamageLevelTotalLoss: "مطابقة الكلمات المفتاحية فقط (افتراضي)",
   },
 } as const;
 
@@ -96,6 +108,7 @@ interface FilterData {
   sourceIds?: string[];
   excludeHeavyDamage?: boolean;
   brands?: string[];
+  maxDamageLevel?: string;
 }
 
 interface FilterFormProps {
@@ -124,6 +137,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>(filter?.sourceIds ?? []);
   const [excludeHeavyDamage, setExcludeHeavyDamage] = useState(filter?.excludeHeavyDamage ?? false);
+  const [maxDamageLevel, setMaxDamageLevel] = useState(filter?.maxDamageLevel ?? "total_loss");
   const [brandOptions, setBrandOptions] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>(filter?.brands ?? []);
   const [loading, setLoading] = useState(false);
@@ -164,6 +178,7 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
         maxMileage: maxMileage ? parseInt(maxMileage) : undefined,
         sourceIds: selectedSourceIds,
         excludeHeavyDamage,
+        maxDamageLevel: maxDamageLevel as "none" | "light" | "moderate" | "heavy" | "total_loss",
         brands: selectedBrands,
       };
 
@@ -288,6 +303,20 @@ export function FilterForm({ filter, onSuccess, onCancel, locale }: FilterFormPr
           checked={excludeHeavyDamage}
           onCheckedChange={setExcludeHeavyDamage}
         />
+      </div>
+
+      <div>
+        <Label>{t.maxDamageLevel}</Label>
+        <Select
+          value={maxDamageLevel}
+          onChange={(e) => setMaxDamageLevel(e.target.value)}
+        >
+          <option value="total_loss">{t.maxDamageLevelTotalLoss}</option>
+          <option value="heavy">{t.maxDamageLevelHeavy}</option>
+          <option value="moderate">{t.maxDamageLevelModerate}</option>
+          <option value="light">{t.maxDamageLevelLight}</option>
+          <option value="none">{t.maxDamageLevelNone}</option>
+        </Select>
       </div>
 
       <div>

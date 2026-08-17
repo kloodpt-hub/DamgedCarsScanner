@@ -24,6 +24,7 @@ interface FilterDraft {
   excludeHeavyDamage?: boolean;
   brands?: string[];
   excludedKeywords?: string[];
+  maxDamageLevel?: string;
 }
 
 const ANY_ANSWER = new Set(["any", "none", "skip", "-"]);
@@ -485,6 +486,36 @@ async function handleConversationStep(
       await saveDraft(
         user.id,
         { ...draft, excludeHeavyDamage },
+        "maxDamageLevel",
+        chatId,
+        m.addMaxDamageLevelPrompt
+      );
+      return;
+    }
+    case "maxDamageLevel": {
+      const trimmed = text.trim().toLowerCase();
+      const damageLevelMap: Record<string, string> = {
+        none: "none",
+        light: "light",
+        moderate: "moderate",
+        heavy: "heavy",
+        total_loss: "total_loss",
+        "total loss": "total_loss",
+        "كل": "none",
+        "لا شيء": "none",
+        "خفيف": "light",
+        "متوسط": "moderate",
+        "شديد": "heavy",
+        "خاسر": "total_loss",
+      };
+      const maxDamageLevel = damageLevelMap[trimmed] ?? (ANY_ANSWER.has(trimmed) || trimmed === "" ? "total_loss" : undefined);
+      if (maxDamageLevel === undefined) {
+        await sendTelegramMessage(chatId, m.addInvalid);
+        return;
+      }
+      await saveDraft(
+        user.id,
+        { ...draft, maxDamageLevel },
         "brands",
         chatId,
         m.addBrandsPrompt
@@ -545,6 +576,7 @@ async function handleConversationStep(
           maxMileage: draft.maxMileage ?? null,
           damageStatus: draft.damageStatus ?? null,
           excludeHeavyDamage: draft.excludeHeavyDamage ?? false,
+          maxDamageLevel: draft.maxDamageLevel ?? "total_loss",
           brands: draft.brands ?? [],
           excludedKeywords: draft.excludedKeywords ?? [],
           sourceIds: resolvedSourceIds,
@@ -627,6 +659,10 @@ function buildFilterDetail(filter: Filter, locale: BotLocale): string {
 
   if (filter.excludeHeavyDamage) {
     parts.push("no heavy damage");
+  }
+
+  if (filter.maxDamageLevel && filter.maxDamageLevel !== "total_loss") {
+    parts.push(`max damage: ${filter.maxDamageLevel}`);
   }
 
   if (filter.brands && filter.brands.length > 0) {

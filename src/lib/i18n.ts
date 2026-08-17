@@ -93,6 +93,12 @@ export interface Dictionary {
     brands: string;
     allBrands: string;
     noBrands: string;
+    maxDamageLevel: string;
+    maxDamageLevelNone: string;
+    maxDamageLevelLight: string;
+    maxDamageLevelModerate: string;
+    maxDamageLevelHeavy: string;
+    maxDamageLevelTotalLoss: string;
   };
   listings: {
     listingTitle: string;
@@ -261,6 +267,12 @@ const en: Dictionary = {
     brands: "Brands",
     allBrands: "All brands",
     noBrands: "No brands available",
+    maxDamageLevel: "Maximum Damage Level",
+    maxDamageLevelNone: "Show all (no damage filter)",
+    maxDamageLevelLight: "Exclude moderate, heavy, and total loss",
+    maxDamageLevelModerate: "Exclude heavy and total loss only",
+    maxDamageLevelHeavy: "Exclude total loss only",
+    maxDamageLevelTotalLoss: "Keyword matching only (default)",
   },
   listings: {
     listingTitle: "Listing Title",
@@ -429,6 +441,12 @@ const ar: Dictionary = {
     brands: "العلامات التجارية",
     allBrands: "كل العلامات",
     noBrands: "لا توجد علامات متاحة",
+    maxDamageLevel: "الحد الأقصى لمستوى الضرر",
+    maxDamageLevelNone: "عرض الكل (بدون فلتر ضرر)",
+    maxDamageLevelLight: "استبعاد متوسط وشديد وخاسر",
+    maxDamageLevelModerate: "استبعاد شديد وخاسر فقط",
+    maxDamageLevelHeavy: "استبعاد خاسر فقط",
+    maxDamageLevelTotalLoss: "مطابقة الكلمات المفتاحية فقط (افتراضي)",
   },
   listings: {
     listingTitle: "عنوان الإعلان",

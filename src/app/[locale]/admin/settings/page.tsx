@@ -20,6 +20,7 @@ import {
   ShieldAlert,
   ExternalLink,
   Settings2,
+  Brain,
 } from "lucide-react";
 
 const GOOGLE_REDIRECT_URI =
@@ -126,6 +127,11 @@ export default async function SettingsPage({
 
   const renderConfigured =
     !!process.env.RENDER_API_KEY && !!process.env.RENDER_SERVICE_ID;
+
+  const aiEnabled = process.env.AI_ASSESSMENT_ENABLED === "true";
+  const aiApiUrl = process.env.AI_API_URL;
+  const aiApiKey = process.env.AI_API_KEY;
+  const aiModel = process.env.AI_MODEL;
 
   const envEntries = [
     {
@@ -454,6 +460,85 @@ export default async function SettingsPage({
                   Enter the bot&apos;s username (without the leading <code>@</code>) and save.
                 </>,
                 <>Click <code className="text-primary">Register Webhook</code> to activate receiving connect requests.</>,
+              ]}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section: AI Assessment */}
+      <Card>
+        <CardHeader>
+          <CardTitle className={`flex items-center gap-2 ${isRtl ? "flex-row-reverse" : ""}`}>
+            <Brain className="h-5 w-5 text-primary" />
+            <span>AI Assessment</span>
+          </CardTitle>
+          <CardDescription>
+            Optional AI-powered damage assessment. When enabled, borderline listings are
+            analyzed by an OpenAI-compatible API for more accurate damage classification.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SettingRow
+            label="Enabled"
+            envVar="AI_ASSESSMENT_ENABLED"
+            value={process.env.AI_ASSESSMENT_ENABLED ?? ""}
+            configured={aiEnabled}
+            isRtl={isRtl}
+          />
+          <SettingRow
+            label="API URL"
+            envVar="AI_API_URL"
+            value={aiApiUrl ?? ""}
+            configured={!!aiApiUrl}
+            isRtl={isRtl}
+          />
+          <SettingRow
+            label="API Key"
+            envVar="AI_API_KEY"
+            value={aiApiKey ?? ""}
+            configured={!!aiApiKey}
+            isRtl={isRtl}
+          />
+          <SettingRow
+            label="Model"
+            envVar="AI_MODEL"
+            value={aiModel ?? ""}
+            configured={!!aiModel}
+            isRtl={isRtl}
+          />
+
+          <div className={setupShell}>
+            <p className="font-medium text-text mb-1">AI Assessment setup steps</p>
+            <StepList
+              items={[
+                <>
+                  Get an API key from any OpenAI-compatible provider: OpenAI, Groq, Together,
+                  DeepSeek, or run a local model with Ollama/LM Studio.
+                </>,
+                <>
+                  Set <code className="text-primary">AI_API_URL</code> to the provider&apos;s base URL
+                  (e.g. <code className="text-primary">https://api.openai.com</code>,{" "}
+                  <code className="text-primary">https://api.groq.com</code>, or{" "}
+                  <code className="text-primary">http://localhost:11434</code> for Ollama).
+                </>,
+                <>
+                  Set <code className="text-primary">AI_API_KEY</code> to your API key. For Ollama
+                  local, any non-empty string works.
+                </>,
+                <>
+                  Set <code className="text-primary">AI_MODEL</code> to the model name
+                  (e.g. <code className="text-primary">gpt-4o-mini</code>,{" "}
+                  <code className="text-primary">llama-3.1-8b-instant</code>).
+                </>,
+                <>
+                  Set <code className="text-primary">AI_ASSESSMENT_ENABLED</code> to{" "}
+                  <code className="text-primary">true</code> to activate.
+                </>,
+                <>
+                  Without AI, the system uses rule-based keyword matching (free, instant).
+                  AI is only called for ambiguous listings where rules are uncertain.
+                </>,
               ]}
             />
           </div>

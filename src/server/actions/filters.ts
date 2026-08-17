@@ -62,6 +62,7 @@ const createFilterSchema = z.object({
   sourceIds: z.array(z.string()).optional(),
   excludeHeavyDamage: z.boolean().optional(),
   brands: z.array(z.string()).optional(),
+  maxDamageLevel: z.enum(["none", "light", "moderate", "heavy", "total_loss"]).optional(),
 });
 
 const updateFilterSchema = createFilterSchema.partial();
@@ -97,6 +98,7 @@ export async function createFilter(data: {
   sourceIds?: string[];
   excludeHeavyDamage?: boolean;
   brands?: string[];
+  maxDamageLevel?: "none" | "light" | "moderate" | "heavy" | "total_loss";
 }) {
   const session = await requireAuth();
   const validated = createFilterSchema.parse(data);
@@ -130,6 +132,7 @@ export async function updateFilter(
     sourceIds?: string[];
     excludeHeavyDamage?: boolean;
     brands?: string[];
+    maxDamageLevel?: "none" | "light" | "moderate" | "heavy" | "total_loss";
   }
 ) {
   const session = await requireAuth();

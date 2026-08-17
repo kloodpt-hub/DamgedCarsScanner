@@ -1,5 +1,6 @@
 import type { Listing, Filter } from "@prisma/client";
-import { isHeavyDamage } from "@/lib/damage-detector";
+import type { AiAssessment } from "@/lib/ai/assessor";
+import { isHeavyDamage, getEffectiveAssessment, isDamageAcceptable } from "@/lib/damage-detector";
 
 export function evaluateListing(listing: Listing, filters: Filter[]): Filter[] {
   return filters.filter((filter) => {
@@ -17,6 +18,12 @@ export function evaluateListing(listing: Listing, filters: Filter[]): Filter[] {
     if (!matchKeywords(listing.title, listing.description, filter.excludedKeywords)) return false;
     if (filter.excludeHeavyDamage) {
       if (isHeavyDamage(listing.title, listing.description, listing.damageStatus)) return false;
+    }
+    if (filter.maxDamageLevel && filter.maxDamageLevel !== "total_loss" && filter.maxDamageLevel !== "none") {
+      const assessment = getEffectiveAssessment(listing);
+      if (assessment && !isDamageAcceptable(assessment.damageLevel, filter.maxDamageLevel)) {
+        return false;
+      }
     }
     if (filter.brands && filter.brands.length > 0) {
       if (!listing.make) return false;
@@ -56,8 +63,9 @@ function hasActiveConstraints(filter: Filter): boolean {
   const hasKeywords = filter.excludedKeywords && filter.excludedKeywords.length > 0;
   const hasSources = filter.sourceIds && filter.sourceIds.length > 0;
   const hasHeavyDamage = !!filter.excludeHeavyDamage;
+  const hasMaxDamageLevel = !!filter.maxDamageLevel && filter.maxDamageLevel !== "total_loss" && filter.maxDamageLevel !== "none";
   const hasBrands = filter.brands && filter.brands.length > 0;
-  return hasYear || hasPrice || hasMileage || hasDamage || hasKeywords || hasSources || hasHeavyDamage || hasBrands;
+  return hasYear || hasPrice || hasMileage || hasDamage || hasKeywords || hasSources || hasHeavyDamage || hasMaxDamageLevel || hasBrands;
 }
 
 export function matchYear(
@@ -67,7 +75,6 @@ export function matchYear(
 ): boolean {
   const hasFilter = minYear != null || maxYear != null;
   if (!hasFilter) return true;
-  // Null listing value fails any active constraint.
   if (listingYear == null) return false;
   if (minYear != null && listingYear < minYear) return false;
   if (maxYear != null && listingYear > maxYear) return false;
@@ -104,7 +111,7 @@ function matchDamage(
   listingDamage: string | null | undefined,
   filterDamage: string | null | undefined
 ): boolean {
-  if (!filterDamage) return true; // no constraint
+  if (!filterDamage) return true;
   if (!listingDamage) return false;
 
   const l = listingDamage.toLowerCase().trim();
@@ -114,7 +121,6 @@ function matchDamage(
   if (f === "total loss") return l === "total loss";
   if (f === "damage") return l === "damage";
 
-  // fallback for any custom value: exact equality on normalized values
   return l === f;
 }
 
@@ -123,7 +129,7 @@ export function matchKeywords(
   description: string | null | undefined,
   excludedKeywords: string[]
 ): boolean {
-  if (!excludedKeywords || excludedKeywords.length === 0) return true; // no exclusions = pass
+  if (!excludedKeywords || excludedKeywords.length === 0) return true;
   const text = `${title} ${description ?? ""}`.toLowerCase();
   return !excludedKeywords.some((kw) => {
     const trimmed = kw.trim().toLowerCase();

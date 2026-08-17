@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { GenericAdapter } from "./generic-adapter";
 import { LeboncoinAdapter } from "./leboncoin.adapter";
 import { Autoscout24Adapter } from "./autoscout24.adapter";
@@ -12,6 +12,7 @@ import { DsmAdapter } from "./dsm.adapter";
 import type { BaseAdapterOptions } from "./base-adapter";
 import type { ScraperAdapter, ScraperJobResult, ScraperSelectors } from "./types";
 import { evaluateListing } from "../filters/evaluator";
+import { assessDamage } from "../damage-detector";
 import { notifyNewListing } from "../notifications";
 import { findDuplicates } from "../dedup/duplicate-detector";
 import { getDueSources, markSourceScraped, releaseStaleLocks } from "../cron/scheduler";
@@ -171,6 +172,28 @@ export class ScraperEngine {
               model: raw.model ?? undefined,
             },
           });
+
+          if (!existing) {
+            try {
+              const assessment = await assessDamage({
+                title: raw.title,
+                description: raw.description ?? null,
+                damageStatus: raw.damageStatus ?? null,
+              });
+              if (assessment) {
+                await this.prisma.listing.update({
+                  where: { id: listing.id },
+                  data: { aiAssessment: assessment as unknown as Prisma.InputJsonValue },
+                });
+                Object.assign(listing, { aiAssessment: assessment });
+              }
+            } catch (err) {
+              console.warn(
+                `[engine] AI assessment failed for ${raw.externalId}:`,
+                err instanceof Error ? err.message : String(err)
+              );
+            }
+          }
 
           if (raw.isSold) continue;
 

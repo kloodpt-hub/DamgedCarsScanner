@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isHeavyDamage } from "@/lib/damage-detector";
+import { isHeavyDamage, assessByRules } from "@/lib/damage-detector";
 
 describe("isHeavyDamage", () => {
   it("returns true when damageStatus is Total Loss", () => {
@@ -96,5 +96,58 @@ describe("isHeavyDamage", () => {
 
   it("returns true for 'allongé' keyword (French)", () => {
     expect(isHeavyDamage("Voiture allongé", null, null)).toBe(true);
+  });
+});
+
+describe("assessByRules", () => {
+  it("returns total_loss with isDefinite=true for Total Loss status", () => {
+    const result = assessByRules("Some car", null, "Total Loss");
+    expect(result.damageLevel).toBe("total_loss");
+    expect(result.isDefinite).toBe(true);
+    expect(result.confidence).toBe(1.0);
+  });
+
+  it("returns total_loss with isDefinite=true for heavy damage keyword", () => {
+    const result = assessByRules("BMW wreck", null, null);
+    expect(result.damageLevel).toBe("total_loss");
+    expect(result.isDefinite).toBe(true);
+    expect(result.confidence).toBe(0.9);
+  });
+
+  it("returns moderate with isDefinite=false for damage keyword", () => {
+    const result = assessByRules("BMW 320d with scratches", null, null);
+    expect(result.damageLevel).toBe("moderate");
+    expect(result.isDefinite).toBe(false);
+  });
+
+  it("returns moderate with isDefinite=false for Damage status", () => {
+    const result = assessByRules("Some car", null, "Damage");
+    expect(result.damageLevel).toBe("moderate");
+    expect(result.isDefinite).toBe(false);
+  });
+
+  it("returns none with isDefinite=true for No Damage status", () => {
+    const result = assessByRules("Clean BMW", null, "No Damage");
+    expect(result.damageLevel).toBe("none");
+    expect(result.isDefinite).toBe(true);
+  });
+
+  it("returns none with isDefinite=false when no damage indicators", () => {
+    const result = assessByRules("BMW 320d 2018", null, null);
+    expect(result.damageLevel).toBe("none");
+    expect(result.isDefinite).toBe(false);
+    expect(result.confidence).toBe(0.5);
+  });
+
+  it("returns total_loss for 'épave' keyword", () => {
+    const result = assessByRules("Peugeot 308 épave", null, null);
+    expect(result.damageLevel).toBe("total_loss");
+    expect(result.isDefinite).toBe(true);
+  });
+
+  it("returns moderate for 'accident' keyword", () => {
+    const result = assessByRules("Audi A4 accident history", null, null);
+    expect(result.damageLevel).toBe("moderate");
+    expect(result.isDefinite).toBe(false);
   });
 });

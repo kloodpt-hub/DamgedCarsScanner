@@ -15,6 +15,7 @@ const createFilterSchema = z.object({
   minMileage: z.number().min(0).optional(),
   maxMileage: z.number().min(0).optional(),
   sourceIds: z.array(z.string()).optional(),
+  maxDamageLevel: z.enum(["none", "light", "moderate", "heavy", "total_loss"]).optional(),
 });
 
 export async function GET() {

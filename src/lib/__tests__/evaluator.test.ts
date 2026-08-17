@@ -21,6 +21,7 @@ function makeListing(partial: Partial<Listing> = {}): Listing {
     isRead: false,
     isNotified: false,
     isSold: false,
+    aiAssessment: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...partial,
@@ -42,6 +43,8 @@ function makeFilter(partial: Partial<Filter> = {}): Filter {
     minMileage: null,
     maxMileage: null,
     excludeHeavyDamage: false,
+    maxDamageLevel: "total_loss",
+    priceType: "any",
     brands: [],
     isActive: true,
     createdAt: new Date(),
@@ -257,5 +260,87 @@ describe("evaluateListing", () => {
 describe("matchPrice", () => {
   it("returns false for a null listing price with an active constraint", () => {
     expect(matchPrice(null, undefined, 10000)).toBe(false);
+  });
+});
+
+describe("maxDamageLevel filtering", () => {
+  it("accepts everything when maxDamageLevel is total_loss (default)", () => {
+    const filter = makeFilter({ maxDamageLevel: "total_loss", minYear: 2000 });
+    const result = evaluateListing(
+      makeListing({ damageStatus: "Total Loss", year: 2018 }),
+      [filter]
+    );
+    expect(result).toEqual([filter]);
+  });
+
+  it("excludes total_loss when maxDamageLevel is heavy", () => {
+    const filter = makeFilter({ maxDamageLevel: "heavy", minYear: 2000 });
+    const result = evaluateListing(
+      makeListing({ damageStatus: "Total Loss", year: 2018 }),
+      [filter]
+    );
+    expect(result).toEqual([]);
+  });
+
+  it("accepts non-total-loss when maxDamageLevel is heavy", () => {
+    const filter = makeFilter({ maxDamageLevel: "heavy", minYear: 2000 });
+    const result = evaluateListing(
+      makeListing({ damageStatus: "Damage", year: 2018 }),
+      [filter]
+    );
+    expect(result).toEqual([filter]);
+  });
+
+  it("excludes heavy and total_loss when maxDamageLevel is moderate", () => {
+    const filter = makeFilter({ maxDamageLevel: "moderate", minYear: 2000 });
+    const result = evaluateListing(
+      makeListing({ damageStatus: "Total Loss", year: 2018 }),
+      [filter]
+    );
+    expect(result).toEqual([]);
+  });
+
+  it("accepts moderate damage when maxDamageLevel is moderate", () => {
+    const filter = makeFilter({ maxDamageLevel: "moderate", minYear: 2000 });
+    const result = evaluateListing(
+      makeListing({ damageStatus: "Damage", year: 2018 }),
+      [filter]
+    );
+    expect(result).toEqual([filter]);
+  });
+
+  it("excludes moderate, heavy, and total_loss when maxDamageLevel is light", () => {
+    const filter = makeFilter({ maxDamageLevel: "light", minYear: 2000 });
+    const result = evaluateListing(
+      makeListing({ damageStatus: "Damage", year: 2018 }),
+      [filter]
+    );
+    expect(result).toEqual([]);
+  });
+
+  it("accepts everything when maxDamageLevel is none", () => {
+    const filter = makeFilter({ maxDamageLevel: "none", minYear: 2000 });
+    const result = evaluateListing(
+      makeListing({ damageStatus: "Total Loss", year: 2018 }),
+      [filter]
+    );
+    expect(result).toEqual([filter]);
+  });
+
+  it("uses AI assessment when available", () => {
+    const filter = makeFilter({ maxDamageLevel: "light", minYear: 2000 });
+    const listing = makeListing({
+      year: 2018,
+      aiAssessment: {
+        damageLevel: "moderate",
+        drivability: "drivable",
+        damageDescription: "test",
+        confidence: 0.8,
+        method: "ai",
+        assessedAt: "2026-01-01T00:00:00Z",
+      },
+    });
+    const result = evaluateListing(listing, [filter]);
+    expect(result).toEqual([]);
   });
 });
